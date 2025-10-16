@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — e-Rapor Super Genius AI</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    body {
+      display: flex;
+      font-family: "Poppins", sans-serif;
+      background: #f4f6fb;
+      margin: 0;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 240px;
+      background: #2f3640;
+      color: #fff;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: fixed;
+      left: 0;
+      top: 0;
+    }
+
+    .sidebar .logo {
+      text-align: center;
+      padding: 24px 0;
+    }
+
+    .sidebar .logo img {
+      width: 90px;
+    }
+
+    .sidebar h2 {
+      font-size: 1.1em;
+      text-align: center;
+      color: #f5f6fa;
+      margin: 8px 0 16px;
+    }
+
+    .sidebar nav ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .sidebar nav li {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .sidebar nav a {
+      display: block;
+      padding: 12px 20px;
+      color: #dcdde1;
+      text-decoration: none;
+      transition: 0.3s;
+    }
+
+    .sidebar nav a:hover {
+      background: #40739e;
+      color: white;
+    }
+
+    .sidebar footer {
+      text-align: center;
+      font-size: 0.8em;
+      padding: 12px;
+      color: #ccc;
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
+
+    /* Main content */
+    .main {
+      margin-left: 240px;
+      padding: 40px;
+      width: calc(100% - 240px);
+    }
+
+    .main h1 {
+      color: #273c75;
+      font-size: 1.8em;
+      margin-bottom: 20px;
+    }
+
+    .ai-card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .ai-card label {
+      font-weight: 600;
+      color: #2f3640;
+    }
+
+    .ai-card input, .ai-card select, .ai-card textarea {
+      width: 100%;
+      margin-top: 6px;
+      margin-bottom: 12px;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #dcdde1;
+      font-size: 0.95em;
+    }
+
+    .ai-card button {
+      background: #4b7bec;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .ai-card button:hover {
+      background: #3867d6;
+    }
+
+    #output {
+      background: #f5f6fa;
+      padding: 15px;
+      border-radius: 8px;
+      white-space: pre-line;
+      margin-top: 15px;
+      font-size: 0.95em;
+    }
+  </style>
+</head>
+
+<body>
+  <aside class="sidebar">
+    <div>
+      <div class="logo">
+        <img src="assets/logo-erapor.png" alt="Logo e-Rapor">
+      </div>
+      <h2>e-Rapor Super Genius AI</h2>
+      <nav>
+        <ul>
+          <li><a href="dashboard.html">🏠 Dashboard</a></li>
+          <li><a href="profil.html">🏫 Profil Sekolah</a></li>
+          <li><a href="informasi.html">ℹ️ Informasi Pengembang</a></li>
+          <li><a href="#" id="logoutBtn" onclick="return false;">🚪 Keluar</a></li>
+
+        </ul>
+      </nav>
+    </div>
+    <footer>© 2025 Dedi Agus Mustofa, S.Pd.SD</footer>
+  </aside>
+
+  <main class="main">
+    <h1>AI Generator Deskripsi</h1>
+    <div class="ai-card">
+      <label>Mata Pelajaran</label>
+      <input id="mapel" placeholder="Contoh: Bahasa Indonesia" />
+
+      <label>Fase</label>
+      <select id="fase">
+        <option value="A">Fase A</option>
+        <option value="B">Fase B</option>
+        <option value="C">Fase C</option>
+      </select>
+
+      <label>Elemen</label>
+      <input id="elemen" placeholder="Contoh: Keterampilan Berbahasa" />
+
+      <label>Tujuan Pembelajaran / Kata Kunci</label>
+      <textarea id="kataKunci" rows="2" placeholder="Contoh: Menyusun kalimat efektif"></textarea>
+
+      <label>Gaya Bahasa</label>
+      <select id="gayaBahasa">
+        <option value="formal">Formal</option>
+        <option value="komunikatif">Komunikatif</option>
+        <option value="naratif">Naratif</option>
+      </select>
+
+      <button id="generateBtn">✨ Hasilkan Deskripsi AI</button>
+      <div id="output"></div>
+    </div>
+  </main>
+
+  <script src="js/dashboard.js"></script>
+</body>
+</html>
