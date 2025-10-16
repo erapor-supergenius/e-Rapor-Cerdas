@@ -60,6 +60,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // tombol logout
   document.getElementById("logoutBtn").addEventListener("click", () => {
     localStorage.clear();
-    location.href = "login.html";
+    location.href = "index.html";
   });
+
 });
