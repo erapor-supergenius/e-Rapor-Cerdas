@@ -1,5 +1,5 @@
 // login.js
-const PUSAT_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxkw6Vn5jFXbP8v264rX3QSZsrBaRUv2dT0PjNLcgfPYLxHJjtYpsFU0W-22oajnSUasw/exec"; // URL WebApp eRapor Pusat (exec)
+const PUSAT_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbzrPTSjYFoADLSjqWUnv2NOBYrcceSDiovtGe92AUnlN55o44fV9gzeTwJFKZXoTKvV3g/exec"; // URL WebApp eRapor Pusat (exec)
 
 function showMsg(text, type="info") {
   const msg = document.getElementById("msg");
@@ -40,4 +40,5 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
     console.error(err);
     showMsg("Gagal menghubungi server pusat.", "error");
   }
+
 });
