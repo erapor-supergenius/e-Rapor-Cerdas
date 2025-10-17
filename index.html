@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login Token Sekolah — e-Rapor Super Genius AI</title>
+  <title>Login — e-Rapor Super Genius AI</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -12,27 +12,38 @@
       <div class="logo">
         <img src="assets/logo-erapor.png" alt="Logo e-Rapor">
       </div>
-      <h2>Login Sekolah</h2>
-      <p class="sub">Masukkan Token Sekolah Anda</p>
 
-      <form id="loginForm">
-        <label>Token Sekolah</label>
-        <input id="token" placeholder="Masukkan token sekolah" required>
+      <div id="tokenFormContainer">
+        <h2>Verifikasi Token Sekolah</h2>
+        <p class="sub">Masukkan Token Sekolah Anda</p>
+        <form id="tokenForm">
+          <label>Token Sekolah</label>
+          <input id="token" placeholder="Masukkan token sekolah" required>
+          <button type="submit">Verifikasi Token</button>
+        </form>
+      </div>
 
-        <button type="submit">Validasi Token</button>
-        <div id="msg" class="msg"></div>
-      </form>
-    </div>
-    <footer>
+      <div id="loginFormContainer" style="display: none;">
+        <h2>Login Guru</h2>
+        <p class="sub">Gunakan akun yang telah Anda daftarkan</p>
+        <form id="loginForm">
+          <label>Username</label>
+          <input id="username" placeholder="Masukkan username" required>
+          <label>Password</label>
+          <input type="password" id="password" placeholder="Masukkan password" required>
+          <button type="submit">Login</button>
+        </form>
+      </div>
+
+      <p style="margin-top: 14px; font-size: 0.9em;">
+        Belum punya akun? <a href="register.html">Daftar di sini</a>
+      </p>
+
+    </div> <footer>
       © 2025 e-Rapor Super Genius AI<br>
       Dikembangkan oleh : <strong>Dedi Agus Mustofa, S.Pd.SD</strong>
     </footer>
-  </div>
-
-  <link rel="stylesheet" href="css/style.css">
-  <script src="js/login.js" defer></script>
+  </div> <script src="js/login.js" defer></script>
 
 </body>
-
 </html>
-
