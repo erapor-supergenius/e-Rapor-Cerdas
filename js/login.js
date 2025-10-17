@@ -5,7 +5,7 @@
 // URL untuk verifikasi TOKEN ke server PUSAT
 const PUSAT_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbySsp-hz1mKiGME-1c7eLQiRHKEoK3cf4nmIunJatceBMPWIiis7U-5JEQlkYJTaUZCyQ/exec";
 // URL untuk verifikasi USERNAME/PASSWORD ke server SEKOLAH
-const SEKOLAH_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxzgqgQf1p0zXk4IvnqMB62Yp_WTexZ6LYQijDPLTvKl_-ekpv5tKIVnKCX238KzdbB/exec";
+const SEKOLAH_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbyHgGSfCitCEgGs70wu4VbicYI22IXkPrw3Xuxus3Ip2OmUq80O_S7REGSwoGkBMH82/exec";
 
 // -------------------------------------------------------------------
 
@@ -110,5 +110,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 });
+
 
 
