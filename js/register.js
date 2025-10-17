@@ -1,7 +1,7 @@
 // js/register.js
 
 // ⚠️ PASTIKAN URL INI ADALAH URL DEPLOYMENT BARU DARI E-RAPOR SEKOLAH
-const SEKOLAH_WEBAPP_URL = "https://script.google.com/macros/s/AKfycby3WKiWVuKo56fk8FlXmJHMwvCHfcb9ljbfHPYA2an71p2STZwY35XL5WQXWmbZSrf_/exec";
+const SEKOLAH_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbwdzxboNRcNTXB25QjQl5kG3vgpORlm_GPNDpZG8tYdZjXkYpHkP0xTzPAEncBQPIaT/exec";
 
 // Utility Toast Anda (tidak perlu diubah)
 function showToast(msg, type = "info", timeout = 3000) {
@@ -86,3 +86,4 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
+
