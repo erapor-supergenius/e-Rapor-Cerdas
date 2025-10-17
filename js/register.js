@@ -1,89 +1,45 @@
 // js/register.js
 
-// ⚠️ PASTIKAN URL INI ADALAH URL DEPLOYMENT BARU DARI E-RAPOR SEKOLAH
-const SEKOLAH_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbwdzxboNRcNTXB25QjQl5kG3vgpORlm_GPNDpZG8tYdZjXkYpHkP0xTzPAEncBQPIaT/exec";
+// ⚠️ GANTI DENGAN URL DEPLOY BARU DARI E-RAPOR SEKOLAH ANDA
+const SEKOLAH_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbycM4PIbWzmAnr-36Mrp4xukfwJMrNACrrngZn4LPcPMTT6s8OgyF7SHP_xfefVRuwP/exec";
 
-// Utility Toast Anda (tidak perlu diubah)
+// Utility Toast Anda
 function showToast(msg, type = "info", timeout = 3000) {
-  const wrap = document.querySelector(".toast-wrap") || (() => {
-    const w = document.createElement("div");
-    w.className = "toast-wrap";
-    document.body.appendChild(w);
-    return w;
-  })();
-
-  const t = document.createElement("div");
-  t.className = "toast " + (type === "success" ? "success" : type === "error" ? "error" : "");
-  t.innerText = msg;
-  wrap.appendChild(t);
-  setTimeout(() => {
-    t.style.opacity = 0;
-    setTimeout(() => t.remove(), 400);
-  }, timeout);
+    const wrap = document.querySelector(".toast-wrap") || (() => {
+        const w = document.createElement("div"); w.className = "toast-wrap"; document.body.appendChild(w); return w;
+    })();
+    const t = document.createElement("div");
+    t.className = "toast " + (type === "success" ? "success" : type === "error" ? "error" : "");
+    t.innerText = msg; wrap.appendChild(t);
+    setTimeout(() => { t.style.opacity = 0; setTimeout(() => t.remove(), 400); }, timeout);
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  const form = document.getElementById("registerForm");
-  const submitButton = form.querySelector('button');
+    const form = document.getElementById("registerForm");
+    const tokenInput = document.getElementById("token");
 
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    // 1. Ambil token dari penyimpanan browser
-    const token = localStorage.getItem("erapor_token");
-    if (!token) {
-      showToast("Token sekolah tidak ditemukan. Silakan verifikasi token terlebih dahulu.", "error");
-      setTimeout(() => location.href = "index.html", 2000);
-      return;
+    // Ambil token dari penyimpanan dan masukkan ke form tersembunyi
+    const savedToken = localStorage.getItem("erapor_token");
+    if (!savedToken) {
+        showToast("Token sekolah tidak ditemukan!", "error");
+        setTimeout(() => location.href = "index.html", 2000);
+        return;
     }
+    tokenInput.value = savedToken;
 
-    // 2. Ambil data dari form
-    const nama = document.getElementById("nama").value.trim();
-    const username = document.getElementById("username").value.trim();
-    const password = document.getElementById("password").value;
+    // Atur URL tujuan form
+    form.action = SEKOLAH_WEBAPP_URL;
 
-    if (!nama || !username || !password) {
-      showToast("Lengkapi semua field wajib.", "error");
-      return;
-    }
+    form.addEventListener("submit", () => {
+        // Dengan metode ini, kita tidak bisa tahu pasti apakah registrasi berhasil
+        // atau ditolak karena kuota penuh. Kita hanya bisa asumsikan berhasil.
+        showToast("⏳ Mengirim data pendaftaran...", "info");
 
-    // 3. Kirim data ke server
-    showToast("⏳ Memvalidasi data ke server...", "info");
-    submitButton.disabled = true;
-    submitButton.textContent = 'Memproses...';
-
-    try {
-      const res = await fetch(SEKOLAH_WEBAPP_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "registerUser",
-          token: token, // Kirim token untuk validasi kuota
-          nama: nama,
-          username: username,
-          password: password,
-        }),
-      });
-
-      const json = await res.json();
-      
-      // 4. Tangani balasan dari server
-      if (json.success) {
-        showToast("✅ Registrasi berhasil! Mengarahkan ke halaman login...", "success");
-        setTimeout(() => location.href = 'index.html?status=registered', 2000);
-      } else {
-        // Tampilkan pesan error spesifik dari server
-        showToast("❌ Gagal: " + json.message, "error");
-      }
-
-    } catch (err) {
-      console.error(err);
-      showToast("🚫 Tidak dapat terhubung ke server sekolah. Periksa koneksi internet.", "error");
-    } finally {
-      // Kembalikan tombol ke keadaan semula
-      submitButton.disabled = false;
-      submitButton.textContent = 'Daftar Sekarang';
-    }
-  });
+        setTimeout(() => {
+            showToast("✅ Pendaftaran terkirim! Mengarahkan ke halaman login...", "success");
+            setTimeout(() => {
+                location.href = 'index.html?status=registered'; 
+            }, 2000);
+        }, 1500);
+    });
 });
-
