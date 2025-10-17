@@ -1,5 +1,5 @@
 // login.js
-const PUSAT_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbzrPTSjYFoADLSjqWUnv2NOBYrcceSDiovtGe92AUnlN55o44fV9gzeTwJFKZXoTKvV3g/exec";
+const PUSAT_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbyphk9DRVrG1-t7kXFiUc1xf5hgY98vopB_Agppr112EKMf2d0VYpihujNEJz_u5QHg/exec";
 
 function showMsg(text, type = "info") {
   const msg = document.getElementById("msg");
@@ -45,3 +45,4 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
     showMsg("⚠️ Gagal menghubungi server pusat. Pastikan Apps Script sudah di-deploy.", "error");
   }
 });
+
