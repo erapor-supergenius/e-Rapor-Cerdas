@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const user = localStorage.getItem("erapor_user");
   if (!user) {
     alert("Sesi Anda berakhir. Silakan login ulang.");
-    location.href = "login_guru.html";
+    location.href = "index.html";
     return;
   }
 
@@ -69,4 +69,5 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
 });
+
 
