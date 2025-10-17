@@ -32,7 +32,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const token = localStorage.getItem("erapor_token");
     if (!token) {
       showToast("Token sekolah belum terverifikasi. Silakan login token dulu.", "error");
-      setTimeout(() => location.href = "login.html", 2000);
+      setTimeout(() => location.href = "index.html", 2000);
       return;
     }
 
