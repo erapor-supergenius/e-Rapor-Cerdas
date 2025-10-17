@@ -1,5 +1,5 @@
 // register.js
-const SCHOOL_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxf0mhlmgh-6rTr_iHugLpRjt_6dxJ0eiEHVV0AZOLVmmr-H7w7AWCQJSnumQM-lbP1/exec"; // Ganti dengan URL Apps Script sekolah
+const SCHOOL_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbyNiEZdbsjFnxGaFtZ7e3tlZH7RAdo0VgtjKMmK-Fa5i8euP33XLn_VBWSJ3EiZod67/exec"; // Ganti dengan URL Apps Script sekolah
 
 // 🔔 Utility Toast
 function showToast(msg, type = "info", timeout = 3000) {
@@ -73,3 +73,4 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
 });
+
