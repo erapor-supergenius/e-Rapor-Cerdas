@@ -1,6 +1,6 @@
 // register.js
 
-// 🚀 Ganti URL Apps Script lama dengan URL API dari SheetDB
+// URL API dari SheetDB
 const SHEETDB_URL = "https://sheetdb.io/api/v1/ux7q4uxw2m2qr";
 
 // 🔔 Utility Toast (Fungsi ini tidak perlu diubah)
@@ -28,16 +28,13 @@ document.addEventListener("DOMContentLoaded", () => {
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    // Bagian ini tetap sama, untuk memastikan token sekolah ada
     const token = localStorage.getItem("erapor_token");
     if (!token) {
-      // ✅ SUDAH DIPERBAIKI
       showToast("Token sekolah belum terverifikasi. Silakan login token dulu.", "error");
       setTimeout(() => location.href = "index.html", 2000);
       return;
     }
 
-    // Ambil data dari form
     const nama = document.getElementById("nama").value.trim();
     const username = document.getElementById("username").value.trim();
     const password = document.getElementById("password").value;
@@ -50,16 +47,21 @@ document.addEventListener("DOMContentLoaded", () => {
     showToast("⏳ Mengirim data pendaftaran...", "info");
 
     try {
+      // 👇 BAGIAN YANG DIPERBAIKI ADA DI SINI 👇
       const payload = {
         data: [{
+          // Data ini harus cocok 100% dengan urutan dan nama header di Sheet
           username: username,
           password: password,
           nama_pengguna: nama,
           role: 'guru',
           status: 'aktif',
+          id_guru: '', // ✅ DITAMBAHKAN (nilai kosong)
+          last_login: '', // ✅ DITAMBAHKAN (nilai kosong)
           akses_terakhir: new Date().toISOString()
         }]
       };
+      // -----------------------------------------
 
       const res = await fetch(SHEETDB_URL, {
         method: "POST",
@@ -68,17 +70,16 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       if (res.ok) {
-        // ✅ SUDAH DIPERBAIKI
-        showToast("✅ Registrasi berhasil. Anda akan dialihkan ke halaman login.", "success");
+        showToast("✅ Registrasi berhasil! Anda akan dialihkan...", "success");
         setTimeout(() => location.href = "index.html", 2000);
       } else {
         const errorData = await res.json();
         console.error("Error dari SheetDB:", errorData);
-        showToast("❌ Gagal: Terjadi kesalahan di server. Cek console untuk detail.", "error");
+        showToast("❌ Gagal: Format data salah. Periksa console (F12).", "error");
       }
     } catch (err) {
       console.error("Error koneksi:", err);
-      showToast("🚫 Tidak dapat terhubung ke server. Periksa koneksi internet Anda.", "error");
+      showToast("🚫 Tidak dapat terhubung ke server. Periksa koneksi internet.", "error");
     }
   });
 });
