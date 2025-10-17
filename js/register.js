@@ -1,5 +1,5 @@
 // register.js
-const SCHOOL_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbzkDLwfOwQQLXfDP0cPctKULS_9Y34iRjdA9kMOLVWaR6IQ2uldBZN1u7yYSeNC3GM7/exec"; // Ganti dengan URL Apps Script sekolah
+const SCHOOL_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxf0mhlmgh-6rTr_iHugLpRjt_6dxJ0eiEHVV0AZOLVmmr-H7w7AWCQJSnumQM-lbP1/exec"; // Ganti dengan URL Apps Script sekolah
 
 // 🔔 Utility Toast
 function showToast(msg, type = "info", timeout = 3000) {
@@ -71,4 +71,5 @@ document.addEventListener("DOMContentLoaded", () => {
       showToast("🚫 Tidak dapat terhubung ke server sekolah.", "error");
     }
   });
+
 });
