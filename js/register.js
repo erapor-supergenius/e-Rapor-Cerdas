@@ -1,7 +1,7 @@
 // register.js
 
 // URL API dari SheetDB
-const SHEETDB_URL = "https://sheetdb.io/api/v1/ux7q4uxw2m2qr";
+const SHEETDB_URL = "https://sheetdb.io/api/v1/o0xdudvldgubu";
 
 // 🔔 Utility Toast (Fungsi ini tidak perlu diubah)
 function showToast(msg, type = "info", timeout = 3000) {
@@ -83,3 +83,4 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
+
