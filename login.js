@@ -1,7 +1,7 @@
 // login.js
-const PUSAT_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbzrPTSjYFoADLSjqWUnv2NOBYrcceSDiovtGe92AUnlN55o44fV9gzeTwJFKZXoTKvV3g/exec"; // URL WebApp eRapor Pusat (exec)
+const PUSAT_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbzrPTSjYFoADLSjqWUnv2NOBYrcceSDiovtGe92AUnlN55o44fV9gzeTwJFKZXoTKvV3g/exec";
 
-function showMsg(text, type="info") {
+function showMsg(text, type = "info") {
   const msg = document.getElementById("msg");
   msg.textContent = text;
   msg.className = "msg " + (type === "error" ? "error" : type === "success" ? "success" : "");
@@ -20,7 +20,11 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
   showMsg("Memeriksa token sekolah...");
 
   try {
-    const res = await fetch(`${PUSAT_WEBAPP_URL}?action=checkToken&token=${encodeURIComponent(token)}`);
+    const res = await fetch(`${PUSAT_WEBAPP_URL}?action=checkToken&token=${encodeURIComponent(token)}`, {
+      method: "GET",
+      mode: "cors"
+    });
+
     const json = await res.json();
 
     if (json.success) {
@@ -38,7 +42,6 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
     }
   } catch (err) {
     console.error(err);
-    showMsg("Gagal menghubungi server pusat.", "error");
+    showMsg("⚠️ Gagal menghubungi server pusat. Pastikan Apps Script sudah di-deploy.", "error");
   }
-
 });
