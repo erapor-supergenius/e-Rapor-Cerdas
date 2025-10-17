@@ -1,7 +1,7 @@
 // js/register.js
 
 // ⚠️ GANTI DENGAN URL DEPLOY BARU DARI E-RAPOR SEKOLAH ANDA
-const SEKOLAH_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbycM4PIbWzmAnr-36Mrp4xukfwJMrNACrrngZn4LPcPMTT6s8OgyF7SHP_xfefVRuwP/exec";
+const SEKOLAH_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxzgqgQf1p0zXk4IvnqMB62Yp_WTexZ6LYQijDPLTvKl_-ekpv5tKIVnKCX238KzdbB/exec";
 
 // Utility Toast Anda
 function showToast(msg, type = "info", timeout = 3000) {
@@ -43,3 +43,4 @@ document.addEventListener("DOMContentLoaded", () => {
         }, 1500);
     });
 });
+
