@@ -15,13 +15,14 @@
       <h1>Registrasi Akun Guru</h1>
       <p>Silakan daftarkan akun Anda untuk mengakses e-Rapor Super Genius AI.</p>
 
-      <form id="registerForm" method="POST" target="hidden_iframe">
-        <input type="text" id="nama" name="nama_pengguna" placeholder="Nama Lengkap" required />
-        <input type="text" id="username" name="username" placeholder="Username" required />
-        <input type="password" id="password" name="password" placeholder="Password" required />
-        <input type="email" id="email" name="email" placeholder="Email (opsional)" />
+      <form id="registerForm">
+        <input type="text" id="nama" placeholder="Nama Lengkap" required />
+        <input type="text" id="username" placeholder="Username" required />
+        <input type="password" id="password" placeholder="Password" required />
+        <input type="email" id="email" placeholder="Email (opsional)" />
         <button type="submit">Daftar Sekarang</button>
       </form>
+
       <p style="margin-top: 14px; font-size: 0.9em;">
         Sudah punya akun? <a href="index.html">Login di sini</a>
       </p>
@@ -32,9 +33,6 @@
     </footer>
   </div>
 
-  <iframe name="hidden_iframe" style="display:none;"></iframe>
-
   <script src="js/register.js"></script>
 </body>
-
 </html>
