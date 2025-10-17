@@ -1,6 +1,6 @@
 // dashboard.js
 
-const SCHOOL_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbyNiEZdbsjFnxGaFtZ7e3tlZH7RAdo0VgtjKMmK-Fa5i8euP33XLn_VBWSJ3EiZod67/exec"; // URL backend sekolah
+const SCHOOL_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbw3-aPCGLfg1E0oyjsAnvILyYVFc15wGjZmCDAvOImNklOBb__c3mW7soE0YsvwIE2z/exec"; // URL backend sekolah
 
 document.addEventListener("DOMContentLoaded", () => {
   const user = JSON.parse(localStorage.getItem("erapor_user") || "null");
@@ -64,5 +64,6 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
 });
+
 
 
