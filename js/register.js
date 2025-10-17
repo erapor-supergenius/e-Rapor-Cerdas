@@ -62,7 +62,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const json = await res.json();
       if (json.success) {
         showToast("✅ Registrasi berhasil. Silakan login.", "success");
-        setTimeout(() => location.href = "login.html", 1500);
+        setTimeout(() => location.href = "index.html", 1500);
       } else {
         showToast("❌ Gagal: " + json.message, "error");
       }
@@ -73,4 +73,5 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
 });
+
 
