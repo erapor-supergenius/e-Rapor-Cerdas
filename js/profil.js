@@ -1,5 +1,5 @@
 // profil.js
-const SCHOOL_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbykZbeRJ9CYzNRx8JYAvRLwkT3SPl8SJUdFGf4JQy9dTNEn_sP1EXEDRFZoxNduzVYh/exec"; // ganti dengan URL WebApp Sekolah
+const SCHOOL_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxZuarfaElKLcJ1Q-9mbV2R2klfRXGdT6A1NO6o6eYEn71OIZ21g8jiI4X8irQlnUQx/exec"; // ganti dengan URL WebApp Sekolah
 
 document.addEventListener("DOMContentLoaded", () => {
   const user = localStorage.getItem("erapor_user");
@@ -69,6 +69,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
 });
+
 
 
 
