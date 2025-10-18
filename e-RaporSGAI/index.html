@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-R" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login e-Rapor Genius AI</title>
+    <style>
+        body { 
+            font-family: system-ui, sans-serif; 
+            display: flex; /* Diubah */
+            flex-direction: column; /* Ditambahkan */
+            align-items: center; /* Ditambahkan */
+            justify-content: center; /* Diubah */
+            min-height: 100vh; 
+            background-color: #f4f7f6; 
+            margin: 0; /* Ditambahkan */
+        }
+        
+        /* === STYLE BARU: LOGO === */
+        .logo-container {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        .logo-container img {
+            max-width: 150px; /* Atur ukuran logo Anda */
+            height: auto;
+        }
+        /* ======================== */
+
+        .container { 
+            background: #fff; 
+            border-radius: 8px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
+            padding: 2rem; 
+            width: 400px; 
+            max-width: 90%; /* Responsif */
+        }
+        .tabs { display: flex; border-bottom: 2px solid #eee; margin-bottom: 1.5rem; }
+        .tab-button { padding: 1rem; border: none; background: none; cursor: pointer; font-size: 1rem; color: #aaa; }
+        .tab-button.active { color: #007bff; border-bottom: 2px solid #007bff; font-weight: bold; }
+        .form-content { display: none; }
+        .form-content.active { display: block; }
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 500; }
+        .form-group input { width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        button { width: 100%; padding: 0.85rem; border: none; border-radius: 4px; background-color: #007bff; color: white; font-size: 1rem; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
+        button:disabled { background-color: #ccc; }
+        #message-area { margin-top: 1rem; padding: 0.75rem; border-radius: 4px; text-align: center; display: none; }
+        #message-area.success { background-color: #d4edda; color: #155724; }
+        #message-area.error { background-color: #f8d7da; color: #721c24; }
+
+        /* === STYLE BARU: FOOTER === */
+        footer {
+            text-align: center;
+            margin-top: 2rem;
+            color: #888;
+            font-size: 0.9rem;
+        }
+        /* ========================== */
+    </style>
+</head>
+<body>
+    
+    <div class="logo-container">
+        <img src="assets/logo.png" alt="Logo e-Rapor Genius AI">
+    </div>
+    <div class="container">
+        <div class="tabs">
+            <button class="tab-button active" data-tab="login-form">Masuk (Login)</button>
+            <button class="tab-button" data-tab="register-form">Daftar Baru</button>
+        </div>
+
+        <div id="login-form" class="form-content active">
+            <form id="formLogin">
+                <div class="form-group">
+                    <label for="login-username">Username</label>
+                    <input type="text" id="login-username" required />
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" required />
+                </div>
+                <button type="submit" id="login-button">Masuk</button>
+            </form>
+        </div>
+
+        <div id="register-form" class="form-content">
+            <div id="token-step">
+                <p>Masukkan token lisensi yang diberikan oleh sekolah Anda.</p>
+                <form id="formToken">
+                    <div class="form-group">
+                        <label for="token">Token Sekolah</label>
+                        <input type="text" id="token" required />
+                    </div>
+                    <button type="submit" id="token-button">Validasi Token</button>
+                </form>
+            </div>
+
+            <div id="register-step" style="display: none;">
+                <p>Token valid! Silakan lengkapi data diri Anda.</p>
+                <form id="formRegister">
+                    <input type="hidden" id="register-token" /> <div class="form-group">
+                        <label for="register-name">Nama Lengkap</label>
+                        <input type="text" id="register-name" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="register-username">Username Baru</label>
+                        <input type="text" id="register-username" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="register-password">Password Baru</label>
+                        <input type="password" id="register-password" required />
+                    </div>
+                    <button type="submit" id="register-button">Daftar Akun</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="message-area"></div>
+    </div>
+
+    <footer>
+        <p>Dikembangkan oleh [Nama Pengembang Anda]</p>
+    </footer>
+    <script src="script.js"></script>
+</body>
+</html>
