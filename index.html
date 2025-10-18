@@ -1,54 +1,110 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login — e-Rapor Super Genius AI</title>
-  <link rel="stylesheet" href="css/style.css">
+    <meta charset="UTF-R" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login e-Rapor Cerdas</title>
+    <style>
+        body { font-family: system-ui, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; background-color: #f4f7f6; margin: 0; }
+        .logo-container { text-align: center; margin-bottom: 1.5rem; }
+        .logo-container img { max-width: 150px; height: auto; }
+        .container { background: #fff; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); padding: 2rem; width: 400px; max-width: 90%; }
+        .tabs { display: flex; border-bottom: 2px solid #eee; margin-bottom: 1.5rem; }
+        .tab-button { padding: 1rem; border: none; background: none; cursor: pointer; font-size: 1rem; color: #aaa; }
+        .tab-button.active { color: #007bff; border-bottom: 2px solid #007bff; font-weight: bold; }
+        .form-content { display: none; }
+        .form-content.active { display: block; }
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 500; }
+        .form-group input { width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        button { width: 100%; padding: 0.85rem; border: none; border-radius: 4px; background-color: #007bff; color: white; font-size: 1rem; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
+        button:disabled { background-color: #ccc; }
+        #message-area { margin-top: 1rem; padding: 0.75rem; border-radius: 4px; text-align: center; display: none; }
+        #message-area.success { background-color: #d4edda; color: #155724; }
+        #message-area.error { background-color: #f8d7da; color: #721c24; }
+        footer { text-align: center; margin-top: 2rem; color: #888; font-size: 0.9rem; }
+    </style>
 </head>
 <body>
-  <div class="auth-container">
-    <div class="auth-card">
-      <div class="logo">
-        <img src="assets/logo-erapor.png" alt="Logo e-Rapor">
-      </div>
+    
+    <div class="logo-container">
+        <img src="assets/logo.png" alt="Logo e-Rapor Cerdas">
+    </div>
 
-      <!-- Token Sekolah -->
-      <div id="tokenFormContainer" style="display: none;">
-        <h2>Verifikasi Token Sekolah</h2>
-        <p class="sub">Masukkan Token Sekolah Anda</p>
-        <form id="tokenForm">
-          <label>Token Sekolah</label>
-          <input id="token" placeholder="Masukkan token sekolah" required>
-          <button type="submit">Verifikasi Token</button>
-        </form>
-      </div>
+    <div class="container">
+        <div class="tabs">
+            <button class="tab-button active" data-tab="login-form">Masuk (Login)</button>
+            <button class="tab-button" data-tab="register-form">Daftar Baru</button>
+        </div>
 
-      <!-- Login User -->
-      <div id="loginFormContainer" style="display: none;">
-        <h2>Login Guru</h2>
-        <p class="sub">Gunakan akun yang telah Anda daftarkan</p>
-        <form id="loginForm">
-          <label>Username</label>
-          <input id="username" placeholder="Masukkan username" required>
-          <label>Password</label>
-          <input type="password" id="password" placeholder="Masukkan password" required>
-          <button type="submit">Login</button>
-        </form>
-      </div>
+        <div id="login-form" class="form-content active">
+            <form id="formLogin">
+                <div class="form-group">
+                    <label for="login-username">Username</label>
+                    <input type="text" id="login-username" required />
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" required />
+                </div>
+                <button type="submit" id="login-button">Masuk</button>
+            </form>
+        </div>
 
-      <!-- Link ke Registrasi -->
-      <p style="margin-top: 14px; font-size: 0.9em;">
-        Belum punya akun? <a href="register.html">Daftar di sini</a>
-      </p>
+        <div id="register-form" class="form-content">
+            <div id="token-step">
+                <p>Masukkan token lisensi yang diberikan oleh sekolah Anda.</p>
+                <form id="formToken">
+                    <div class="form-group">
+                        <label for="token">Token Sekolah</label>
+                        <input type="text" id="token" required />
+                    </div>
+                    <button type="submit" id="token-button">Validasi Token</button>
+                </form>
+            </div>
+
+            <div id="register-step" style="display: none;">
+                <p>Token valid! Silakan lengkapi data diri Anda.</p>
+                <form id="formRegister">
+                    <input type="hidden" id="register-token" />
+
+                    <div class="form-group" id="nama-sekolah-group" style="display: none;">
+                        <label for="register-nama-sekolah">Nama Sekolah</label>
+                        <input type="text" id="register-nama-sekolah" placeholder="Cth: SDN 01 Pagi" />
+                        <small>Anda adalah pendaftar pertama, harap isi nama sekolah.</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="register-name">Nama Lengkap</label>
+                        <input type="text" id="register-name" required />
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="register-nip">NIP (Isi ' - ' jika tidak ada)</label>
+                        <input type="text" id="register-nip" required />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="register-username">Username Baru</label>
+                        <input type="text" id="register-username" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="register-password">Password Baru</label>
+                        <input type="password" id="register-password" required />
+                    </div>
+                    <button type="submit" id="register-button">Daftar Akun</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="message-area"></div>
     </div>
 
     <footer>
-      © 2025 e-Rapor Super Genius AI<br>
-      Dikembangkan oleh: <strong>Dedi Agus Mustofa, S.Pd.SD</strong>
+        <p>Dikembangkan oleh : Dedi Agus Mustofa, S.Pd.SD</p>
     </footer>
-  </div>
 
-  <script src="js/login.js" defer></script>
+    <script src="script.js"></script>
 </body>
 </html>
