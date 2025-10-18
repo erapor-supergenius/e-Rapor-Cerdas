@@ -1,7 +1,7 @@
 // js/register.js
 
 // ⚠️ GANTI DENGAN URL BARU DARI LANGKAH 1 DI ATAS
-const SEKOLAH_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbyHgGSfCitCEgGs70wu4VbicYI22IXkPrw3Xuxus3Ip2OmUq80O_S7REGSwoGkBMH82/exec";
+const SEKOLAH_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxZuarfaElKLcJ1Q-9mbV2R2klfRXGdT6A1NO6o6eYEn71OIZ21g8jiI4X8irQlnUQx/exec";
 
 // Utility Toast Anda (tidak perlu diubah)
 function showToast(msg, type = "info", timeout = 3000) {
@@ -71,3 +71,4 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 });
+
