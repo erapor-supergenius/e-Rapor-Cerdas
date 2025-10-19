@@ -457,6 +457,79 @@
     background: #eef5ff;
 }
 /* === AKHIR CSS BARU === */
+/* === CSS BARU UNTUK INPUT NILAI === */
+
+/* Style untuk textarea deskripsi */
+textarea.form-control {
+    width: 100%; /* Lebar penuh */
+    padding: 8px 12px;
+    border: 1px solid #ced4da; /* Warna border standar Bootstrap */
+    border-radius: 4px;
+    font-size: 0.9em;
+    line-height: 1.5;
+    background-color: #e9ecef; /* Warna abu-abu saat readonly */
+    transition: background-color 0.15s ease-in-out; /* Transisi halus saat diedit */
+    box-sizing: border-box; /* Pastikan padding tidak menambah lebar */
+}
+
+textarea.form-control:read-only {
+    background-color: #e9ecef; /* Tetap abu-abu saat readonly */
+    cursor: not-allowed; /* Ubah cursor saat tidak bisa diedit */
+}
+
+textarea.form-control:not(:read-only) {
+    background-color: #fff; /* Warna putih saat bisa diedit */
+    cursor: text;
+}
+
+/* Style untuk tombol Edit Deskripsi */
+#edit-deskripsi-btn {
+    margin-top: -10px; /* Tarik sedikit ke atas agar dekat textarea */
+    margin-bottom: 15px; /* Beri jarak ke dropdown nilai */
+    display: block; /* Agar margin atas/bawah bekerja */
+}
+
+/* Penyesuaian layout form agar rapi */
+/* Asumsi Anda menggunakan class .form-row dan .form-group seperti contoh HTML */
+.form-row {
+    display: flex;
+    flex-wrap: wrap; /* Agar bisa turun baris di layar kecil */
+    gap: 1rem; /* Jarak antar kolom form */
+    margin-bottom: 1rem; /* Jarak ke baris form berikutnya */
+}
+
+.form-row .form-group {
+    flex: 1 1 200px; /* Fleksibel tapi punya lebar minimal */
+    display: flex;
+    flex-direction: column; /* Label di atas input */
+}
+
+/* Penyesuaian label dan input agar konsisten */
+.form-group label {
+    margin-bottom: 0.3rem; /* Jarak label ke input */
+    font-weight: 500; /* Sedikit tebal */
+    display: block; /* Pastikan label full width */
+}
+
+.form-group select,
+.form-group textarea {
+    width: 100%; /* Pastikan input mengisi grup */
+    padding: 0.375rem 0.75rem; /* Padding standar */
+    font-size: 1rem; /* Ukuran font standar */
+    line-height: 1.5;
+    color: #495057;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+}
+
+.form-group select:disabled {
+     background-color: #e9ecef; /* Warna abu-abu saat disabled */
+     cursor: not-allowed;
+}
+/* === AKHIR CSS BARU === */
     </style>
 </head>
 <body class="dashboard-wrapper">
@@ -733,5 +806,6 @@
     <script src="dashboard.js"></script>
 </body>
 </html>
+
 
 
