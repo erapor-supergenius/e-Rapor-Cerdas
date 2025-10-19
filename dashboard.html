@@ -376,9 +376,101 @@
         <main class="main-content">
             
             <div id="page-home" class="content-page active">
-                <h2>Selamat Datang di e-Rapor Cerdas</h2>
-                <p>Silakan pilih menu di sebelah kiri untuk mulai mengelola data rapor.</p>
+    
+    <div class="widget-grid" style="margin-bottom: 1.5rem;">
+        <a href="#" class="action-card nav-link" data-page="page-input-nilai">
+            <span class="action-card-icon">✎</span> <div class="action-card-text">
+                <h4>Input Nilai</h4>
+                <p>Mulai mengisi nilai CP siswa</p>
             </div>
+        </a>
+        <a href="#" class="action-card nav-link" data-page="page-data-siswa">
+            <span class="action-card-icon">👤</span> <div class="action-card-text">
+                <h4>Data Siswa</h4>
+                <p>Kelola data master siswa</p>
+            </div>
+        </a>
+        <a href="#" class="action-card nav-link" data-page="page-cetak">
+            <span class="action-card-icon">🖨️</span> <div class="action-card-text">
+                <h4>Cetak Rapor</h4>
+                <p>Cetak rapor akhir semester</p>
+            </div>
+        </a>
+    </div>
+
+    <div class="widget-grid">
+
+        <div class="widget-card" style="grid-column: span 2;"> <h3>Status Pengerjaan Rapor</h3>
+            <div class="progress-item">
+                <div class="progress-item-label">
+                    <span>Matematika (Fase B)</span>
+                    <span>25 / 30 Siswa</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-bar-fill" style="width: 83%;"></div>
+                </div>
+            </div>
+            <div class="progress-item">
+                <div class="progress-item-label">
+                    <span>Bahasa Indonesia (Fase B)</span>
+                    <span>15 / 30 Siswa</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-bar-fill warning" style="width: 50%;"></div>
+                </div>
+            </div>
+            <div class="progress-item">
+                <div class="progress-item-label">
+                    <span>IPAS (Fase B)</span>
+                    <span>0 / 30 Siswa</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-bar-fill danger" style="width: 1%;"></div> </div>
+            </div>
+        </div>
+
+        <div class="widget-card attention-list">
+            <h3>Siswa Perlu Perhatian</h3>
+            <ul>
+                <li>
+                    <span class="student-name">Budi Setiawan</span>
+                    <span class="student-status">3 CP Bimbingan</span>
+                </li>
+                <li>
+                    <span class="student-name">Ani Cahyani</span>
+                    <span class="student-status">2 CP Bimbingan</span>
+                </li>
+                <li>
+                    <span class="student-name">Candra Wijaya</span>
+                    <span class="student-status">1 CP Bimbingan</span>
+                </li>
+            </ul>
+        </div>
+
+        <div class="widget-card">
+            <h3>Ringkasan Data Sekolah</h3>
+            <div class="summary-grid">
+                <div class="summary-item">
+                    <p class="count">120</p>
+                    <p class="label">Total Siswa</p>
+                </div>
+                <div class="summary-item">
+                    <p class="count">15</p>
+                    <p class="label">Total Guru</p>
+                </div>
+                <div class="summary-item">
+                    <p class="count">6</p>
+                    <p class="label">Total Kelas</p>
+                </div>
+                <div class="summary-item">
+                    <p class="count">3</p>
+                    <p class="label">Absensi (Alpa)</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
 
             <div id="page-input-nilai" class="content-page">
                 <h2>Input Capaian Pembelajaran (CP)</h2>
@@ -452,5 +544,6 @@
     <script src="dashboard.js"></script>
 </body>
 </html>
+
 
 
