@@ -604,46 +604,67 @@
                 <h2>Input Capaian Pembelajaran (CP)</h2>
                 <p>Silakan pilih siswa dan masukkan data capaian pembelajaran di bawah ini.</p>
                 
-                <div class="form-container">
-                    <div class="form-column">
-                        <h4>Identitas Siswa</h4>
-                        <div class="form-group">
-                            <label for="pilih-kelas">Pilih Kelas</label>
-                            <select id="pilih-kelas">
-                                <option>Memuat kelas...</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="pilih-siswa">Pilih Siswa</label>
-                            <select id="pilih-siswa">
-                                <option>Pilih kelas dahulu...</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div class="form-column">
-                        <h4>Data Capaian</h4>
-                        <div class="form-group">
-                            <label for="pilih-mapel">Mata Pelajaran</label>
-                            <select id="pilih-mapel">
-                                <option>Memuat mapel...</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="pilih-cp">Elemen CP / TP</label>
-                            <select id="pilih-cp">
-                                <option>Pilih mapel dahulu...</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="pilih-status">Status Capaian</label>
-                            <select id="pilih-status">
-                                <option value="Tercapai">Tercapai</option>
-                                <option value="Bimbingan">Perlu Bimbingan</option>
-                            </select>
-                        </div>
-                        <button id="simpan-nilai-button">Simpan Nilai</button>
-                    </div>
+                <form id="form-input-nilai">
+        <div class="form-row">
+            <div class="form-group">
+                <label for="pilih-kelas">Pilih Kelas:</label>
+                <select id="pilih-kelas" name="pilih-kelas" disabled>
+                    <option value="">Memuat...</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="pilih-siswa">Pilih Siswa:</label>
+                <select id="pilih-siswa" name="pilih-siswa" disabled>
+                    <option value="">Pilih kelas dahulu...</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="pilih-mapel">Pilih Mata Pelajaran:</label>
+                <select id="pilih-mapel" name="pilih-mapel" disabled>
+                    <option value="">Memuat...</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="pilih-agama">Pilih Agama:</label>
+                <select id="pilih-agama" name="pilih-agama" disabled>
+                    <option value="">Pilih mapel dahulu...</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="pilih-cp">Pilih Elemen CP / TP:</label>
+            <span id="mulok-indicator" style="display: none; font-style: italic; color: #6c757d; margin-left: 10px;">(Input Manual untuk Muatan Lokal)</span>
+            <select id="pilih-cp" name="pilih-cp" disabled>
+                <option value="">Pilih mapel & agama...</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="deskripsi-tercapai-input">Deskripsi Tercapai:</label>
+            <textarea id="deskripsi-tercapai-input" class="form-control" rows="3" readonly placeholder="Pilih CP atau input manual untuk Mulok..."></textarea>
+        </div>
+        <div class="form-group">
+            <label for="deskripsi-bimbingan-input">Deskripsi Perlu Bimbingan:</label>
+            <textarea id="deskripsi-bimbingan-input" class="form-control" rows="3" readonly placeholder="Pilih CP atau input manual untuk Mulok..."></textarea>
+        </div>
+        <button type="button" id="edit-deskripsi-btn" class="btn btn-secondary btn-sm" disabled>Edit Deskripsi</button>
+
+        <div class="form-group">
+            <label for="pilih-nilai">Pilih Nilai:</label>
+            <select id="pilih-nilai" name="pilih-nilai">
+                <option value="">Pilih nilai...</option>
+                <option value="Tercapai">Tercapai</option>
+                <option value="Perlu Bimbingan">Perlu Bimbingan</option>
+            </select>
+        </div>
+
+        <button id="simpan-nilai-btn" class="btn btn-primary">Simpan Nilai</button>
+    </form>
+    </div>
                 </div>
             </div>
 
@@ -712,4 +733,5 @@
     <script src="dashboard.js"></script>
 </body>
 </html>
+
 
