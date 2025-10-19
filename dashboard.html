@@ -612,7 +612,46 @@
 
             <div id="page-data-siswa" class="content-page">
                 <h2>Manajemen Data Siswa</h2>
-                <p>Tambah, edit, atau lihat data siswa di sekolah Anda.</p>
+                
+                <div class="info-box">
+                    <h4>Panduan Import Data Siswa</h4>
+                    <ol class="info-box-steps">
+                        <li>Klik <strong>Download Template</strong> untuk mengunduh file <code>template_siswa.csv</code>.</li>
+                        <li>Buka file tersebut (di Excel/Google Sheets), isi data siswa Anda, lalu <strong>Simpan kembali sebagai .csv</strong>.</li>
+                        <li>Klik <strong>Import Data Siswa</strong>, pilih file .csv yang sudah Anda isi.</li>
+                    </ol>
+                    <p><strong>Penting:</strong> Jangan mengubah urutan kolom di template dan pastikan format tanggal adalah <strong>YYYY-MM-DD</strong> (contoh: 2010-05-17).</p>
+                </div>
+
+                <div class="import-actions">
+                    <button id="download-template-btn" class="btn btn-primary">Download Template CSV</button>
+                    
+                    <button id="import-csv-btn" class="btn btn-secondary">Import Data Siswa</button>
+                    <input type="file" id="csv-file-input" accept=".csv" style="display: none;">
+                </div>
+
+                <div class="data-table-container">
+                    <h3>Daftar Siswa Aktif</h3>
+                    <div class="data-table-wrapper">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>NISN</th>
+                                    <th>Nama Siswa</th>
+                                    <th>Kelas</th>
+                                    <th>Tgl Lahir</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="siswa-table-body">
+                                <tr>
+                                    <td colspan="5" style="text-align: center;">Belum ada data siswa. Silakan import.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
             </div>
             <div id="page-cetak" class="content-page">
                 <h2>Cetak Rapor</h2>
@@ -635,6 +674,7 @@
     <script src="dashboard.js"></script>
 </body>
 </html>
+
 
 
 
