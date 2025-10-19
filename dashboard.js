@@ -1,10 +1,14 @@
 /* === e-Rapor Cerdas - Dashboard Script === */
 
-const GAS_URL = "https://script.google.com/macros/s/AKfycbygLQBaA65WkGaDwF5HSN0lVZC43Riw2SQ5OfNjiwao_ijF6xM911wmgO8ovLlLULc/exec"; // <-- GANTI DENGAN URL ANDA
+// !!! PENTING !!!
+// GANTI URL DI BAWAH INI DENGAN URL "WEB APP" BARU ANDA
+// SETELAH ANDA MELAKUKAN "NEW DEPLOYMENT" DENGAN AKSES "ANYONE"
+const GAS_URL = "https.google.com/macros/s/xxxxxxxxx/exec"; // <-- GANTI DENGAN URL BARU ANDA
 
 // --- Variabel Global ---
 let user = {}; 
-let allSiswaData = []; // <-- (BARU) Variabel untuk menyimpan semua data siswa
+let allSiswaData = []; // Menyimpan semua data siswa
+let allCpTpData = []; // (BARU) Menyimpan semua data CP/TP
 
 // --- Elemen Notifikasi ---
 const notificationToast = document.getElementById('notification-toast');
@@ -15,13 +19,16 @@ const notificationClose = document.getElementById('notification-toast-close');
 const selectKelas = document.getElementById('pilih-kelas');
 const selectSiswa = document.getElementById('pilih-siswa');
 const selectMapel = document.getElementById('pilih-mapel');
-const selectCP = document.getElementById('pilih-cp');
+const selectCP = document.getElementById('pilih-cp'); // Dropdown target kita
 
 // --- Elemen Halaman Data Siswa ---
 const downloadTemplateBtn = document.getElementById('download-template-btn');
 const importCsvBtn = document.getElementById('import-csv-btn');
 const csvFileInput = document.getElementById('csv-file-input');
 const siswaTableBody = document.getElementById('siswa-table-body');
+// (BARU) Tombol dan Kontainer untuk tabel lipat
+const toggleSiswaListBtn = document.getElementById('toggle-siswa-list');
+const siswaTableContainer = document.querySelector('.data-table-container');
 
 
 // --- Fungsi Notifikasi Elegan ---
@@ -97,23 +104,42 @@ document.addEventListener("DOMContentLoaded", () => {
         csvFileInput.addEventListener('change', handleImportCSV);
     }
 
-    // --- (BARU) LOGIKA DROPDOWN BERTINGKAT ---
+    // 6. LOGIKA DROPDOWN BERTINGKAT
     if (selectKelas) {
-        // Tambahkan event listener ke dropdown 'Pilih Kelas'
         selectKelas.addEventListener('change', (e) => {
             const selectedKelasId = e.target.value;
-            // Panggil fungsi untuk memfilter dan mengisi dropdown siswa
-            loadSiswaDropdown(selectedKelasId);
+            loadSiswaDropdown(selectedKelasId); // Filter Siswa
         });
     }
-    // (Kita akan tambahkan event listener untuk 'selectMapel' nanti)
-    // --- AKHIR LOGIKA BARU ---
+    
+    // (BARU) LOGIKA DROPDOWN (Mapel -> CP/TP)
+    if (selectMapel) {
+        selectMapel.addEventListener('change', (e) => {
+            const selectedMapelId = e.target.value;
+            loadCpTpDropdown(selectedMapelId); // Filter CP/TP
+        });
+    }
+
+    // 7. (BARU) LOGIKA TOMBOL 'TAMPILKAN SEMUA' SISWA
+    if (toggleSiswaListBtn && siswaTableContainer) {
+        toggleSiswaListBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            // Toggle class 'is-expanded' di container
+            const isExpanded = siswaTableContainer.classList.toggle('is-expanded');
+            // Ubah teks tombol
+            if (isExpanded) {
+                toggleSiswaListBtn.innerText = 'Sembunyikan';
+            } else {
+                toggleSiswaListBtn.innerText = 'Tampilkan Semua Siswa';
+            }
+        });
+    }
 
 }); // --- AKHIR FUNGSI DOMContentLoaded ---
 
 
 /**
- * Fungsi untuk memuat data awal (profil, kelas, mapel, DAN siswa)
+ * Fungsi untuk memuat data awal (profil, kelas, mapel, siswa, CPT)
  */
 function loadInitialData() {
     showNotification("Memuat data awal sekolah...", "info");
@@ -125,28 +151,26 @@ function loadInitialData() {
     fetch(GAS_URL, {
         method: "POST",
         body: JSON.stringify(payload),
-        headers: { "Content-Type": "text-plain;charset=utf-8" }
+        headers: { "Content-Type": "text/plain;charset=utf-8" }
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
             hideNotification(); 
             
-            // 1. Isi Nama Sekolah
             const namaSekolah = data.profil.nama_sekolah || "[Nama Sekolah Belum Diisi]";
             document.getElementById('sidebar-school-name').innerText = namaSekolah;
             
-            // 2. Isi Dropdown Kelas
+            // Isi semua dropdown awal
             loadKelasDropdown(data.kelas);
-            
-            // 3. Isi Dropdown Mapel
             loadMapelDropdown(data.mapel);
             
-            // 4. (BARU) Simpan data siswa di variabel global
+            // Simpan data ke variabel global
             allSiswaData = data.siswa || []; 
+            allCpTpData = data.cptp || []; // (BARU) Simpan data CPT
             
-            // 5. Muat tabel di halaman Data Siswa (jika kita di sana)
-            loadSiswaList(); // Panggil ini agar tabel terisi saat login
+            // Muat tabel siswa di halaman "Data Siswa"
+            loadSiswaList(); 
 
         } else {
             showNotification("Gagal memuat data awal: " + data.message, "error");
@@ -154,7 +178,8 @@ function loadInitialData() {
     })
     .catch(error => {
         console.error("Error fetching initial data:", error);
-        showNotification("Terjadi kesalahan jaringan saat memuat data.", "error");
+        // Ini adalah error yang Anda lihat
+        showNotification("Terjadi kesalahan jaringan saat memuat data.", "error"); 
     });
 }
 
@@ -176,12 +201,12 @@ function loadKelasDropdown(kelasArray) {
 }
 
 /**
- * (BARU) Fungsi untuk mengisi dropdown 'Pilih Siswa' berdasarkan kelas
+ * Fungsi untuk mengisi dropdown 'Pilih Siswa' berdasarkan kelas
  */
 function loadSiswaDropdown(selectedKelasId) {
     if (!selectSiswa) return;
     
-    selectSiswa.innerHTML = ''; // Kosongkan dulu
+    selectSiswa.innerHTML = ''; 
     selectSiswa.disabled = true;
 
     if (!selectedKelasId) {
@@ -189,16 +214,15 @@ function loadSiswaDropdown(selectedKelasId) {
         return;
     }
     
-    // Filter data siswa global berdasarkan id_kelas yang dipilih
+    // Filter dari variabel global
     const siswaDiKelas = allSiswaData.filter(siswa => siswa.id_kelas === selectedKelasId);
 
     if (siswaDiKelas.length > 0) {
         selectSiswa.add(new Option(`Pilih Siswa (${siswaDiKelas.length} siswa)...`, ""));
         siswaDiKelas.forEach(siswa => {
-            // value = id_siswa, text = nama_siswa
             selectSiswa.add(new Option(siswa.nama_siswa, siswa.id_siswa));
         });
-        selectSiswa.disabled = false; // Aktifkan dropdown
+        selectSiswa.disabled = false; 
     } else {
         selectSiswa.add(new Option("Tidak ada siswa di kelas ini", ""));
     }
@@ -222,8 +246,38 @@ function loadMapelDropdown(mapelArray) {
 }
 
 
-// --- FUNGSI-FUNGSI IMPORT SISWA (TETAP SAMA) ---
+/**
+ * (BARU) Fungsi untuk mengisi dropdown 'Pilih Elemen CP/TP' berdasarkan mapel
+ */
+function loadCpTpDropdown(selectedMapelId) {
+    if (!selectCP) return; 
+    
+    selectCP.innerHTML = ''; 
+    selectCP.disabled = true;
 
+    if (!selectedMapelId) {
+        selectCP.add(new Option("Pilih mapel dahulu...", ""));
+        return;
+    }
+    
+    // Filter dari variabel global
+    const cpTpDiMapel = allCpTpData.filter(cp => cp.id_mapel === selectedMapelId);
+
+    if (cpTpDiMapel.length > 0) {
+        selectCP.add(new Option(`Pilih Elemen CP (${cpTpDiMapel.length} elemen)...`, ""));
+        cpTpDiMapel.forEach(cp => {
+            // Potong deskripsi jika terlalu panjang
+            const shortDesc = cp.deskripsi.length > 70 ? cp.deskripsi.substring(0, 70) + "..." : cp.deskripsi;
+            selectCP.add(new Option(shortDesc, cp.id_cp_tp));
+        });
+        selectCP.disabled = false; // Aktifkan dropdown
+    } else {
+        selectCP.add(new Option("Tidak ada data CP/TP untuk mapel ini", ""));
+    }
+}
+
+
+// --- FUNGSI-FUNGSI IMPORT SISWA (TETAP SAMA, TIDAK DIUBAH) ---
 function handleDownloadTemplate() {
     showNotification("Membuat template...", "info");
     const payload = {
@@ -231,7 +285,6 @@ function handleDownloadTemplate() {
         subAction: "getSiswaTemplate",
         spreadsheetId: user.spreadsheetId 
     };
-
     fetch(GAS_URL, {
         method: "POST",
         body: JSON.stringify(payload),
@@ -261,12 +314,10 @@ function handleDownloadTemplate() {
         showNotification("Terjadi kesalahan jaringan.", "error");
     });
 }
-
 function handleImportCSV(event) {
     const file = event.target.files[0];
     if (!file) return;
     showNotification("Membaca file CSV...", "info");
-    
     const reader = new FileReader();
     reader.onload = function(e) {
         const text = e.target.result;
@@ -280,7 +331,6 @@ function handleImportCSV(event) {
     reader.readAsText(file);
     event.target.value = null;
 }
-
 function parseCSV(text) {
     const lines = text.split('\n').filter(line => line.trim() !== ''); 
     if (lines.length < 2) return []; 
@@ -298,7 +348,6 @@ function parseCSV(text) {
     }
     return data;
 }
-
 function uploadSiswaData(siswaDataArray) {
     showNotification(`Mengimpor ${siswaDataArray.length} data siswa...`, "info");
     const payload = {
@@ -307,17 +356,16 @@ function uploadSiswaData(siswaDataArray) {
         spreadsheetId: user.spreadsheetId,
         data: siswaDataArray 
     };
-
     fetch(GAS_URL, {
         method: "POST",
         body: JSON.stringify(payload),
-        headers: { "Content-Type": "text-plain;charset=utf-8" }
+        headers: { "Content-Type": "text/plain;charset=utf-8" }
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
             showNotification(data.message, "success");
-            loadInitialData(); // (PENTING) Muat ulang semua data setelah impor sukses
+            loadInitialData(); // Muat ulang semua data setelah impor sukses
         } else {
             showNotification("Gagal mengimpor: " + data.message, "error");
         }
@@ -327,64 +375,63 @@ function uploadSiswaData(siswaDataArray) {
         showNotification("Terjadi kesalahan jaringan saat impor.", "error");
     });
 }
-
-/**
- * (DIPERBARUI) Mengisi tabel siswa dari data variabel global
- */
 function loadSiswaList() {
     if (!siswaTableBody) return; 
     
-    if (allSiswaData.length > 0) {
-        // Data sudah ada, kita hanya perlu memanggil data dari sheet 'siswa'
-        // untuk data yang lebih lengkap (nisn, tgl lahir, dll)
-        // Kita panggil fungsi fetch yang lama
-        
-        siswaTableBody.innerHTML = `<tr><td colspan="5" style="text-align: center;">Memuat data siswa...</td></tr>`;
-        const payload = {
-            action: "handleSiswaActions",
-            subAction: "getSiswaList",
-            spreadsheetId: user.spreadsheetId
-        };
+    // (BARU) Sembunyikan tombol 'Tampilkan Semua' saat memuat
+    if (toggleSiswaListBtn) toggleSiswaListBtn.style.display = 'none';
+    
+    // (BARU) Pastikan kontainer dalam keadaan 'terlipat'
+    if (siswaTableContainer) siswaTableContainer.classList.remove('is-expanded');
+    if (toggleSiswaListBtn) toggleSiswaListBtn.innerText = 'Tampilkan Semua Siswa';
 
-        fetch(GAS_URL, {
-            method: "POST",
-            body: JSON.stringify(payload),
-            headers: { "Content-Type": "text/plain;charset=utf-8" }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success && data.data.length > 0) {
-                siswaTableBody.innerHTML = ''; // Kosongkan tabel
-                data.data.forEach(siswa => {
-                    const tr = document.createElement('tr');
-                    let tglLahir = 'N/A';
-                    if(siswa.tanggal_lahir) {
-                         try {
-                           tglLahir = new Date(siswa.tanggal_lahir).toLocaleDateString('id-ID');
-                         } catch(e) { tglLahir = siswa.tanggal_lahir; }
-                    }
-                    tr.innerHTML = `
-                        <td>${siswa.nisn || 'N/A'}</td>
-                        <td>${siswa.nama_siswa || 'N/A'}</td>
-                        <td>${siswa.kelas || 'N/A'}</td>
-                        <td>${tglLahir}</td>
-                        <td><a href="#" class="edit-btn">Edit</a></td>
-                    `;
-                    siswaTableBody.appendChild(tr);
-                });
-            } else if (data.success && data.data.length === 0) {
-                siswaTableBody.innerHTML = `<tr><td colspan="5" style="text-align: center;">Belum ada data siswa. Silakan import.</td></tr>`;
-            } else {
-                 siswaTableBody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: red;">Gagal memuat data: ${data.message}</td></tr>`;
+    // Panggil GAS untuk daftar siswa yang lengkap
+    siswaTableBody.innerHTML = `<tr><td colspan="5" style="text-align: center;">Memuat data siswa...</td></tr>`;
+    const payload = {
+        action: "handleSiswaActions",
+        subAction: "getSiswaList",
+        spreadsheetId: user.spreadsheetId
+    };
+    fetch(GAS_URL, {
+        method: "POST",
+        body: JSON.stringify(payload),
+        headers: { "Content-Type": "text-plain;charset=utf-8" }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success && data.data.length > 0) {
+            siswaTableBody.innerHTML = ''; 
+            data.data.forEach(siswa => {
+                const tr = document.createElement('tr');
+                let tglLahir = 'N/A';
+                if(siswa.tanggal_lahir) {
+                     try {
+                       tglLahir = new Date(siswa.tanggal_lahir).toLocaleDateString('id-ID');
+                     } catch(e) { tglLahir = siswa.tanggal_lahir; }
+                }
+                tr.innerHTML = `
+                    <td>${siswa.nisn || 'N/A'}</td>
+                    <td>${siswa.nama_siswa || 'N/A'}</td>
+                    <td>${siswa.kelas || 'N/A'}</td>
+                    <td>${tglLahir}</td>
+                    <td><a href="#" class="edit-btn">Edit</a></td>
+                `;
+                siswaTableBody.appendChild(tr);
+            });
+            
+            // (BARU) Tampilkan tombol 'Tampilkan Semua' HANYA jika siswa lebih dari 3
+            if (data.data.length > 3 && toggleSiswaListBtn) {
+                toggleSiswaListBtn.style.display = 'block';
             }
-        })
-        .catch(error => {
-             console.error("Error loading siswa list:", error);
-             siswaTableBody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: red;">Terjadi kesalahan jaringan.</td></tr>`;
-        });
 
-    } else {
-        // Jika allSiswaData masih kosong (sedang load awal)
-        siswaTableBody.innerHTML = `<tr><td colspan="5" style="text-align: center;">Belum ada data siswa. Silakan import.</td></tr>`;
-    }
+        } else if (data.success && data.data.length === 0) {
+            siswaTableBody.innerHTML = `<tr><td colspan="5" style="text-align: center;">Belum ada data siswa. Silakan import.</td></tr>`;
+        } else {
+             siswaTableBody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: red;">Gagal memuat data: ${data.message}</td></tr>`;
+        }
+    })
+    .catch(error => {
+         console.error("Error loading siswa list:", error);
+         siswaTableBody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: red;">Terjadi kesalahan jaringan.</td></tr>`;
+    });
 }
