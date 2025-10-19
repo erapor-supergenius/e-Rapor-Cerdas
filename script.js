@@ -3,7 +3,7 @@
 // GANTI URL DI BAWAH INI DENGAN URL APLIKASI WEB ANDA YANG BARU
 // (setelah Anda men-deploy ulang Code.gs)
 //
-const GAS_URL = "https://script.google.com/macros/s/AKfycbygLQBaA65WkGaDwF5HSN0lVZC43Riw2SQ5OfNjiwao_ijF6xM911wmgO8ovLlLULc/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbwpnKGy-DUiwgKz3zUtg0Css3yXmOnjau1QGA8jipbfWt8TN4n6Am8KPdCCzemIpNL00A/exec";
 
 // ----- Elemen DOM -----
 const tabButtons = document.querySelectorAll(".tab-button");
