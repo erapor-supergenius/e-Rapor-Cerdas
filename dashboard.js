@@ -3,7 +3,7 @@
 // !!! PENTING !!!
 // GANTI URL DI BAWAH INI DENGAN URL "WEB APP" BARU ANDA
 // SETELAH ANDA MELAKUKAN "NEW DEPLOYMENT" DENGAN AKSES "ANYONE"
-const GAS_URL = "https://script.google.com/macros/s/AKfycbxhyLw9GMGq58Z3RkdhlwgY-fAtVx98wpQnGTHUi9sNPHUyRQ03U_XemlHfmI7z-7GBkQ/exec"; // <-- GANTI DENGAN URL BARU ANDA
+const GAS_URL = "https://script.google.com/macros/s/AKfycby-empDcPt5BndGZnjLNyTKt9wbMIP3iRtvoQELdWWoOvZnu2om_Uoh9Zsj5I0Wdq7ZLw/exec"; // <-- GANTI DENGAN URL BARU ANDA
 
 // --- Variabel Global ---
 let user = {}; 
