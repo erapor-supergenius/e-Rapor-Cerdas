@@ -800,3 +800,60 @@ function loadSiswaList() {
   });
 }
 
+// ===========================================================
+// === FUNGSI SIMPAN NILAI KE SERVER (FINAL + MENDUKUNG MULOK)
+// ===========================================================
+function simpanNilaiKeServer() {
+  showNotification("Menyimpan data nilai...", "info");
+
+  try {
+    // Deteksi apakah mapel adalah Muatan Lokal (Manual)
+    const isMulokManual = selectMapel && selectMapel.value === "MULOK_MANUAL";
+
+    const payload = {
+      action: isMulokManual ? "simpanNilaiMulok" : "saveNilaiCp",
+      spreadsheetId: user.spreadsheetId,
+      username: user.username,
+      id_kelas: selectKelas.value,
+      id_siswa: selectSiswa.value,
+      id_mapel: selectMapel.value,
+      nama_mapel: selectMapel.options[selectMapel.selectedIndex].text,
+      id_agama: selectAgama.value,
+      nilai_akhir: nilaiAkhirInput.value,
+      deskripsi_rapor: finalDescriptionInput.value,
+      cp_statuses: currentSelectedCpStatuses,
+      tahun_ajaran: "2025/2026", // bisa dibuat dinamis nanti
+      semester: "1"
+    };
+
+    fetch(GAS_URL, {
+      method: "POST",
+      body: JSON.stringify(payload),
+      headers: { "Content-Type": "text/plain;charset=utf-8" }
+    })
+      .then(res => res.json())
+      .then(result => {
+        hideNotification();
+        if (result.success) {
+          showNotification(result.message || "Nilai berhasil disimpan!", "success");
+          console.log("✅ Simpan nilai sukses:", result);
+        } else {
+          showNotification(result.message || "Gagal menyimpan nilai.", "error");
+          console.error("❌ Simpan nilai gagal:", result);
+        }
+      })
+      .catch(err => {
+        hideNotification();
+        console.error("Fetch Error:", err);
+        showNotification("Koneksi ke server gagal: " + err.message, "error");
+      });
+
+  } catch (error) {
+    hideNotification();
+    console.error("Error simpanNilaiKeServer:", error);
+    showNotification("Terjadi kesalahan internal: " + error.message, "error");
+  }
+}
+
+// Pastikan tombol Simpan Nilai terhubung ke fungsi ini:
+simpanNilaiBtn.addEventListener("click", simpanNilaiKeServer);
