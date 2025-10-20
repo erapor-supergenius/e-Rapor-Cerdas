@@ -1,4 +1,4 @@
-/* === e-Rapor Cerdas - Dashboard Script (Final V3.1 + Fix Input/Simpan + Final Logging V2) === */
+/* === e-Rapor Cerdas - Dashboard Script (Final V3.1 + Fix removeAttribute) === */
 
 // !!! PENTING !!! PASTIKAN INI ADALAH URL DARI "DATABASE ADMIN v2" ANDA !!!
 const GAS_URL = "https://script.google.com/macros/s/AKfycbw1Jc7JXssFYq_KMQ6Up34zBGm4XYyOEEORsCeJI7DwJfG-xj3mGY930FbU5a5c5ZCJew/exec"; // <-- GANTI JIKA URL ANDA BERBEDA
@@ -213,7 +213,7 @@ function loadCpCheckboxList(selectedMapelId, selectedFase, selectedAgama) {
         });
     }
 
-    // --- PERBAIKAN DI SINI ---
+    // --- PERBAIKAN DI SINI (PAKSA AKTIFKAN INPUT NILAI) ---
     console.log("[LOG AKTIVASI FINAL] Mencoba mengaktifkan #nilai-akhir-input...");
     if (nilaiAkhirInput) {
         // Gunakan kedua metode untuk memastikan
@@ -253,7 +253,7 @@ function generateFinalDescription() {
     if (!finalDescriptionInput || !allCpTpData) return;
     let descT = [], descB = [], isAny = false;
     if (isMulokActive) { finalDescriptionInput.readOnly = false; finalDescriptionInput.placeholder = "Input deskripsi Mulok..."; isAny = true; }
-    else { for (const cpId in currentSelectedCpStatuses) { if (cpId === 'MULOK') continue; isAny = true; const st = currentSelectedCpStatuses[cpId]; const cp = allCpTpData.find(c => c.id_cp_tp === cpId); if (cp) { let dp = cp.deskripsi ? cp.deskripsi.toLowerCase().replace(/[.,;!?]$/, '') : ''; if (!dp && st === "Tercapai") dp = cp.deskripsi_tercapai ? cp.deskisipsi_tercapai.toLowerCase().replace(/[.,;!?]$/, '') : ''; if (!dp && st === "Perlu Bimbingan") dp = cp.deskripsi_perlu_bimbingan ? cp.deskripsi_perlu_bimbingan.toLowerCase().replace(/[.,;!?]$/, '') : ''; if (dp) { if (st === "Tercapai") descT.push(dp); else if (st === "Perlu Bimbingan") descB.push(dp); } } } }
+    else { for (const cpId in currentSelectedCpStatuses) { if (cpId === 'MULOK') continue; isAny = true; const st = currentSelectedCpStatuses[cpId]; const cp = allCpTpData.find(c => c.id_cp_tp === cpId); if (cp) { let dp = cp.deskripsi ? cp.deskripsi.toLowerCase().replace(/[.,;!?]$/, '') : ''; if (!dp && st === "Tercapai") dp = cp.deskripsi_tercapai ? cp.deskripsi_tercapai.toLowerCase().replace(/[.,;!?]$/, '') : ''; if (!dp && st === "Perlu Bimbingan") dp = cp.deskripsi_perlu_bimbingan ? cp.deskripsi_perlu_bimbingan.toLowerCase().replace(/[.,;!?]$/, '') : ''; if (dp) { if (st === "Tercapai") descT.push(dp); else if (st === "Perlu Bimbingan") descB.push(dp); } } } }
     if (!isMulokActive) {
         let finalD = ""; const si = selectSiswa ? selectSiswa.selectedIndex : -1; const nama = si > 0 && selectSiswa.options.length > si ? selectSiswa.options[si].text : ""; const pembT = currentPembukaTercapai || " menunj..."; const pembB = currentPembukaBimbingan || " perlu bim..."; const prefix = nama ? `Ananda ${nama}` : "Ananda";
         if (descT.length > 0) finalD += prefix + pembT + descT.join(', ');
@@ -279,7 +279,7 @@ function generateFinalDescription() {
 /**
  * Reset status Mulok
  */
-function resetMulok() { isMulokActive = false; if (mulokIndicator) mulokIndicator.style.display = 'none'; if (!isMulokActive && finalDescriptionInput) { finalDescriptionInput.readOnly = true; finalDescriptionInput.placeholder = "Deskripsi dibuat otomatis..."; } if (editDeskiriBtn) editDeskripsiBtn.style.display = 'block'; }
+function resetMulok() { isMulokActive = false; if (mulokIndicator) mulokIndicator.style.display = 'none'; if (!isMulokActive && finalDescriptionInput) { finalDescriptionInput.readOnly = true; finalDescriptionInput.placeholder = "Deskripsi dibuat otomatis..."; } if (editDeskripsiBtn) editDeskripsiBtn.style.display = 'block'; }
 
 /**
  * Validasi input form dan aktifkan/nonaktifkan tombol simpan (Log Super Detail)
@@ -304,10 +304,10 @@ function validateAndToggleButton() {
     console.log(`Status Mulok: ${isMulokActive}`);
     console.log(`Deskripsi (trimmed): '${deskripsi_rapor.trim()}'`);
 
-    if (!id_kelas || id_kelas === 'NULL') { isValid = false; reasonsInvalid.push("Kelas belum dipilih"); }
-    if (!id_siswa || id_siswa === 'NULL') { isValid = false; reasonsInvalid.push("Siswa belum dipilih"); }
-    if (!id_mapel || id_mapel === 'NULL') { isValid = false; reasonsInvalid.push("Mapel belum dipilih"); }
-    if (!id_agama || id_agama === 'NULL') { isValid = false; reasonsInvalid.push("Agama belum dipilih"); }
+    if (!id_kelas || id_kelas === 'NULL' || id_kelas === "") { isValid = false; reasonsInvalid.push("Kelas belum dipilih"); }
+    if (!id_siswa || id_siswa === 'NULL' || id_siswa === "") { isValid = false; reasonsInvalid.push("Siswa belum dipilih"); }
+    if (!id_mapel || id_mapel === 'NULL' || id_mapel === "") { isValid = false; reasonsInvalid.push("Mapel belum dipilih"); }
+    if (!id_agama || id_agama === 'NULL' || id_agama === "") { isValid = false; reasonsInvalid.push("Agama belum dipilih"); }
 
     const nilaiNum = parseFloat(nilai_akhir_str);
     if (nilai_akhir_str.trim() === '' || isNaN(nilaiNum) || nilaiNum < 0 || nilaiNum > 100) {
