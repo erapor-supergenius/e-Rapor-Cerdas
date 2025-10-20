@@ -1,11 +1,11 @@
 /* ================================================================
  * e-Rapor Cerdas – Dashboard Script (Final V3.2 Penuh Disempurnakan)
  * Fix Total : Form Input Nilai + Deskripsi + Validasi Tombol
- * URL GAS aktif : https://script.google.com/macros/s/AKfycby-empDcPt5BndGZnjLNyTKt9wbMIP3iRtvoQELdWWoOvZnu2om_Uoh9Zsj5I0Wdq7ZLw/exec
+ * URL GAS aktif : https://script.google.com/macros/s/AKfycbw1Jc7JXssFYq_KMQ6Up34zBGm4XYyOEEORsCeJI7DwJfG-xj3mGY930FbU5a5c5ZCJew/exec
  * ================================================================ */
 
 // === URL GAS (Backend Database Admin v2) ===
-const GAS_URL = "https://script.google.com/macros/s/AKfycby-empDcPt5BndGZnjLNyTKt9wbMIP3iRtvoQELdWWoOvZnu2om_Uoh9Zsj5I0Wdq7ZLw/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbw1Jc7JXssFYq_KMQ6Up34zBGm4XYyOEEORsCeJI7DwJfG-xj3mGY930FbU5a5c5ZCJew/exec";
 
 // === Variabel Global ===
 let user = {};
