@@ -329,81 +329,80 @@ function handleCpCheckboxChange(changedCheckbox, cpId, allCheckboxesForThisCp) {
 }
 
 /**
- * Membuat Deskripsi Naratif Akhir (Format Baru)
+ * (DIPERBARUI) Membuat Deskripsi Naratif Akhir + Validasi Tombol Simpan
  */
 function generateFinalDescription() {
+    // ... (kode awal fungsi sama: cek elemen, loop CP, kumpulkan list) ...
     if (!finalDescriptionInput || !allCpTpData) return;
 
     let deskripsiTercapaiList = []; let deskripsiBimbinganList = [];
     let isAnyCpSelected = false;
 
     if (isMulokActive) {
-        finalDescriptionInput.readOnly = false; finalDescriptionInput.placeholder = "Input deskripsi Mulok..."; return;
-    }
+        finalDescriptionInput.readOnly = false;
+        finalDescriptionInput.placeholder = "Masukkan deskripsi Muatan Lokal secara manual...";
+        // Untuk Mulok, anggap 'ada CP' agar tombol simpan bisa aktif (jika nilai diisi)
+        isAnyCpSelected = true;
+        // Jangan hapus isi jika user sudah mengetik
+        // return; // Hapus return agar validasi tombol tetap jalan
+    } else {
+        // Kumpulkan deskripsi dari CP yang diceklis
+        for (const cpId in currentSelectedCpStatuses) {
+            if (cpId === 'MULOK') continue;
+            isAnyCpSelected = true;
+            const status = currentSelectedCpStatuses[cpId];
+            const cpData = allCpTpData.find(cp => cp.id_cp_tp === cpId);
+            if (cpData) {
+                let descPart = cpData.deskripsi ? cpData.deskripsi.toLowerCase().replace(/[.,;!?]$/, '') : '';
+                if (!descPart && status === "Tercapai") descPart = cpData.deskripsi_tercapai ? cpData.deskripsi_tercapai.toLowerCase().replace(/[.,;!?]$/, '') : '';
+                if (!descPart && status === "Perlu Bimbingan") descPart = cpData.deskripsi_perlu_bimbingan ? cpData.deskripsi_perlu_bimbingan.toLowerCase().replace(/[.,;!?]$/, '') : '';
 
-    for (const cpId in currentSelectedCpStatuses) {
-        if (cpId === 'MULOK') continue; isAnyCpSelected = true;
-        const status = currentSelectedCpStatuses[cpId];
-        const cpData = allCpTpData.find(cp => cp.id_cp_tp === cpId);
-        if (cpData) {
-            let descPart = cpData.deskripsi ? cpData.deskripsi.toLowerCase().replace(/[.,;!?]$/, '') : ''; // Ambil TP
-            if (!descPart && status === "Tercapai") descPart = cpData.deskripsi_tercapai ? cpData.deskripsi_tercapai.toLowerCase().replace(/[.,;!?]$/, '') : ''; // Fallback ke desk tercapai
-            if (!descPart && status === "Perlu Bimbingan") descPart = cpData.deskripsi_perlu_bimbingan ? cpData.deskripsi_perlu_bimbingan.toLowerCase().replace(/[.,;!?]$/, '') : ''; // Fallback ke desk bimbingan
-
-            if (descPart) {
-                 if (status === "Tercapai") deskripsiTercapaiList.push(descPart);
-                 else if (status === "Perlu Bimbingan") deskripsiBimbinganList.push(descPart);
+                if (descPart) {
+                     if (status === "Tercapai") deskripsiTercapaiList.push(descPart);
+                     else if (status === "Perlu Bimbingan") deskripsiBimbinganList.push(descPart);
+                }
             }
         }
     }
 
+
+    // --- Rangkai Kalimat (Sama seperti sebelumnya) ---
     let finalDescription = "";
     const siswaSelectedIndex = selectSiswa ? selectSiswa.selectedIndex : -1;
     const namaSiswa = siswaSelectedIndex > 0 && selectSiswa.options.length > siswaSelectedIndex ? selectSiswa.options[siswaSelectedIndex].text : "Ananda";
-
     const pembukaTercapai = currentPembukaTercapai || " menunjukkan penguasaan yang baik dalam ";
     const pembukaBimbingan = currentPembukaBimbingan || " perlu bimbingan dalam ";
 
-    if (deskripsiTercapaiList.length > 0) {
-        finalDescription += namaSiswa + pembukaTercapai + deskripsiTercapaiList.join(', ');
-    }
-
-    if (deskripsiBimbinganList.length > 0) {
-        if (finalDescription !== "") { // Jika sudah ada tercapai
-            // Format: ..., namun perlu bimbingan dalam A, B, C
-            finalDescription += ", namun" + pembukaBimbingan + deskripsiBimbinganList.join(', ');
-        } else { // Jika hanya perlu bimbingan
-             // Format: Ananda perlu bimbingan dalam A, B, C
-            finalDescription += namaSiswa + " " + pembukaBimbingan + deskripsiBimbinganList.join(', ');
-        }
-    }
-
-    // Akhiri dengan titik jika ada deskripsi
+    if (deskripsiTercapaiList.length > 0) { finalDescription += namaSiswa + pembukaTercapai + deskripsiTercapaiList.join(', '); }
+    if (deskripsiBimbinganList.length > 0) { finalDescription += (finalDescription !== "" ? ", namun" : namaSiswa + " ") + pembukaBimbingan + deskripsiBimbinganList.join(', '); }
     if (finalDescription !== "") finalDescription += ".";
 
     finalDescriptionInput.value = finalDescription.trim();
 
-    // Atur status readonly dan placeholder
-    if (!isAnyCpSelected) {
+    // Atur status readonly dan placeholder (Sama)
+    if (!isAnyCpSelected && !isMulokActive) {
         finalDescriptionInput.placeholder = "Pilih status capaian pada CP di atas...";
         finalDescriptionInput.readOnly = true;
-         if (editDeskripsiBtn) editDeskripsiBtn.disabled = true;
-    } else {
+    } else if (!isMulokActive) { // Hanya kunci jika BUKAN Mulok dan TIDAK ada CP dipilih
         finalDescriptionInput.placeholder = "Deskripsi rapor...";
-        finalDescriptionInput.readOnly = false; // Selalu bisa diedit jika ada CP terpilih
-         // Tombol edit bisa disembunyikan saja, atau dinonaktifkan jika readonly=false
-         if (editDeskripsiBtn) editDeskripsiBtn.disabled = false; // Aktifkan jika ada CP
+        finalDescriptionInput.readOnly = false; // Selalu bisa diedit jika ada CP terpilih atau Mulok
     }
+
+    // --- BARU: Validasi Tombol Simpan ---
+    validateAndToggleButton();
+    // --- AKHIR BARU ---
 }
 
 /**
- * Reset deskripsi akhir dan nilai
+ * (DIPERBARUI) Reset deskripsi akhir, nilai, DAN validasi tombol
  */
  function resetFinalDescriptionAndGrade() {
     if(finalDescriptionInput) { finalDescriptionInput.value = ''; finalDescriptionInput.readOnly = true; finalDescriptionInput.placeholder = "Deskripsi dibuat otomatis..."; }
-    if(nilaiAkhirInput) { nilaiAkhirInput.value = ''; nilaiAkhirInput.disabled = true; }
+    if(nilaiAkhirInput) { nilaiAkhirInput.value = ''; nilaiAkhirInput.disabled = true; } // Tetap disabled di awal
     currentSelectedCpStatuses = {};
-    if (editDeskripsiBtn) editDeskripsiBtn.disabled = true;
+    // --- BARU: Nonaktifkan tombol simpan saat reset ---
+    if (simpanNilaiBtn) simpanNilaiBtn.disabled = true;
+    // --- AKHIR BARU ---
  }
 
 /**
