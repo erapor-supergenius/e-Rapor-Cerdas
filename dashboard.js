@@ -335,7 +335,7 @@ function handleCpCheckboxChange(changedCheckbox, cpId, allCheckboxesForThisCp) {
 }
 
 /**
- * Membuat Deskripsi Naratif Akhir (Format Baru) + Validasi
+ * (DIPERBARUI) Membuat Deskripsi Naratif Akhir SELALU dengan "Ananda [Nama Siswa]"
  */
 function generateFinalDescription() {
     if (!finalDescriptionInput || !allCpTpData) return;
@@ -343,7 +343,7 @@ function generateFinalDescription() {
     let deskripsiTercapaiList = [], deskripsiBimbinganList = [], isAnyCpSelected = false;
 
     if (isMulokActive) {
-        finalDescriptionInput.readOnly = false; finalDescriptionInput.placeholder = "Input deskripsi Mulok..."; isAnyCpSelected = true; // Anggap ada input untuk validasi
+        finalDescriptionInput.readOnly = false; finalDescriptionInput.placeholder = "Input deskripsi Mulok..."; isAnyCpSelected = true;
     } else {
         for (const cpId in currentSelectedCpStatuses) {
             if (cpId === 'MULOK') continue; isAnyCpSelected = true;
@@ -364,26 +364,46 @@ function generateFinalDescription() {
     if (!isMulokActive) {
         let finalDescription = "";
         const siswaSelectedIndex = selectSiswa ? selectSiswa.selectedIndex : -1;
-        const namaSiswa = siswaSelectedIndex > 0 && selectSiswa.options.length > siswaSelectedIndex ? selectSiswa.options[siswaSelectedIndex].text : "Ananda";
+        // Ambil nama siswa, JANGAN default ke "Ananda" lagi
+        const namaSiswa = siswaSelectedIndex > 0 && selectSiswa.options.length > siswaSelectedIndex
+                        ? selectSiswa.options[siswaSelectedIndex].text : ""; // Kosongkan jika belum dipilih
+
         const pembukaTercapai = currentPembukaTercapai || " menunjukkan penguasaan yang baik dalam ";
         const pembukaBimbingan = currentPembukaBimbingan || " perlu bimbingan dalam ";
 
-        if (deskripsiTercapaiList.length > 0) { finalDescription += namaSiswa + pembukaTercapai + deskripsiTercapaiList.join(', '); }
-        if (deskripsiBimbinganList.length > 0) { finalDescription += (finalDescription !== "" ? ", namun" : namaSiswa + " ") + pembukaBimbingan + deskripsiBimbinganList.join(', '); }
+        // --- PERUBAHAN DI SINI ---
+        // Selalu tambahkan "Ananda " di depan, baru nama siswa (jika ada)
+        const prefixNama = namaSiswa ? `Ananda ${namaSiswa}` : "Ananda";
+        // --- AKHIR PERUBAHAN ---
+
+        if (deskripsiTercapaiList.length > 0) {
+            // Gunakan prefixNama
+            finalDescription += prefixNama + pembukaTercapai + deskripsiTercapaiList.join(', ');
+        }
+
+        if (deskripsiBimbinganList.length > 0) {
+            if (finalDescription !== "") { // Jika sudah ada tercapai
+                finalDescription += ", namun" + pembukaBimbingan + deskripsiBimbinganList.join(', ');
+            } else { // Jika hanya perlu bimbingan
+                // Gunakan prefixNama
+                finalDescription += prefixNama + " " + pembukaBimbingan + deskripsiBimbinganList.join(', ');
+            }
+        }
+
         if (finalDescription !== "") finalDescription += ".";
         finalDescriptionInput.value = finalDescription.trim();
     }
 
 
-    // Atur status readonly dan placeholder
+    // Atur status readonly dan placeholder (Sama)
     if (!isAnyCpSelected && !isMulokActive) {
         finalDescriptionInput.placeholder = "Pilih status capaian pada CP di atas...";
         finalDescriptionInput.readOnly = true;
          if (editDeskripsiBtn) editDeskripsiBtn.disabled = true;
-    } else { // Jika Mulok ATAU ada CP dipilih
+    } else {
         finalDescriptionInput.placeholder = isMulokActive ? "Input deskripsi Mulok..." : "Deskripsi rapor...";
-        finalDescriptionInput.readOnly = false; // Selalu bisa diedit
-         if (editDeskripsiBtn) editDeskripsiBtn.disabled = isMulokActive; // Nonaktifkan edit jika Mulok
+        finalDescriptionInput.readOnly = false;
+         if (editDeskripsiBtn) editDeskripsiBtn.disabled = isMulokActive;
     }
 
     // Validasi tombol simpan setelah deskripsi di-generate/diubah
