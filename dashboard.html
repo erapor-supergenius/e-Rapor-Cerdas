@@ -5,829 +5,301 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - e-Rapor Cerdas</title>
     <style>
-        body { 
+        /* === CSS DASAR & LAYOUT === */
+        body {
             font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            margin: 0;
-            background-color: #f4f7f6; 
-            color: #333;
+            margin: 0; background-color: #f4f7f6; color: #333; font-size: 16px; line-height: 1.6;
         }
+        .dashboard-wrapper { display: flex; min-height: 100vh; }
 
-        /* 1. Layout Utama Wrapper */
-        .dashboard-wrapper {
-            display: flex;
-            min-height: 100vh;
-        }
+        /* === SIDEBAR === */
+        .sidebar { width: 240px; background-color: #2c3e50; color: #ecf0f1; flex-shrink: 0; display: flex; flex-direction: column; }
+        .sidebar-logo { padding: 1.5rem; text-align: center; border-bottom: 1px solid #34495e; }
+        .sidebar-logo img { max-width: 100px; height: auto; margin-bottom: 0.5rem; }
+        .sidebar-logo h3 { color: #ffffff; font-size: 1.25rem; margin: 0.5rem 0 0.25rem; }
+        .sidebar-logo p { font-size: 0.9rem; color: #bdc3c7; margin: 0; font-weight: 500; }
+        .sidebar-menu { padding: 1rem 0; flex-grow: 1; }
+        .sidebar-menu h3 { padding: 0 1.5rem 0.5rem; font-size: 0.8rem; text-transform: uppercase; color: #95a5a6; margin: 0.5rem 0; }
+        .sidebar-menu ul { list-style: none; padding: 0; margin: 0; }
+        .sidebar-menu ul li a { display: block; padding: 0.85rem 1.5rem; text-decoration: none; color: #ecf0f1; border-radius: 4px; margin: 0.25rem 0.5rem; transition: background-color 0.2s ease, color 0.2s ease; font-size: 0.95rem; }
+        .sidebar-menu ul li a:hover { background-color: #34495e; }
+        .sidebar-menu ul li a.active { background-color: #007bff; color: white; font-weight: 500; }
+        .sidebar-footer { padding: 1.5rem; text-align: center; font-size: 0.85rem; color: #95a5a6; border-top: 1px solid #34495e; }
+        .sidebar-footer p { margin: 0; line-height: 1.4; }
 
-        /* 2. Sidebar Kiri (Elegan) */
-        .sidebar {
-            width: 240px;
-            background-color: #2c3e50; /* Dark Charcoal / Slate */
-            color: #ecf0f1;
-            flex-shrink: 0;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        /* 2a. Logo di Atas Sidebar (BARU) */
-        .sidebar-logo {
-            padding: 1.5rem;
-            text-align: center;
-            border-bottom: 1px solid #34495e; 
-        }
-        .sidebar-logo img {
-            max-width: 100px; /* Sedikit lebih kecil agar rapi */
-            height: auto;
-        }
-        .sidebar-logo h3 {
-            color: #ffffff;
-            font-size: 1.25rem;
-            margin: 0.75rem 0 0.25rem;
-        }
-        .sidebar-logo p {
-            font-size: 0.9rem;
-            color: #bdc3c7; /* Warna abu-abu terang */
-            margin: 0;
-            font-weight: 500;
-        }
-        /* (AKHIR BARU) */
-
-
-        /* 2b. Menu Navigasi Sidebar */
-        .sidebar-menu {
-            padding: 1rem 0;
-            flex-grow: 1; /* Mendorong footer ke bawah */
-        }
-        .sidebar-menu h3 {
-            padding: 0 1.5rem 0.5rem;
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            color: #95a5a6;
-            margin: 0.5rem 0;
-        }
-        .sidebar-menu ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        .sidebar-menu ul li a {
-            display: block;
-            padding: 0.85rem 1.5rem;
-            text-decoration: none;
-            color: #ecf0f1;
-            border-radius: 4px;
-            margin: 0.25rem 0.5rem;
-            transition: background-color 0.2s ease, color 0.2s ease;
-        }
-        .sidebar-menu ul li a:hover {
-            background-color: #34495e; 
-        }
-        .sidebar-menu ul li a.active {
-             background-color: #007bff; 
-             color: white;
-             font-weight: 500;
-        }
-
-        /* 2c. Footer Sidebar (BARU) */
-        .sidebar-footer {
-            padding: 1.5rem;
-            text-align: center;
-            font-size: 0.85rem;
-            color: #95a5a6;
-            border-top: 1px solid #34495e;
-        }
-        .sidebar-footer p {
-            margin: 0;
-            line-height: 1.4;
-        }
-        /* (AKHIR BARU) */
-
-        /* 3. Wrapper Konten Utama (Kanan) */
-        .main-wrapper {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* 3a. Header Konten (Navbar Kanan) */
-        .content-header {
-            display: flex;
-            justify-content: flex-end; 
-            align-items: center;
-            padding: 1rem 2rem;
-            background-color: #ffffff;
-            border-bottom: 1px solid #ddd;
-            position: sticky; 
-            top: 0;
-            z-index: 900;
-        }
-        .content-header .user-info {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-        .content-header #welcome-message {
-            font-weight: 500;
-            color: #333;
-        }
-        .content-header #logout-button {
-            text-decoration: none;
-            color: #fff;
-            background-color: #d9534f;
-            padding: 0.5rem 1rem;
-            border-radius: 4px;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: background-color 0.2s ease;
-        }
-         .content-header #logout-button:hover {
-            background-color: #c9302c;
-         }
-
-        /* 3b. Area Konten Utama */
-        .main-content {
-            flex-grow: 1; 
-            padding: 2rem;
-        }
-        
-        /* 4. Konten Halaman & Form */
+        /* === AREA KONTEN UTAMA === */
+        .main-wrapper { flex-grow: 1; display: flex; flex-direction: column; }
+        .content-header { display: flex; justify-content: flex-end; align-items: center; padding: 1rem 2rem; background-color: #ffffff; border-bottom: 1px solid #ddd; position: sticky; top: 0; z-index: 900; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .content-header .user-info { display: flex; align-items: center; gap: 1rem; }
+        .content-header #welcome-message { font-weight: 500; color: #333; }
+        .content-header #logout-button { text-decoration: none; color: #fff; background-color: #dc3545; padding: 0.5rem 1rem; border: none; border-radius: 4px; font-size: 0.9rem; cursor: pointer; transition: background-color 0.2s ease; }
+        .content-header #logout-button:hover { background-color: #c82333; }
+        .main-content { flex-grow: 1; padding: 2rem; }
         .content-page { display: none; }
         .content-page.active { display: block; animation: fadeIn 0.3s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .main-content h2 { margin-top: 0; margin-bottom: 1.5rem; color: #2c3e50; }
+        .main-content p { margin-bottom: 1rem; color: #555; }
 
-        .main-content h2 { margin-top: 0; }
-        .form-container { display: flex; gap: 2rem; background: #fff; padding: 1.5rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-        .form-column { flex: 1; }
-        .form-column h4 { margin-top: 0; color: #007bff; border-bottom: 2px solid #f0f0f0; padding-bottom: 0.5rem; }
+        /* === STYLE FORM UMUM === */
         .form-group { margin-bottom: 1.25rem; }
-        .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.9rem; }
-        .form-group input, .form-group select, .form-group textarea {
-            width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.9rem; color: #495057; }
+        .form-group select,
+        .form-group input[type="text"],
+        .form-group input[type="number"],
+        .form-group textarea {
+            width: 100%; padding: 0.6rem 0.75rem; border: 1px solid #ced4da; border-radius: 4px; box-sizing: border-box; font-size: 1rem; line-height: 1.5; color: #495057; background-color: #fff; transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
         }
-        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
-            outline: none; border-color: #007bff; box-shadow: 0 0 0 2px rgba(0,123,255,0.2);
-        }
-        
-        /* 5. Placeholder Notifikasi (Elegan) */
-        #notification-toast {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 9999;
-            background: #fff;
-            padding: 1.25rem 1.5rem;
-            border-radius: 8px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            border-left: 5px solid #007bff; 
-            display: none; 
-            align-items: center;
-            gap: 1rem;
-            animation: slideIn 0.3s ease;
-        }
-        #notification-toast.success { border-left-color: #2ecc71; } 
-        #notification-toast.error { border-left-color: #e74c3c; } 
-        
-        #notification-toast-message {
-            font-size: 1rem;
-            font-weight: 500;
-        }
-        #notification-toast-close {
-            font-size: 1.5rem;
-            color: #aaa;
-            cursor: pointer;
-            line-height: 1;
-        }
-        
+        .form-group select:focus,
+        .form-group input:focus,
+        .form-group textarea:focus { outline: none; border-color: #80bdff; box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25); }
+        .form-group select:disabled,
+        .form-group input:disabled,
+        .form-group textarea:disabled { background-color: #e9ecef; cursor: not-allowed; opacity: 0.7; }
+        .form-group textarea { resize: vertical; min-height: 80px; }
+        .form-row { display: flex; flex-wrap: wrap; gap: 1.5rem; margin-bottom: 1rem; }
+        .form-row .form-group { flex: 1 1 200px; margin-bottom: 0; } /* Lebar fleksibel, hapus margin bawah */
+
+        /* === TOMBOL === */
+        .btn { display: inline-block; padding: 0.75rem 1.25rem; border: none; border-radius: 5px; font-size: 0.95rem; font-weight: 500; text-align: center; cursor: pointer; text-decoration: none; transition: background-color 0.2s ease, transform 0.1s ease; white-space: nowrap; }
+        .btn-primary { background-color: #007bff; color: white; }
+        .btn-primary:hover { background-color: #0056b3; }
+        .btn-primary:active { transform: translateY(1px); }
+        .btn-secondary { background-color: #6c757d; color: white; }
+        .btn-secondary:hover { background-color: #5a6268; }
+        .btn-sm { padding: 0.3rem 0.8rem; font-size: 0.85rem; }
+        button:disabled { background-color: #adb5bd; cursor: not-allowed; opacity: 0.6; }
+
+        /* === NOTIFIKASI ELEGAN === */
+        .notification-toast { /* Ganti ID jadi class */
+            position: fixed; top: 20px; right: 20px; z-index: 9999; background: #fff; padding: 1.25rem 1.5rem; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); border-left: 5px solid #007bff; display: none; align-items: center; gap: 1rem; animation: slideIn 0.3s ease; min-width: 250px; max-width: 400px; }
+        .notification-toast.success { border-left-color: #28a745; }
+        .notification-toast.error { border-left-color: #dc3545; }
+        .notification-toast.warning { border-left-color: #ffc107; }
+        .notification-toast.info { border-left-color: #17a2b8; }
+        #notification-toast-message { font-size: 1rem; font-weight: 500; flex-grow: 1; }
+        #notification-toast-close { font-size: 1.6rem; color: #aaa; cursor: pointer; line-height: 1; padding-left: 0.5rem; }
+        #notification-toast-close:hover { color: #555; }
         @keyframes slideIn { from { opacity: 0; transform: translateX(100%); } to { opacity: 1; transform: translateX(0); } }
-    /* === CSS BARU UNTUK DASHBOARD HOME === */
 
-/* Grid untuk Widget */
-.widget-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 1.5rem;
-}
+        /* === DASHBOARD HOME WIDGETS === */
+        .widget-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;}
+        .action-card { display: flex; align-items: center; gap: 1rem; padding: 1.5rem; background-color: #fff; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); text-decoration: none; color: #333; transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        .action-card:hover { transform: translateY(-5px); box-shadow: 0 6px 16px rgba(0,0,0,0.08); }
+        .action-card-icon { font-size: 2rem; color: #007bff; }
+        .action-card-text h4 { margin: 0 0 0.25rem; font-size: 1.1rem; }
+        .action-card-text p { margin: 0; font-size: 0.9rem; color: #777; }
+        .widget-card { background-color: #fff; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); padding: 1.5rem; }
+        .widget-card h3 { margin-top: 0; margin-bottom: 1rem; border-bottom: 1px solid #eee; padding-bottom: 0.75rem; color: #2c3e50; font-size: 1.1rem; }
+        /* ... (style progress, list, summary dari sebelumnya jika diperlukan) ... */
 
-/* Kartu Aksi Cepat (Tombol Besar) */
-.action-card {
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-    padding: 1.5rem;
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-    text-decoration: none;
-    color: #333;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-.action-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 6px 16px rgba(0,0,0,0.08);
-}
-.action-card-icon {
-    font-size: 2.5rem; /* Ganti dengan ikon Anda */
-    padding: 0.5rem;
-    color: #007bff;
-}
-.action-card-text h4 {
-    margin: 0 0 0.25rem;
-    font-size: 1.1rem;
-}
-.action-card-text p {
-    margin: 0;
-    font-size: 0.9rem;
-    color: #777;
-}
+        /* === HALAMAN DATA SISWA === */
+        .info-box { background-color: #eef5ff; border-left: 4px solid #007bff; border-radius: 4px; padding: 1rem 1.5rem; margin-bottom: 1.5rem; font-size: 0.95rem; }
+        .info-box h4 { margin: 0 0 0.75rem 0; color: #0056b3; }
+        .info-box p { margin: 0.5rem 0 0 0; }
+        .import-actions { display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem; }
+        .data-table-container { background-color: #fff; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); padding: 1.5rem; position: relative; padding-bottom: 4rem; /* Ruang untuk tombol lipat */ }
+        .data-table-container h3 { margin-top: 0; margin-bottom: 1rem; }
+        .data-table-wrapper { overflow-x: auto; }
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table th, .data-table td { padding: 0.85rem 1rem; border-bottom: 1px solid #ddd; text-align: left; vertical-align: middle; }
+        .data-table th { background-color: #f8f9fa; font-size: 0.85rem; text-transform: uppercase; color: #555; white-space: nowrap; }
+        .data-table td { font-size: 0.95rem; }
+        .data-table tbody tr:hover { background-color: #f1f1f1; }
+        .data-table .edit-btn { color: #007bff; text-decoration: none; font-weight: 500; }
+        .data-table .edit-btn:hover { text-decoration: underline; }
+        /* Tabel Lipat */
+        .data-table tbody tr:nth-child(n+4) { display: none; }
+        .data-table-container.is-expanded .data-table tbody tr:nth-child(n+4) { display: table-row; }
+        #toggle-siswa-list { position: absolute; bottom: 1rem; left: 1.5rem; background: none; border: 1px solid #007bff; color: #007bff; padding: 0.5rem 1rem; border-radius: 5px; cursor: pointer; font-weight: 500; transition: background-color 0.2s; }
+        #toggle-siswa-list:hover { background: #eef5ff; }
 
-/* Kartu Widget Umum */
-.widget-card {
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-    padding: 1.5rem;
-}
-.widget-card h3 {
-    margin-top: 0;
-    margin-bottom: 1rem;
-    border-bottom: 2px solid #f0f0f0;
-    padding-bottom: 0.75rem;
-    color: #2c3e50;
-}
+        /* === HALAMAN INPUT NILAI CP (V3) === */
+        /* List Checkbox CP */
+        .cp-checkbox-list { border: 1px solid #ddd; border-radius: 4px; padding: 1rem; max-height: 250px; overflow-y: auto; background-color: #f9f9f9; margin-bottom: 1.5rem; }
+        .cp-item { margin-bottom: 0.8rem; padding-bottom: 0.8rem; border-bottom: 1px dashed #eee; }
+        .cp-item:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+        .cp-item-header { font-weight: 500; margin-bottom: 0.4rem; font-size: 0.95em; color: #333; line-height: 1.4; }
+        .cp-item-options label { display: inline-flex; align-items: center; margin-right: 1.5rem; font-size: 0.9em; cursor: pointer; user-select: none; }
+        .cp-item-options input[type="checkbox"] { margin-right: 0.4rem; cursor: pointer; transform: scale(1.1); }
+        /* Pengaturan Frasa Deskripsi */
+        .description-phrase-settings { background-color: #f0f4f8; padding: 1rem; border-radius: 5px; margin-bottom: 1.5rem; border: 1px solid #d6e0eb; }
+        .phrase-group { display: flex; flex-wrap: wrap; /* Agar bisa turun */ align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; }
+        .phrase-group label { flex-basis: 150px; flex-shrink: 0; margin-bottom: 0; text-align: right; font-size: 0.9em; color: #555; }
+        .phrase-group select { flex: 1 1 250px; /* Fleksibel */ max-width: 450px; }
+        .custom-phrase-input { flex: 1 1 250px; padding: 0.375rem 0.75rem; border: 1px solid #ced4da; border-radius: 0.25rem; font-size: 0.95rem; }
+        #final-description-input { min-height: 120px; font-size: 0.95rem; } /* Textarea deskripsi final */
+        #nilai-akhir-input { max-width: 150px; } /* Batasi lebar input nilai */
+        #edit-deskripsi-btn { margin-top: 0.5rem; margin-bottom: 1rem; } /* Tombol edit deskripsi (jika masih dipakai) */
 
-/* Widget Progress */
-.progress-item {
-    margin-bottom: 1rem;
-}
-.progress-item-label {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.9rem;
-    font-weight: 500;
-    margin-bottom: 0.5rem;
-}
-.progress-bar {
-    width: 100%;
-    height: 10px;
-    background-color: #e9ecef;
-    border-radius: 5px;
-    overflow: hidden;
-}
-.progress-bar-fill {
-    height: 100%;
-    background-color: #2ecc71; /* Hijau */
-    border-radius: 5px;
-    transition: width 0.5s ease;
-}
-.progress-bar-fill.warning { background-color: #f39c12; } /* Kuning */
-.progress-bar-fill.danger { background-color: #e74c3c; } /* Merah */
-
-
-/* Widget Daftar Siswa */
-.attention-list ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-.attention-list li {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.75rem 0;
-    border-bottom: 1px solid #f0f0f0;
-}
-.attention-list li:last-child {
-    border-bottom: none;
-}
-.attention-list .student-name {
-    font-weight: 500;
-}
-.attention-list .student-status {
-    font-size: 0.9rem;
-    font-weight: bold;
-    color: #e74c3c; /* Merah */
-}
-
-/* Widget Data Ringkasan */
-.summary-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-}
-.summary-item {
-    background-color: #f9f9f9;
-    padding: 1rem;
-    border-radius: 5px;
-    text-align: center;
-}
-.summary-item .count {
-    font-size: 2rem;
-    font-weight: bold;
-    color: #007bff;
-    margin: 0 0 0.25rem;
-}
-.summary-item .label {
-    font-size: 0.9rem;
-    color: #555;
-    margin: 0;
-}
-
-/* === AKHIR CSS BARU === */
-
-/* === CSS BARU UNTUK Halaman Data Siswa === */
-.info-box {
-    background-color: #eef5ff;
-    border: 1px solid #b8d4fe;
-    border-radius: 8px;
-    padding: 1rem 1.5rem;
-    margin-bottom: 1.5rem;
-    font-size: 0.95rem;
-}
-.info-box h4 {
-    margin: 0 0 0.75rem 0;
-    color: #0056b3;
-}
-.info-box p {
-    margin: 0.5rem 0 0 0;
-}
-.info-box-steps {
-    padding-left: 1.25rem;
-    margin: 0;
-}
-.info-box-steps li {
-    margin-bottom: 0.5rem;
-}
-
-.import-actions {
-    display: flex;
-    gap: 1rem;
-    margin-bottom: 2rem;
-}
-/* Style untuk tombol */
-.btn {
-    padding: 0.75rem 1.25rem;
-    border: none;
-    border-radius: 5px;
-    font-size: 0.95rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-}
-.btn-primary {
-    background-color: #007bff;
-    color: white;
-}
-.btn-primary:hover {
-    background-color: #0056b3;
-}
-.btn-secondary {
-    background-color: #6c757d;
-    color: white;
-}
-.btn-secondary:hover {
-    background-color: #5a6268;
-}
-
-/* Style untuk Tabel Data */
-.data-table-container {
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-    padding: 1.5rem;
-}
-.data-table-container h3 {
-    margin-top: 0;
-}
-.data-table-wrapper {
-    overflow-x: auto; /* Agar tabel bisa di-scroll di HP */
-}
-.data-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-.data-table th, .data-table td {
-    padding: 0.85rem 1rem;
-    border-bottom: 1px solid #ddd;
-    text-align: left;
-}
-.data-table th {
-    background-color: #f8f9fa;
-    font-size: 0.9rem;
-    text-transform: uppercase;
-    color: #555;
-}
-.data-table td {
-    font-size: 0.95rem;
-}
-.data-table tbody tr:hover {
-    background-color: #f1f1f1;
-}
-
-/* === AKHIR CSS BARU === */
-/* === CSS BARU UNTUK TABEL LIPAT === */
-.data-table-container {
-    /* Menambahkan position relative agar tombol bisa diatur */
-    position: relative;
-    padding-bottom: 3.5rem; /* Beri ruang di bawah untuk tombol */
-}
-
-/* Sembunyikan baris ke-4 (n+4) dan seterusnya secara default */
-.data-table tbody tr:nth-child(n+4) {
-    display: none;
-}
-
-/* Tampilkan semua baris jika container punya class 'is-expanded' */
-.data-table-container.is-expanded .data-table tbody tr:nth-child(n+4) {
-    display: table-row; /* Tampilkan kembali sebagai baris tabel */
-}
-
-/* Tombol untuk Tampilkan/Sembunyikan */
-#toggle-siswa-list {
-    position: absolute;
-    bottom: 1rem; /* Letakkan di bawah */
-    left: 1.5rem; /* Samakan dengan padding container */
-    background: none;
-    border: 1px solid #007bff;
-    color: #007bff;
-    padding: 0.5rem 1rem;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: 500;
-}
-#toggle-siswa-list:hover {
-    background: #eef5ff;
-}
-/* === AKHIR CSS BARU === */
-/* === CSS BARU UNTUK INPUT NILAI === */
-
-/* Style untuk textarea deskripsi */
-textarea.form-control {
-    width: 100%; /* Lebar penuh */
-    padding: 8px 12px;
-    border: 1px solid #ced4da; /* Warna border standar Bootstrap */
-    border-radius: 4px;
-    font-size: 0.9em;
-    line-height: 1.5;
-    background-color: #e9ecef; /* Warna abu-abu saat readonly */
-    transition: background-color 0.15s ease-in-out; /* Transisi halus saat diedit */
-    box-sizing: border-box; /* Pastikan padding tidak menambah lebar */
-}
-
-textarea.form-control:read-only {
-    background-color: #e9ecef; /* Tetap abu-abu saat readonly */
-    cursor: not-allowed; /* Ubah cursor saat tidak bisa diedit */
-}
-
-textarea.form-control:not(:read-only) {
-    background-color: #fff; /* Warna putih saat bisa diedit */
-    cursor: text;
-}
-
-/* Style untuk tombol Edit Deskripsi */
-#edit-deskripsi-btn {
-    margin-top: -10px; /* Tarik sedikit ke atas agar dekat textarea */
-    margin-bottom: 15px; /* Beri jarak ke dropdown nilai */
-    display: block; /* Agar margin atas/bawah bekerja */
-}
-
-/* Penyesuaian layout form agar rapi */
-/* Asumsi Anda menggunakan class .form-row dan .form-group seperti contoh HTML */
-.form-row {
-    display: flex;
-    flex-wrap: wrap; /* Agar bisa turun baris di layar kecil */
-    gap: 1rem; /* Jarak antar kolom form */
-    margin-bottom: 1rem; /* Jarak ke baris form berikutnya */
-}
-
-.form-row .form-group {
-    flex: 1 1 200px; /* Fleksibel tapi punya lebar minimal */
-    display: flex;
-    flex-direction: column; /* Label di atas input */
-}
-
-/* Penyesuaian label dan input agar konsisten */
-.form-group label {
-    margin-bottom: 0.3rem; /* Jarak label ke input */
-    font-weight: 500; /* Sedikit tebal */
-    display: block; /* Pastikan label full width */
-}
-
-.form-group select,
-.form-group textarea {
-    width: 100%; /* Pastikan input mengisi grup */
-    padding: 0.375rem 0.75rem; /* Padding standar */
-    font-size: 1rem; /* Ukuran font standar */
-    line-height: 1.5;
-    color: #495057;
-    background-color: #fff;
-    background-clip: padding-box;
-    border: 1px solid #ced4da;
-    border-radius: 0.25rem;
-    transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
-}
-
-.form-group select:disabled {
-     background-color: #e9ecef; /* Warna abu-abu saat disabled */
-     cursor: not-allowed;
-}
-/* === AKHIR CSS BARU === */
-/* === CSS BARU UNTUK CHECKBOX CP === */
-.cp-checkbox-list {
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    padding: 1rem;
-    max-height: 250px; /* Batasi tinggi & buat scroll jika perlu */
-    overflow-y: auto;
-    background-color: #f9f9f9;
-}
-
-.cp-item {
-    margin-bottom: 0.8rem;
-    padding-bottom: 0.8rem;
-    border-bottom: 1px dashed #eee;
-}
-.cp-item:last-child {
-    margin-bottom: 0;
-    padding-bottom: 0;
-    border-bottom: none;
-}
-
-.cp-item-header {
-    font-weight: 500;
-    margin-bottom: 0.4rem;
-    font-size: 0.95em;
-    color: #333;
-}
-
-.cp-item-options label {
-    display: inline-flex; /* Agar sejajar */
-    align-items: center;
-    margin-right: 1.5rem;
-    font-size: 0.9em;
-    cursor: pointer;
-}
-
-.cp-item-options input[type="checkbox"] {
-    margin-right: 0.4rem;
-    cursor: pointer;
-}
-
-/* === AKHIR CSS BARU === */
     </style>
 </head>
-<body class="dashboard-wrapper">
-
-    <aside class="sidebar">
-        
-        <div class="sidebar-logo">
-            <img src="assets/logo.png" alt="Logo e-Rapor Cerdas">
-            <h3>e-Rapor Cerdas</h3>
-            <p id="sidebar-school-name">[Nama Sekolah]</p>
-        </div>
-        
-        <nav class="sidebar-menu">
-            <h3>Menu Utama</h3>
-            <ul>
-                <li><a href="#" class="nav-link active" data-page="page-home">Dashboard</a></li>
-                
-                <li><a href="#" class="nav-link" data-page="page-data-siswa">Data Siswa</a></li>
-                
-                <li><a href="#" class="nav-link" data-page="page-input-nilai">Input Nilai CP</a></li>
-                
-                <li><a href="#" class="nav-link" data-page="page-cetak">Cetak Rapor</a></li>
-            </ul>
-            
-            <h3>Pengaturan</h3>
-            <ul>
-                <li><a href="#" class="nav-link" data-page="page-profil-sekolah">Profil Sekolah</a></li>
-            </ul>
-        </nav>
-
-        <div class="sidebar-footer">
-            <p>Dikembangkan oleh : <br>Dedi Agus Mustofa, S.Pd.SD</p>
-        </div>
-    </aside>
-
-    <div class="main-wrapper">
-        
-        <header class="content-header">
-            <div class="user-info">
-                <span id="welcome-message">Memuat...</span>
-                <a id="logout-button">Logout</a>
+<body> <div class="dashboard-wrapper"> <aside class="sidebar">
+            <div class="sidebar-logo">
+                <img src="assets/logo.png" alt="Logo e-Rapor Cerdas"> <h3>e-Rapor Cerdas</h3>
+                <p id="sidebar-school-name">[Nama Sekolah]</p>
             </div>
-        </header>
-
-        <main class="main-content">
-            
-            <div id="page-home" class="content-page active">
-    
-    <div class="widget-grid" style="margin-bottom: 1.5rem;">
-        <a href="#" class="action-card nav-link" data-page="page-input-nilai">
-            <span class="action-card-icon">✎</span> <div class="action-card-text">
-                <h4>Input Nilai</h4>
-                <p>Mulai mengisi nilai CP siswa</p>
+            <nav class="sidebar-menu">
+                <h3>Menu Utama</h3>
+                <ul>
+                    <li><a href="#" class="nav-link active" data-page="page-home">Dashboard</a></li>
+                    <li><a href="#" class="nav-link" data-page="page-data-siswa">Data Siswa</a></li>
+                    <li><a href="#" class="nav-link" data-page="page-input-nilai">Input Nilai CP</a></li>
+                    <li><a href="#" class="nav-link" data-page="page-cetak">Cetak Rapor</a></li>
+                </ul>
+                <h3>Pengaturan</h3>
+                <ul>
+                    <li><a href="#" class="nav-link" data-page="page-profil-sekolah">Profil Sekolah</a></li>
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <p>Dikembangkan oleh : <br>Dedi Agus Mustofa, S.Pd.SD</p>
             </div>
-        </a>
-        <a href="#" class="action-card nav-link" data-page="page-data-siswa">
-            <span class="action-card-icon">👤</span> <div class="action-card-text">
-                <h4>Data Siswa</h4>
-                <p>Kelola data master siswa</p>
-            </div>
-        </a>
-        <a href="#" class="action-card nav-link" data-page="page-cetak">
-            <span class="action-card-icon">🖨️</span> <div class="action-card-text">
-                <h4>Cetak Rapor</h4>
-                <p>Cetak rapor akhir semester</p>
-            </div>
-        </a>
-    </div>
+        </aside>
 
-    <div class="widget-grid">
+        <div class="main-wrapper">
+            <header class="content-header">
+                <div class="user-info">
+                    <span id="welcome-message">Memuat...</span>
+                    <button id="logout-button" class="btn btn-danger btn-sm">Logout</button> </div>
+            </header>
 
-        <div class="widget-card" style="grid-column: span 2;"> <h3>Status Pengerjaan Rapor</h3>
-            <div class="progress-item">
-                <div class="progress-item-label">
-                    <span>Matematika (Fase B)</span>
-                    <span>25 / 30 Siswa</span>
-                </div>
-                <div class="progress-bar">
-                    <div class="progress-bar-fill" style="width: 83%;"></div>
-                </div>
-            </div>
-            <div class="progress-item">
-                <div class="progress-item-label">
-                    <span>Bahasa Indonesia (Fase B)</span>
-                    <span>15 / 30 Siswa</span>
-                </div>
-                <div class="progress-bar">
-                    <div class="progress-bar-fill warning" style="width: 50%;"></div>
-                </div>
-            </div>
-            <div class="progress-item">
-                <div class="progress-item-label">
-                    <span>IPAS (Fase B)</span>
-                    <span>0 / 30 Siswa</span>
-                </div>
-                <div class="progress-bar">
-                    <div class="progress-bar-fill danger" style="width: 1%;"></div> </div>
-            </div>
-        </div>
+            <main class="main-content">
 
-        <div class="widget-card attention-list">
-            <h3>Siswa Perlu Perhatian</h3>
-            <ul>
-                <li>
-                    <span class="student-name">Budi Setiawan</span>
-                    <span class="student-status">3 CP Bimbingan</span>
-                </li>
-                <li>
-                    <span class="student-name">Ani Cahyani</span>
-                    <span class="student-status">2 CP Bimbingan</span>
-                </li>
-                <li>
-                    <span class="student-name">Candra Wijaya</span>
-                    <span class="student-status">1 CP Bimbingan</span>
-                </li>
-            </ul>
-        </div>
-
-        <div class="widget-card">
-            <h3>Ringkasan Data Sekolah</h3>
-            <div class="summary-grid">
-                <div class="summary-item">
-                    <p class="count">120</p>
-                    <p class="label">Total Siswa</p>
-                </div>
-                <div class="summary-item">
-                    <p class="count">15</p>
-                    <p class="label">Total Guru</p>
-                </div>
-                <div class="summary-item">
-                    <p class="count">6</p>
-                    <p class="label">Total Kelas</p>
-                </div>
-                <div class="summary-item">
-                    <p class="count">3</p>
-                    <p class="label">Absensi (Alpa)</p>
-                </div>
-            </div>
-        </div>
-
-    </div>
-</div>
-
-            <div id="page-input-nilai" class="content-page">
-                <h2>Input Capaian Pembelajaran (CP)</h2>
-                <p>Silakan pilih siswa dan masukkan data capaian pembelajaran di bawah ini.</p>
-                
-                <form id="form-input-nilai">
-    <div class="form-row">
-        <div class="form-group">
-            <label for="pilih-kelas">Pilih Kelas:</label>
-            <select id="pilih-kelas" name="pilih-kelas" disabled><option value="">Memuat...</option></select>
-        </div>
-        <div class="form-group">
-            <label for="pilih-siswa">Pilih Siswa:</label>
-            <select id="pilih-siswa" name="pilih-siswa" disabled><option value="">Pilih kelas dahulu...</option></select>
-        </div>
-    </div>
-    <div class="form-row">
-        <div class="form-group">
-            <label for="pilih-mapel">Pilih Mata Pelajaran:</label>
-            <select id="pilih-mapel" name="pilih-mapel" disabled><option value="">Memuat...</option></select>
-        </div>
-        <div class="form-group">
-            <label for="pilih-agama">Pilih Agama:</label>
-            <select id="pilih-agama" name="pilih-agama" disabled><option value="">Pilih mapel dahulu...</option></select>
-        </div>
-    </div>
-
-    <div class="form-group">
-        <label>Pilih Capaian Pembelajaran (CP) yang Dinilai:</label>
-        <div id="cp-selection-list" class="cp-checkbox-list">
-            <p style="color: #6c757d;"><i>Pilih kelas, mapel, dan agama terlebih dahulu...</i></p>
-        </div>
-    </div>
-    <div class="form-group">
-        <label for="final-description-input">Deskripsi Rapor (Otomatis & Bisa Diedit):</label>
-        <textarea id="final-description-input" class="form-control" rows="5" placeholder="Deskripsi akan dibuat otomatis setelah memilih CP..."></textarea>
-    </div>
-    <div class="form-group">
-        <label for="nilai-akhir-input">Nilai Akhir (Angka):</label>
-        <input type="number" id="nilai-akhir-input" class="form-control" min="0" max="100" placeholder="Masukkan nilai 0-100">
-    </div>
-    <button id="simpan-nilai-btn" class="btn btn-primary">Simpan Nilai & Deskripsi</button>
-</form>
-    </div>
-                </div>
-            </div>
-
-            <div id="page-data-siswa" class="content-page">
-                <h2>Manajemen Data Siswa</h2>
-                
-                <div class="info-box">
-                    <h4>Panduan Import Data Siswa</h4>
-                    <ol class="info-box-steps">
-                        <li>Klik <strong>Download Template</strong> untuk mengunduh file <code>template_siswa.csv</code>.</li>
-                        <li>Buka file tersebut (di Excel/Google Sheets), isi data siswa Anda, lalu <strong>Simpan kembali sebagai .csv</strong>.</li>
-                        <li>Klik <strong>Import Data Siswa</strong>, pilih file .csv yang sudah Anda isi.</li>
-                    </ol>
-                    <p><strong>Penting:</strong> Jangan mengubah urutan kolom di template dan pastikan format tanggal adalah <strong>YYYY-MM-DD</strong> (contoh: 2010-05-17).</p>
-                </div>
-
-                <div class="import-actions">
-                    <button id="download-template-btn" class="btn btn-primary">Download Template CSV</button>
-                    
-                    <button id="import-csv-btn" class="btn btn-secondary">Import Data Siswa</button>
-                    <input type="file" id="csv-file-input" accept=".csv" style="display: none;">
-                </div>
-
-                <div class="data-table-container">
-                    <h3>Daftar Siswa Aktif</h3>
-                    <div class="data-table-wrapper">
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>NISN</th>
-                                    <th>Nama Siswa</th>
-                                    <th>Kelas</th>
-                                    <th>Tgl Lahir</th>
-                                    <th>Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody id="siswa-table-body">
-                                <tr>
-                                    <td colspan="5" style="text-align: center;">Belum ada data siswa. Silakan import.</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                <div id="page-home" class="content-page active">
+                     <h2>Dashboard Utama</h2>
+                     <p>Selamat datang di e-Rapor Cerdas. Silakan pilih menu di samping atau gunakan pintasan di bawah.</p>
+                     <div class="widget-grid">
+                         <a href="#" class="action-card nav-link" data-page="page-input-nilai">
+                             <span class="action-card-icon">✎</span> <div class="action-card-text"><h4>Input Nilai</h4><p>Mulai mengisi nilai CP siswa</p></div>
+                         </a>
+                         <a href="#" class="action-card nav-link" data-page="page-data-siswa">
+                             <span class="action-card-icon">👤</span> <div class="action-card-text"><h4>Data Siswa</h4><p>Kelola data master siswa</p></div>
+                         </a>
+                         <a href="#" class="action-card nav-link" data-page="page-cetak">
+                             <span class="action-card-icon">🖨️</span> <div class="action-card-text"><h4>Cetak Rapor</h4><p>Cetak rapor akhir semester</p></div>
+                         </a>
                     </div>
-                        <a href="#" id="toggle-siswa-list">Tampilkan Semua Siswa</a>
+                    </div>
+
+                <div id="page-input-nilai" class="content-page">
+                    <h2>Input Capaian Pembelajaran (CP)</h2>
+                    <p>Pilih siswa, mata pelajaran, dan status capaian untuk setiap CP.</p>
+
+                    <form id="form-input-nilai">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="pilih-kelas">Pilih Kelas:</label>
+                                <select id="pilih-kelas" name="pilih-kelas" disabled><option value="">Memuat...</option></select>
+                            </div>
+                            <div class="form-group">
+                                <label for="pilih-siswa">Pilih Siswa:</label>
+                                <select id="pilih-siswa" name="pilih-siswa" disabled><option value="">Pilih kelas dahulu...</option></select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="pilih-mapel">Pilih Mata Pelajaran:</label>
+                                <select id="pilih-mapel" name="pilih-mapel" disabled><option value="">Memuat...</option></select>
+                            </div>
+                            <div class="form-group">
+                                <label for="pilih-agama">Pilih Agama:</label>
+                                <select id="pilih-agama" name="pilih-agama" disabled><option value="">Pilih mapel dahulu...</option></select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Pilih Capaian Pembelajaran (CP) yang Dinilai:</label>
+                             <span id="mulok-indicator" style="display: none; font-style: italic; color: #6c757d; margin-left: 10px;">(Input Manual untuk Muatan Lokal)</span>
+                            <div id="cp-selection-list" class="cp-checkbox-list">
+                                <p style="color: #6c757d;"><i>Pilih kelas, mapel, dan agama terlebih dahulu...</i></p>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Pengaturan Kalimat Deskripsi (Berlaku untuk sesi ini):</label>
+                            <div class="description-phrase-settings">
+                                <div class="phrase-group">
+                                    <label for="kalimat-pembuka-tercapai">Awalan Tercapai:</label>
+                                    <select id="kalimat-pembuka-tercapai">
+                                        <option value="">Memuat...</option>
+                                        <option value="custom">-- Tulis Manual --</option>
+                                    </select>
+                                    <input type="text" id="custom-pembuka-tercapai" class="custom-phrase-input" placeholder="Tulis awalan kalimat tercapai..." style="display: none;">
+                                </div>
+                                <div class="phrase-group">
+                                    <label for="kalimat-pembuka-bimbingan">Awalan Perlu Bimbingan:</label>
+                                    <select id="kalimat-pembuka-bimbingan">
+                                        <option value="">Memuat...</option>
+                                        <option value="custom">-- Tulis Manual --</option>
+                                    </select>
+                                     <input type="text" id="custom-pembuka-bimbingan" class="custom-phrase-input" placeholder="Tulis awalan kalimat bimbingan..." style="display: none;">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="final-description-input">Deskripsi Rapor (Otomatis & Bisa Diedit):</label>
+                            <textarea id="final-description-input" class="form-control" rows="5" placeholder="Deskripsi akan dibuat otomatis setelah memilih CP..." readonly></textarea>
+                             <button type="button" id="edit-deskripsi-btn" class="btn btn-secondary btn-sm" disabled style="display:none;">Edit Deskripsi Manual</button>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="nilai-akhir-input">Nilai Akhir (Angka):</label>
+                            <input type="number" id="nilai-akhir-input" class="form-control" min="0" max="100" placeholder="0-100" disabled>
+                        </div>
+
+                        <button id="simpan-nilai-btn" class="btn btn-primary">Simpan Nilai & Deskripsi</button>
+                    </form>
                 </div>
 
-            </div>
-            <div id="page-cetak" class="content-page">
-                <h2>Cetak Rapor</h2>
-                <p>Pilih kelas dan semester untuk mencetak rapor.</p>
-            </div>
-            <div id="page-profil-sekolah" class="content-page">
-                <h2>Profil Sekolah</h2>
-                <p>Lengkapi data sekolah Anda untuk ditampilkan di kop rapor.</p>
-            </div>
+                <div id="page-data-siswa" class="content-page">
+                    <h2>Manajemen Data Siswa</h2>
+                    <div class="info-box">
+                        <h4>Panduan Import Data Siswa</h4>
+                        <ol>
+                            <li>Klik <strong>Download Template</strong> untuk mengunduh <code>template_siswa.csv</code>.</li>
+                            <li>Buka & isi data siswa, lalu <strong>Simpan sebagai .csv</strong>.</li>
+                            <li>Klik <strong>Import Data Siswa</strong>, pilih file .csv Anda.</li>
+                        </ol>
+                        <p><strong>Penting:</strong> Jangan ubah header/urutan kolom. Format tanggal: <strong>YYYY-MM-DD</strong>.</p>
+                    </div>
+                    <div class="import-actions">
+                        <button id="download-template-btn" class="btn btn-primary">Download Template CSV</button>
+                        <button id="import-csv-btn" class="btn btn-secondary">Import Data Siswa</button>
+                        <input type="file" id="csv-file-input" accept=".csv" style="display: none;">
+                    </div>
+                    <div class="data-table-container">
+                        <h3>Daftar Siswa Aktif</h3>
+                        <div class="data-table-wrapper">
+                            <table class="data-table">
+                                <thead>
+                                    <tr><th>NISN</th><th>Nama Siswa</th><th>Kelas</th><th>Tgl Lahir</th><th>Aksi</th></tr>
+                                </thead>
+                                <tbody id="siswa-table-body">
+                                    <tr><td colspan="5" style="text-align: center;">Memuat data...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <button id="toggle-siswa-list" class="btn btn-sm" style="display:none; position: absolute; bottom: 1rem; left: 1.5rem;">Tampilkan Semua Siswa</button> </div>
+                </div>
 
-        </main>
-        
-        </div>
+                <div id="page-cetak" class="content-page">
+                    <h2>Cetak Rapor</h2>
+                    <p>Fitur cetak rapor akan segera tersedia.</p>
+                    </div>
 
-    <div id="notification-toast">
-        <span id="notification-toast-message">Ini adalah pesan notifikasi!</span>
+                <div id="page-profil-sekolah" class="content-page">
+                    <h2>Profil Sekolah</h2>
+                    <p>Fitur edit profil sekolah akan segera tersedia.</p>
+                    </div>
+
+            </main>
+        </div> </div> <div id="notification-toast" class="notification-toast">
+        <span id="notification-toast-message">Pesan notifikasi!</span>
         <span id="notification-toast-close">&times;</span>
     </div>
 
     <script src="dashboard.js"></script>
+
 </body>
 </html>
-
-
-
-
-
