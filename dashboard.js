@@ -593,4 +593,172 @@ function validateAndToggleButton() {
   simpanNilaiBtn.disabled = !isValid;
 }
 
+// ===========================================================
+// === BAGIAN 4 : SIMPAN NILAI, IMPORT/EXPORT CSV, DATA SISWA ===
+// ===========================================================
+
+/**
+ * Mengirim nilai dan deskripsi ke server GAS
+ */
+function handleSimpanNilai() {
+  if (!simpanNilaiBtn || simpanNilaiBtn.disabled) return;
+
+  const id_kelas = selectKelas ? selectKelas.value : '';
+  const id_siswa = selectSiswa ? selectSiswa.value : '';
+  const id_mapel = selectMapel ? selectMapel.value : '';
+  const id_agama = selectAgama ? selectAgama.value : '';
+  const nilai_akhir = nilaiAkhirInput ? nilaiAkhirInput.value.trim() : '';
+  const deskripsi_rapor = finalDescriptionInput ? finalDescriptionInput.value.trim() : '';
+
+  if (!id_kelas || !id_siswa || !id_mapel || !id_agama || !nilai_akhir) {
+    showNotification("Lengkapi semua data sebelum menyimpan.", "warning");
+    return;
+  }
+
+  const nilaiNum = parseFloat(nilai_akhir);
+  if (isNaN(nilaiNum) || nilaiNum < 0 || nilaiNum > 100) {
+    showNotification("Nilai harus antara 0-100.", "warning");
+    return;
+  }
+
+  const payload = {
+    action: "simpanNilai",
+    spreadsheetId: user.spreadsheetId,
+    username: user.username,
+    id_kelas,
+    id_siswa,
+    id_mapel,
+    id_agama,
+    nilai_akhir: nilaiNum,
+    deskripsi_rapor,
+    cp_statuses: currentSelectedCpStatuses
+  };
+
+  showNotification("Menyimpan nilai...", "info");
+  simpanNilaiBtn.disabled = true;
+
+  fetch(GAS_URL, {
+    method: "POST",
+    body: JSON.stringify(payload),
+    headers: { "Content-Type": "text/plain;charset=utf-8" }
+  })
+    .then(response => response.json())
+    .then(result => {
+      if (result.success) {
+        showNotification("Nilai berhasil disimpan.", "success");
+        resetFinalDescriptionAndGrade();
+        cpSelectionList.innerHTML = '<p><i>Nilai tersimpan.</i></p>';
+      } else {
+        showNotification("Gagal menyimpan nilai: " + (result.message || ""), "error");
+      }
+    })
+    .catch(error => {
+      console.error("Error simpan nilai:", error);
+      showNotification("Gagal koneksi ke server: " + error.message, "error");
+    })
+    .finally(() => {
+      simpanNilaiBtn.disabled = false;
+    });
+}
+
+/**
+ * Mengunduh template CSV untuk data siswa
+ */
+function handleDownloadTemplate() {
+  const header = ["id_siswa", "nama_siswa", "id_kelas"];
+  const sample = ["S1", "Nama Siswa Contoh", "KLS1"];
+  const csvContent = "data:text/csv;charset=utf-8," + [header.join(","), sample.join(",")].join("\n");
+  const encodedUri = encodeURI(csvContent);
+  const link = document.createElement("a");
+  link.setAttribute("href", encodedUri);
+  link.setAttribute("download", "template_siswa.csv");
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+/**
+ * Import file CSV siswa
+ */
+function handleImportCSV(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = evt => {
+    const csvText = evt.target.result;
+    const siswaData = parseCSV(csvText);
+    if (siswaData.length > 0) uploadSiswaData(siswaData);
+    else showNotification("File CSV kosong atau tidak valid.", "warning");
+  };
+  reader.readAsText(file);
+}
+
+/**
+ * Parser CSV sederhana
+ */
+function parseCSV(text) {
+  const lines = text.trim().split("\n");
+  const headers = lines[0].split(",");
+  return lines.slice(1).map(line => {
+    const values = line.split(",");
+    let obj = {};
+    headers.forEach((h, i) => obj[h.trim()] = values[i]?.trim());
+    return obj;
+  });
+}
+
+/**
+ * Upload data siswa ke server
+ */
+function uploadSiswaData(siswaArray) {
+  if (!Array.isArray(siswaArray) || siswaArray.length === 0) return;
+  const payload = {
+    action: "uploadSiswa",
+    spreadsheetId: user.spreadsheetId,
+    username: user.username,
+    siswa: siswaArray
+  };
+
+  showNotification("Mengupload data siswa...", "info");
+
+  fetch(GAS_URL, {
+    method: "POST",
+    body: JSON.stringify(payload),
+    headers: { "Content-Type": "text/plain;charset=utf-8" }
+  })
+    .then(res => res.json())
+    .then(result => {
+      if (result.success) {
+        showNotification("Data siswa berhasil diupload.", "success");
+        loadSiswaList();
+      } else {
+        showNotification("Gagal upload siswa: " + (result.message || ""), "error");
+      }
+    })
+    .catch(error => {
+      console.error("Error upload siswa:", error);
+      showNotification("Kesalahan upload: " + error.message, "error");
+    });
+}
+
+/**
+ * Menampilkan daftar siswa di tabel dashboard
+ */
+function loadSiswaList() {
+  if (!siswaTableBody) return;
+  siswaTableBody.innerHTML = '';
+  if (!allSiswaData || allSiswaData.length === 0) {
+    siswaTableBody.innerHTML = `<tr><td colspan="3" style="text-align:center;">Belum ada data siswa.</td></tr>`;
+    return;
+  }
+  allSiswaData.forEach((siswa, index) => {
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${index + 1}</td>
+      <td>${siswa.nama_siswa}</td>
+      <td>${siswa.id_kelas}</td>
+    `;
+    siswaTableBody.appendChild(row);
+  });
+}
 
