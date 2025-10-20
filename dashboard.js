@@ -742,6 +742,74 @@ function loadSiswaList() {
   });
 }
 
+// =============================================================
+// 📥 IMPORT DATA SISWA (FIXED UNTUK handleSiswaActions di GS)
+// =============================================================
+async function importSiswa(fileData) {
+  try {
+    showNotification("Mengimpor data siswa...", "info");
+
+    const payload = {
+      action: "handleSiswaActions",
+      subAction: "importSiswa",
+      spreadsheetId: user.spreadsheetId,
+      data: fileData
+    };
+
+    const response = await fetch(GAS_URL, {
+      method: "POST",
+      body: JSON.stringify(payload),
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+    });
+
+    const result = await response.json();
+    hideNotification();
+
+    if (result.success) {
+      showNotification(result.message || "Data siswa berhasil diimpor!", "success");
+      console.log("✅ Import siswa sukses:", result);
+      loadSiswaList();
+    } else {
+      showNotification(result.message || "Gagal impor siswa.", "error");
+      console.error("❌ Gagal impor siswa:", result);
+    }
+
+  } catch (error) {
+    hideNotification();
+    showNotification("Kesalahan saat impor: " + error.message, "error");
+    console.error("Import error:", error);
+  }
+}
+
+// Tombol Import CSV
+document.getElementById("import-siswa-btn").addEventListener("click", () => {
+  const fileInput = document.getElementById("import-siswa-file");
+  if (fileInput.files.length === 0) {
+    showNotification("Pilih file CSV siswa terlebih dahulu.", "warning");
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const csvText = e.target.result;
+      const rows = csvText.split("\n").map(r => r.trim()).filter(r => r);
+      const headers = rows[0].split(",");
+      const siswaData = rows.slice(1).map(row => {
+        const cols = row.split(",");
+        let obj = {};
+        headers.forEach((h, i) => { obj[h.trim()] = cols[i]?.trim() || ""; });
+        return obj;
+      });
+      importSiswa(siswaData);
+    } catch (err) {
+      showNotification("Format file CSV tidak valid: " + err.message, "error");
+    }
+  };
+  reader.readAsText(fileInput.files[0]);
+});
+
+
 // ===========================================================
 // === FUNGSI SIMPAN NILAI KE SERVER (FINAL + MENDUKUNG MULOK)
 // ===========================================================
