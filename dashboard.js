@@ -1,343 +1,65 @@
-/* === e-Rapor Cerdas - Dashboard Script (Final V3 + Validasi + Logging V2) === */
+/* === Dashboard JS - Tes Minimalis === */
+console.log("[TEST] Memulai dashboard.js...");
 
-// !!! PENTING !!! PASTIKAN INI ADALAH URL DARI "DATABASE ADMIN v2" ANDA !!!
-const GAS_URL = "https://script.google.com/macros/s/AKfycby-empDcPt5BndGZnjLNyTKt9wbMIP3iRtvoQELdWWoOvZnu2om_Uoh9Zsj5I0Wdq7ZLw/exec"; // <-- GANTI JIKA URL ANDA BERBEDA
-
-// --- Variabel Global ---
-// ... (Variabel global sama seperti sebelumnya) ...
-let user = {}; let allKelasData = [], allSiswaData = [], allCpTpData = [], allAgamaData = []; let allFrasaTercapai = [], allFrasaBimbingan = []; let currentFase = null, isMulokActive = false; let currentSelectedCpStatuses = {}; let currentPembukaTercapai = ""; let currentPembukaBimbingan = "";
-
-
-// --- Elemen Notifikasi ---
-// ... (Elemen notifikasi sama) ...
-const notificationToast = document.getElementById('notification-toast'); const notificationMessage = document.getElementById('notification-toast-message'); const notificationClose = document.getElementById('notification-toast-close');
-
-
-// --- Elemen Form Input Nilai ---
-// ... (Elemen form sama) ...
-const formInputNilai = document.getElementById('form-input-nilai'); const selectKelas = document.getElementById('pilih-kelas'); const selectSiswa = document.getElementById('pilih-siswa'); const selectMapel = document.getElementById('pilih-mapel'); const selectAgama = document.getElementById('pilih-agama'); const cpSelectionList = document.getElementById('cp-selection-list'); const mulokIndicator = document.getElementById('mulok-indicator'); const selectPembukaTercapai = document.getElementById('kalimat-pembuka-tercapai'); const inputCustomTercapai = document.getElementById('custom-pembuka-tercapai'); const selectPembukaBimbingan = document.getElementById('kalimat-pembuka-bimbingan'); const inputCustomBimbingan = document.getElementById('custom-pembuka-bimbingan'); const finalDescriptionInput = document.getElementById('final-description-input'); const nilaiAkhirInput = document.getElementById('nilai-akhir-input'); const simpanNilaiBtn = document.getElementById('simpan-nilai-btn'); const editDeskripsiBtn = document.getElementById('edit-deskripsi-btn');
-
-
-// --- Elemen Halaman Data Siswa ---
-// ... (Elemen data siswa sama) ...
-const downloadTemplateBtn = document.getElementById('download-template-btn'); const importCsvBtn = document.getElementById('import-csv-btn'); const csvFileInput = document.getElementById('csv-file-input'); const siswaTableBody = document.getElementById('siswa-table-body'); const toggleSiswaListBtn = document.getElementById('toggle-siswa-list'); const siswaTableContainer = document.querySelector('.data-table-container');
-
-
-// --- Fungsi Notifikasi Elegan ---
-function showNotification(message, type = 'info') { /* ... kode sama ... */ }
-function hideNotification() { /* ... kode sama ... */ }
-if (notificationClose) { /* ... kode sama ... */ }
-// Implementasi
-function showNotification(message, type = 'info') { if (!notificationToast || !notificationMessage) { console.warn("Notif elements missing."); return; } notificationMessage.innerText = message; notificationToast.className = 'notification-toast'; notificationToast.classList.add(type); notificationToast.style.display = 'flex'; if (notificationToast.timer) clearTimeout(notificationToast.timer); notificationToast.timer = setTimeout(() => { hideNotification(); }, 5000); }
-function hideNotification() { if (!notificationToast) return; notificationToast.style.display = 'none'; if (notificationToast.timer) clearTimeout(notificationToast.timer); notificationToast.timer = null; }
-if (notificationClose) { notificationClose.addEventListener('click', hideNotification); } else { console.warn("#notification-toast-close missing."); }
-
-
-// --- Fungsi Utama (DOMContentLoaded) ---
 document.addEventListener("DOMContentLoaded", () => {
-    console.log("[LOG INIT] DOM siap."); // LOG 1
+    console.log("[TEST] DOMContentLoaded event fired.");
+
     try {
-        // 1. OTENTIKASI (Sama)
-        // ... kode otentikasi ...
-
-        // 2. LOGIKA LOGOUT (Sama)
-        // ... kode logout ...
-
-        // 3. LOGIKA NAVIGASI SIDEBAR (Sama)
-        // ... kode navigasi ...
-        console.log("[LOG INIT] Listener navigasi OK."); // LOG 3
-
-        // 4. MEMUAT DATA AWAL (Sama)
-        console.log("[LOG INIT] Memulai loadInitialData..."); // LOG 4
-        loadInitialData();
-
-        // 5. LOGIKA HALAMAN DATA SISWA (Sama)
-        // ... listener data siswa ...
-        console.log("[LOG INIT] Listener data siswa OK (jika ada)."); // LOG 5
-
-        // 6. LOGIKA DROPDOWN FILTER INPUT NILAI
-        if (selectKelas) { selectKelas.addEventListener('change', (e) => { handleKelasChange(e); validateAndToggleButton(); }); console.log("[LOG INIT] Listener kelas OK.");} else console.warn("#pilih-kelas missing."); // LOG 6
-        if (selectMapel) { selectMapel.addEventListener('change', (e) => { handleMapelChange(e); validateAndToggleButton(); }); console.log("[LOG INIT] Listener mapel OK.");} else console.warn("#pilih-mapel missing."); // LOG 7
-        if (selectAgama) { selectAgama.addEventListener('change', (e) => { handleAgamaChange(e); validateAndToggleButton(); }); console.log("[LOG INIT] Listener agama OK.");} else console.warn("#pilih-agama missing."); // LOG 8
-
-        // --- PEMERIKSAAN ELEMEN NILAI AKHIR ---
-        console.log("[LOG CHECK] Mencari elemen #nilai-akhir-input:", nilaiAkhirInput); // LOG 9a
-        if (nilaiAkhirInput) {
-            nilaiAkhirInput.addEventListener('input', () => {
-                console.log("[LOG EVENT] Input nilai akhir berubah:", nilaiAkhirInput.value); // LOG 9b
-                validateAndToggleButton();
+        // Tes Tombol Logout
+        const logoutBtn = document.getElementById('logout-button');
+        if (logoutBtn) {
+            console.log("[TEST] Tombol Logout ditemukan.");
+            logoutBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                console.log("[TEST] Tombol Logout DIKLIK!");
+                alert("Tombol Logout berfungsi!");
+                // Tambahkan logika logout asli jika perlu
+                // if (confirm("Yakin logout?")) {
+                //     localStorage.clear();
+                //     window.location.href = 'index.html';
+                // }
             });
-             console.log("[LOG INIT] Listener input nilai akhir DITAMBAHKAN."); // LOG 9c
-        } else console.warn("#nilai-akhir-input TIDAK DITEMUKAN."); // LOG 9d
+            console.log("[TEST] Listener Logout ditambahkan.");
+        } else {
+            console.error("[TEST] Tombol Logout (#logout-button) TIDAK DITEMUKAN!");
+        }
 
-        // 7. Event Listener Dropdown Kalimat Pembuka (Sama)
-        // ... listener kalimat pembuka ...
-        console.log("[LOG INIT] Listener kalimat pembuka OK (jika ada)."); // LOG 10, 11
-
-        // 8. LOGIKA TOMBOL TAMPILKAN SEMUA SISWA (Sama)
-        // ... listener toggle siswa ...
-
-        // --- PEMERIKSAAN ELEMEN TOMBOL SIMPAN ---
-        console.log("[LOG CHECK] Mencari elemen #simpan-nilai-btn:", simpanNilaiBtn); // LOG 12a
-        console.log("[LOG CHECK] Mencari elemen #form-input-nilai:", formInputNilai); // LOG 12b
-        if (simpanNilaiBtn && formInputNilai) {
-             simpanNilaiBtn.disabled = true; // Nonaktifkan di awal
-             simpanNilaiBtn.addEventListener('click', (e) => {
+        // Tes Link Navigasi Pertama (Dashboard Home)
+        const firstNavLink = document.querySelector('.nav-link[data-page="page-home"]');
+        if (firstNavLink) {
+             console.log("[TEST] Link Navigasi Home ditemukan.");
+             firstNavLink.addEventListener('click', (e) => {
                  e.preventDefault();
-                 console.log("[LOG EVENT] Tombol Simpan DIKLIK."); // LOG 12c
-                 handleSimpanNilai();
+                 console.log("[TEST] Link Navigasi Home DIKLIK!");
+                 alert("Link Navigasi Home berfungsi!");
+                 // Logika pindah halaman bisa ditambahkan di sini
              });
-             console.log("[LOG INIT] Listener tombol simpan DITAMBAHKAN."); // LOG 13
-        } else console.error("#simpan-nilai-btn atau #form-input-nilai TIDAK DITEMUKAN."); // LOG 12d
-
-         // 10. (Opsional) Tombol Edit Deskripsi (Sama)
-         // ... listener edit deskripsi ...
-
-        console.log("[LOG INIT] Inisialisasi DOM selesai."); // LOG 14
-    } catch (error) { console.error("Critical init error:", error); showNotification("Gagal memuat: " + error.message, "error"); }
-}); // --- AKHIR DOMContentLoaded ---
-
-// --- Handler Perubahan Dropdown Filter ---
-function handleKelasChange(e) { console.log("Kelas berubah:", e.target.value); /* ... kode sama ... */ }
-function handleMapelChange(e) { console.log("Mapel berubah:", e.target.value); /* ... kode sama ... */ }
-function handleAgamaChange(e) { console.log("Agama berubah:", e.target.value); /* ... kode sama ... */ }
-// Implementasi
-function handleKelasChange(e) { console.log("Kelas berubah:", e.target.value); const selectedKelasId = e.target.value; const selectedKelas = allKelasData.find(k => k.id_kelas === selectedKelasId); currentFase = selectedKelas ? selectedKelas.fase : null; loadSiswaDropdown(selectedKelasId); loadCpCheckboxList(selectMapel ? selectMapel.value : null, currentFase, selectAgama ? selectAgama.value : null); resetFinalDescriptionAndGrade(); resetMulok(); }
-function handleMapelChange(e) { console.log("Mapel berubah:", e.target.value); const selectedMapelId = e.target.value; loadAgamaDropdown(allAgamaData); if (selectAgama) selectAgama.disabled = !selectedMapelId; loadCpCheckboxList(selectedMapelId, currentFase, selectAgama ? selectAgama.value : null); resetFinalDescriptionAndGrade(); resetMulok(); }
-function handleAgamaChange(e) { console.log("Agama berubah:", e.target.value); loadCpCheckboxList(selectMapel ? selectMapel.value : null, currentFase, e.target.value); resetFinalDescriptionAndGrade(); resetMulok(); }
-
-
-// --- Handler Perubahan Dropdown/Input Kalimat Pembuka ---
-function handlePembukaTercapaiChange() { console.log("Pilihan pembuka tercapai berubah."); /* ... kode sama ... */ }
-function handleCustomTercapaiInput() { /* ... kode sama ... */ } // Log sudah ada di dalam
-function handlePembukaBimbinganChange() { console.log("Pilihan pembuka bimbingan berubah."); /* ... kode sama ... */ }
-function handleCustomBimbinganInput() { /* ... kode sama ... */ } // Log sudah ada di dalam
-// Implementasi
-function handlePembukaTercapaiChange() { console.log("Pilihan pembuka tercapai berubah."); if (!selectPembukaTercapai || !inputCustomTercapai) return; const selVal = selectPembukaTercapai.value; if (selVal === 'custom') { inputCustomTercapai.style.display = 'block'; inputCustomTercapai.value = ''; inputCustomTercapai.focus(); currentPembukaTercapai = " "; } else { inputCustomTercapai.style.display = 'none'; currentPembukaTercapai = selVal ? ` ${selVal.trim()} ` : " "; generateFinalDescription(); } }
-function handleCustomTercapaiInput() { if (!inputCustomTercapai) return; console.log("Input custom tercapai:", inputCustomTercapai.value); currentPembukaTercapai = inputCustomTercapai.value.trim() ? ` ${inputCustomTercapai.value.trim()} ` : " "; generateFinalDescription(); }
-function handlePembukaBimbinganChange() { console.log("Pilihan pembuka bimbingan berubah."); if (!selectPembukaBimbingan || !inputCustomBimbingan) return; const selVal = selectPembukaBimbingan.value; if (selVal === 'custom') { inputCustomBimbingan.style.display = 'block'; inputCustomBimbingan.value = ''; inputCustomBimbingan.focus(); currentPembukaBimbingan = " "; } else { inputCustomBimbingan.style.display = 'none'; currentPembukaBimbingan = selVal ? ` ${selVal.trim()} ` : " "; generateFinalDescription(); } }
-function handleCustomBimbinganInput() { if (!inputCustomBimbingan) return; console.log("Input custom bimbingan:", inputCustomBimbingan.value); currentPembukaBimbingan = inputCustomBimbingan.value.trim() ? ` ${inputCustomBimbingan.value.trim()} ` : " "; generateFinalDescription(); }
-
-
-/**
- * Memuat data awal + Memuat Opsi Frasa
- */
-function loadInitialData() {
-    console.log("[LOG LOAD] Memulai fetch data awal..."); // LOG 15
-    showNotification("Memuat data awal sekolah...", "info");
-    const payload = { action: "getInitialData", spreadsheetId: user.spreadsheetId };
-    fetch(GAS_URL, { method: "POST", body: JSON.stringify(payload), headers: { "Content-Type": "text/plain;charset=utf-8" }})
-    .then(response => { if (!response.ok) throw new Error(`Server status ${response.status}`); return response.json(); })
-    .then(data => {
-        hideNotification();
-        if (data.success) {
-            console.log("[LOG LOAD] Data awal berhasil dimuat."); // LOG 16
-            // ... (Kode pengisian data sama seperti sebelumnya) ...
-            const sidebarSchoolName = document.getElementById('sidebar-school-name'); if (sidebarSchoolName) sidebarSchoolName.innerText = data.profil.nama_sekolah || "[Nama Sekolah]"; allKelasData = data.kelas || []; loadKelasDropdown(allKelasData); loadMapelDropdown(data.mapel); allAgamaData = data.agama || []; loadAgamaDropdown(allAgamaData); allSiswaData = data.siswa || []; allCpTpData = data.cptp || []; allFrasaTercapai = data.frasaTercapai || []; allFrasaBimbingan = data.frasaBimbingan || []; loadPembukaOptions(selectPembukaTercapai, allFrasaTercapai); loadPembukaOptions(selectPembukaBimbingan, allFrasaBimbingan); currentPembukaTercapai = selectPembukaTercapai && selectPembukaTercapai.options.length > 1 ? selectPembukaTercapai.options[0].value : " menunj..."; currentPembukaBimbingan = selectPembukaBimbingan && selectPembukaBimbingan.options.length > 1 ? selectPembukaBimbingan.options[0].value : " perlu bim..."; console.log("[LOG LOAD] Frasa default:", currentPembukaTercapai, "|", currentPembukaBimbingan); const activePage = document.querySelector('.content-page.active'); if (activePage && activePage.id === 'page-data-siswa') { loadSiswaList(); } if (selectKelas && allKelasData.length > 0) selectKelas.disabled = false; if (selectMapel && data.mapel && data.mapel.length > 0) selectMapel.disabled = false; console.log("[LOG LOAD] Dropdown awal diaktifkan.");
-
+             console.log("[TEST] Listener Navigasi Home ditambahkan.");
         } else {
-            console.error("[LOG LOAD] Gagal memuat data awal dari server:", data.message); // LOG 19
-            showNotification("Gagal memuat data awal: " + (data.message || "Error"), "error");
+             console.warn("[TEST] Link Navigasi Home (.nav-link[data-page='page-home']) TIDAK DITEMUKAN!");
         }
-    })
-    .catch(error => {
-        hideNotification(); console.error("[LOG LOAD] Initial load fetch error:", error); // LOG 20
-        showNotification(`Jaringan error: ${error.message}.`, "error");
-        // Nonaktifkan form jika gagal load
-        if (formInputNilai) { /* ... disable form ... */ }
-    });
-}
 
-/**
- * Memuat opsi dropdown kalimat pembuka
- */
-function loadPembukaOptions(selectElement, optionsArray) { /* ... kode sama ... */ }
-
-// --- Fungsi-fungsi Pengisian Dropdown Awal ---
-function loadKelasDropdown(kelasArray) { /* ... kode sama ... */ }
-function loadSiswaDropdown(selectedKelasId) { /* ... kode sama ... */ }
-function loadMapelDropdown(mapelArray) { /* ... kode sama ... */ }
-function loadAgamaDropdown(agamaArray) { /* ... kode sama ... */ }
-// Implementasi
-function loadKelasDropdown(kelasArray) { if (!selectKelas) return; selectKelas.innerHTML = ''; selectKelas.add(new Option("Pilih Kelas...", "")); if (kelasArray && kelasArray.length > 0) { kelasArray.forEach(kelas => { const displayText = `${kelas.nama_kelas} (Fase ${kelas.fase || '?'})`; selectKelas.add(new Option(displayText, kelas.id_kelas)); }); selectKelas.disabled = false; } else { selectKelas.add(new Option("Belum ada data kelas", "")); selectKelas.disabled = true; } }
-function loadSiswaDropdown(selectedKelasId) { if (!selectSiswa) return; selectSiswa.innerHTML = ''; selectSiswa.disabled = true; if (!selectedKelasId) { selectSiswa.add(new Option("Pilih kelas dahulu...", "")); return; } const siswaDiKelas = allSiswaData.filter(siswa => siswa.id_kelas === selectedKelasId); if (siswaDiKelas.length > 0) { selectSiswa.add(new Option(`Pilih Siswa (${siswaDiKelas.length} siswa)...`, "")); siswaDiKelas.forEach(siswa => { selectSiswa.add(new Option(siswa.nama_siswa, siswa.id_siswa)); }); selectSiswa.disabled = false; } else { selectSiswa.add(new Option("Tidak ada siswa di kelas ini", "")); } }
-function loadMapelDropdown(mapelArray) { if (!selectMapel) return; selectMapel.innerHTML = ''; selectMapel.add(new Option("Pilih Mata Pelajaran...", "")); if (mapelArray && mapelArray.length > 0) { mapelArray.forEach(mapel => { selectMapel.add(new Option(mapel.nama_mapel, mapel.id_mapel)); }); selectMapel.disabled = false; } else { selectMapel.add(new Option("Belum ada data mapel", "")); selectMapel.disabled = true; } }
-function loadAgamaDropdown(agamaArray) { if (!selectAgama) return; selectAgama.innerHTML = ''; selectAgama.add(new Option("Pilih Agama...", "")); let hasAgama = false; if (agamaArray && agamaArray.length > 0) { selectAgama.add(new Option("Semua (Umum)", "Semua")); hasAgama = true; agamaArray.forEach(agama => { if (agama && agama.toLowerCase() !== 'semua') { selectAgama.add(new Option(agama, agama)); hasAgama = true; } }); } if (!hasAgama) { selectAgama.add(new Option("Tidak ada data agama", "")); selectAgama.disabled = true; } else { selectAgama.disabled = !selectMapel || !selectMapel.value; } }
-function loadPembukaOptions(selectElement, optionsArray) { if (!selectElement) return; const customOption = selectElement.querySelector('option[value="custom"]'); selectElement.innerHTML = ''; if (optionsArray && optionsArray.length > 0) { optionsArray.forEach((frasa, index) => { const trimmedFrasa = frasa.trim(); const option = new Option(trimmedFrasa, ` ${trimmedFrasa} `); selectElement.add(option); if (index === 0) option.selected = true; }); } else { selectElement.add(new Option("-- Tidak ada pilihan --", "")); } if (customOption) selectElement.add(customOption); else selectElement.add(new Option("-- Tulis Manual --", "custom")); }
-
-
-/**
- * Membuat daftar Checkbox CP + Deteksi Mulok
- */
-function loadCpCheckboxList(selectedMapelId, selectedFase, selectedAgama) {
-    console.log(`[LOG CP] Memuat CP: Mapel=${selectedMapelId}, Fase=${selectedFase}, Agama=${selectedAgama}`); // LOG 21
-    if (!cpSelectionList || !allCpTpData) { console.warn("#cp-selection-list or CP data missing."); return; }
-    cpSelectionList.innerHTML = ''; currentSelectedCpStatuses = {}; resetFinalDescriptionAndGrade(); resetMulok();
-    if (!selectedMapelId || !selectedFase || !selectedAgama) { cpSelectionList.innerHTML = `<p style="color: #6c757d;"><i>Pilih kelas, mapel, & agama...</i></p>`; return; }
-
-    const cpTpFiltered = allCpTpData.filter(cp => cp.id_mapel === selectedMapelId && cp.fase === selectedFase && (cp.agama === selectedAgama || cp.agama === "Semua" || !cp.agama));
-    console.log(`[LOG CP] Ditemukan ${cpTpFiltered.length} CP.`); // LOG 22
-
-    if (cpTpFiltered.length === 0) { // --- MULOK ---
-        isMulokActive = true; cpSelectionList.innerHTML = `<p style="color: #6c757d;"><i>Tidak ada CP. Input manual Mulok aktif.</i></p>`;
-        if (mulokIndicator) mulokIndicator.style.display = 'inline';
-        if(finalDescriptionInput) { finalDescriptionInput.readOnly = false; finalDescriptionInput.placeholder = "Input deskripsi Mulok..."; }
-        if(nilaiAkhirInput) { nilaiAkhirInput.disabled = false; console.log("[LOG CP] Input nilai diaktifkan (Mulok)."); } // LOG 23
-        currentSelectedCpStatuses['MULOK'] = { isMulok: true };
-        if (editDeskripsiBtn) editDeskripsiBtn.style.display = 'none';
-        validateAndToggleButton();
-    } else { // --- ADA CP ---
-        isMulokActive = false; if (mulokIndicator) mulokIndicator.style.display = 'none';
-        if(finalDescriptionInput) { finalDescriptionInput.readOnly = true; finalDescriptionInput.placeholder = "Deskripsi dibuat otomatis..."; }
-        if(nilaiAkhirInput) { nilaiAkhirInput.disabled = false; console.log("[LOG CP] Input nilai diaktifkan (Ada CP)."); } // LOG 24
-        if (editDeskripsiBtn) { editDeskripsiBtn.style.display = 'block'; editDeskripsiBtn.disabled = true; }
-
-        cpTpFiltered.forEach(cp => {
-            const cpId = cp.id_cp_tp; if (!cpId) return;
-            const itemDiv = document.createElement('div'); itemDiv.classList.add('cp-item');
-            const tercapaiId = `cp_${cpId}_tercapai`; const bimbinganId = `cp_${cpId}_bimbingan`;
-            itemDiv.innerHTML = `<div class="cp-item-header">${cp.deskripsi || '[No TP Desc]'}</div> <div class="cp-item-options"> <label for="${tercapaiId}"><input type="checkbox" id="${tercapaiId}" name="cp_status_${cpId}" value="Tercapai" data-cp-id="${cpId}" data-status="Tercapai"> Tercapai</label> <label for="${bimbinganId}"><input type="checkbox" id="${bimbinganId}" name="cp_status_${cpId}" value="Perlu Bimbingan" data-cp-id="${cpId}" data-status="Perlu Bimbingan"> P. Bimbingan</label> </div>`;
-            cpSelectionList.appendChild(itemDiv);
-            const checkboxes = itemDiv.querySelectorAll(`input[name="cp_status_${cpId}"]`);
-            checkboxes.forEach(cb => { cb.addEventListener('change', (e) => handleCpCheckboxChange(e.target, cpId, checkboxes)); });
-        });
-        validateAndToggleButton();
-    }
-}
-
-/**
- * Menangani perubahan pada checkbox CP
- */
-function handleCpCheckboxChange(changedCheckbox, cpId, allCheckboxesForThisCp) {
-    console.log(`[LOG CP EVENT] Checkbox CP ${cpId} berubah: ${changedCheckbox.value} = ${changedCheckbox.checked}`); // LOG 25
-    const status = changedCheckbox.dataset.status; const isChecked = changedCheckbox.checked;
-    if (isChecked) { allCheckboxesForThisCp.forEach(cb => { if (cb !== changedCheckbox) cb.checked = false; }); currentSelectedCpStatuses[cpId] = status; }
-    else { delete currentSelectedCpStatuses[cpId]; }
-    generateFinalDescription(); // Regenerate deskripsi
-}
-
-/**
- * Membuat Deskripsi Naratif Akhir (Format Baru) + Validasi
- */
-function generateFinalDescription() { /* ... kode sama (termasuk panggil validateAndToggleButton di akhir) ... */ }
-
-/**
- * Reset deskripsi akhir, nilai, DAN validasi tombol
- */
- function resetFinalDescriptionAndGrade() {
-    console.log("[LOG RESET] Resetting form deskripsi & nilai..."); // LOG 26
-    if(finalDescriptionInput) { finalDescriptionInput.value = ''; finalDescriptionInput.readOnly = true; finalDescriptionInput.placeholder = "Deskripsi dibuat otomatis..."; }
-    if(nilaiAkhirInput) { nilaiAkhirInput.value = ''; nilaiAkhirInput.disabled = true; }
-    currentSelectedCpStatuses = {};
-    if (editDeskripsiBtn) editDeskripsiBtn.disabled = true;
-    if (simpanNilaiBtn) simpanNilaiBtn.disabled = true; // Pastikan tombol nonaktif
- }
-
-/**
- * Reset status Mulok
- */
-function resetMulok() { /* ... kode sama ... */ }
-
-/**
- * Validasi input form dan aktifkan/nonaktifkan tombol simpan
- */
-function validateAndToggleButton() {
-    if (!simpanNilaiBtn) return;
-    console.log("[LOG VALIDATE] Menjalankan validasi tombol simpan..."); // LOG 27
-
-    const id_kelas = selectKelas ? selectKelas.value : null;
-    const id_siswa = selectSiswa ? selectSiswa.value : null;
-    const id_mapel = selectMapel ? selectMapel.value : null;
-    const id_agama = selectAgama ? selectAgama.value : null;
-    const nilai_akhir = nilaiAkhirInput ? nilaiAkhirInput.value : null;
-    const deskripsi_rapor = finalDescriptionInput ? finalDescriptionInput.value : '';
-    const hasSelectedCp = Object.keys(currentSelectedCpStatuses).filter(k => k !== 'MULOK').length > 0;
-
-    let isValid = true;
-    let debugMsg = [];
-
-    // Cek field wajib dasar
-    if (!id_kelas) { isValid = false; debugMsg.push("Kelas kosong"); }
-    if (!id_siswa) { isValid = false; debugMsg.push("Siswa kosong"); }
-    if (!id_mapel) { isValid = false; debugMsg.push("Mapel kosong"); }
-    if (!id_agama) { isValid = false; debugMsg.push("Agama kosong"); }
-
-    // Cek nilai akhir (harus angka 0-100)
-    const nilaiNum = parseFloat(nilai_akhir);
-    if (nilai_akhir === null || nilai_akhir === '' || isNaN(nilaiNum) || nilaiNum < 0 || nilaiNum > 100) {
-        isValid = false; debugMsg.push("Nilai akhir tidak valid");
-    }
-
-    // Cek deskripsi (Jika Mulok, wajib diisi)
-    if (isMulokActive && !deskripsi_rapor.trim()) {
-        isValid = false; debugMsg.push("Deskripsi Mulok kosong");
-    }
-
-    console.log(`[LOG VALIDATE] Hasil: isValid=${isValid}, Sebab: ${debugMsg.join(', ') || 'OK'}`); // LOG 28
-    simpanNilaiBtn.disabled = !isValid;
-    console.log(`[LOG VALIDATE] Tombol Simpan disabled = ${simpanNilaiBtn.disabled}`); // LOG 28a
-}
-
-
-// --- Fungsi-fungsi Halaman Data Siswa ---
-function handleDownloadTemplate() { /* ... kode sama ... */ }
-function handleImportCSV(event) { /* ... kode sama ... */ }
-function parseCSV(text) { /* ... kode sama ... */ }
-function uploadSiswaData(siswaDataArray) { /* ... kode sama ... */ }
-function loadSiswaList() { /* ... kode sama ... */ }
-
-
-/**
- * Simpan Nilai & Deskripsi Akhir (handle Mulok) - Dengan Validasi & Error Handling
- */
-function handleSimpanNilai() {
-    console.log("[LOG SAVE] handleSimpanNilai dipanggil."); // LOG 29
-    // ... (kode validasi awal sama) ...
-    const id_kelas = selectKelas ? selectKelas.value : null; const id_siswa = selectSiswa ? selectSiswa.value : null; const id_mapel = selectMapel ? selectMapel.value : null; const nilai_akhir = nilaiAkhirInput ? nilaiAkhirInput.value : null; const deskripsi_rapor = finalDescriptionInput ? finalDescriptionInput.value : '';
-    if (!id_kelas || !id_siswa || !id_mapel || nilai_akhir === null || nilai_akhir === undefined) { showNotification("Kelas, Siswa, Mapel, & Nilai Akhir wajib!", "warning"); return; }
-    const nilaiNum = parseFloat(nilai_akhir); if (isNaN(nilaiNum) || nilaiNum < 0 || nilaiNum > 100) { showNotification("Nilai Akhir 0-100.", "warning"); return; }
-    if (isMulokActive && !deskripsi_rapor.trim()) { showNotification("Deskripsi Mulok wajib.", "warning"); return; }
-    const hasSelectedCp = Object.keys(currentSelectedCpStatuses).filter(k => k !== 'MULOK').length > 0;
-    if (!isMulokActive && !deskripsi_rapor.trim() && hasSelectedCp) { if (!confirm("Deskripsi rapor kosong. Yakin simpan?")) return; }
-    if (!isMulokActive && !hasSelectedCp) { if (!confirm("Tidak ada CP dipilih. Simpan nilai akhir saja?")) return; }
-
-
-    showNotification("Menyimpan...", "info"); if(simpanNilaiBtn) simpanNilaiBtn.disabled = true;
-
-    let id_cp_tp_tosend = null;
-    if (isMulokActive) { id_cp_tp_tosend = null; }
-    else if (hasSelectedCp) { id_cp_tp_tosend = 'REKAP'; }
-
-    const payload = { action: "saveNilaiCp", spreadsheetId: user.spreadsheetId, id_kelas, id_siswa, id_mapel, id_cp_tp: id_cp_tp_tosend, nilai: nilaiNum, deskripsi_tercapai: deskripsi_rapor.trim(), deskripsi_perlu_bimbingan: "" };
-    console.log("[LOG SAVE] Mengirim payload:", payload); // LOG 30
-
-    fetch(GAS_URL, { method: "POST", body: JSON.stringify(payload), headers: { "Content-Type": "text/plain;charset=utf-8" } })
-    .then(response => {
-        if (!response.ok) { return response.text().then(text => { let errMsg = `Server error (${response.status})`; try { const errData = JSON.parse(text); if (errData && errData.message) errMsg += `: ${errData.message}`; } catch(e){} throw new Error(errMsg); }); }
-        return response.json();
-    })
-    .then(data => {
-        console.log("[LOG SAVE] Respons server:", data); // LOG 31
-        if (data.success) {
-            showNotification(data.message || "Berhasil disimpan.", "success");
-            resetFinalDescriptionAndGrade();
-            if (cpSelectionList) cpSelectionList.innerHTML = '<p style="color: #6c757d;"><i>Pilih kelas, mapel, dan agama...</i></p>';
-            if (isMulokActive) resetMulok();
-            if(selectSiswa) selectSiswa.selectedIndex = 0; // Reset siswa
-            validateAndToggleButton(); // Pastikan tombol nonaktif setelah reset
+        // Tes Tombol Simpan (hanya cek elemen)
+        const simpanBtnTest = document.getElementById('simpan-nilai-btn');
+        if (simpanBtnTest) {
+            console.log("[TEST] Tombol Simpan (#simpan-nilai-btn) DITEMUKAN.");
+             simpanBtnTest.addEventListener('click', (e) => {
+                 e.preventDefault();
+                 console.log("[TEST] Tombol Simpan DIKLIK! (Test Listener)");
+                 alert("Tombol Simpan berfungsi! (Test Listener)");
+             });
+             console.log("[TEST] Listener Tombol Simpan (Test) ditambahkan.");
         } else {
-             showNotification("Gagal menyimpan: " + (data.message || "Error server."), "error"); console.error("[LOG SAVE] Server save error:", data.message);
+             console.error("[TEST] Tombol Simpan (#simpan-nilai-btn) TIDAK DITEMUKAN!");
         }
-    })
-    .catch(error => { console.error("[LOG SAVE] Save fetch/parse error:", error); showNotification(`Gagal menyimpan: ${error.message}.`, "error"); }) // LOG 32
-    .finally(() => { console.log("[LOG SAVE] Fetch selesai."); validateAndToggleButton(); }); // LOG 33
-}
 
-// Implementasi fungsi lain (generateFinalDescription, reset, mulok, data siswa)
-function generateFinalDescription() { if (!finalDescriptionInput || !allCpTpData) return; let descT = [], descB = [], isAny = false; if (isMulokActive) { finalDescriptionInput.readOnly = false; finalDescriptionInput.placeholder = "Input deskripsi Mulok..."; isAny = true; } else { for (const cpId in currentSelectedCpStatuses) { if (cpId === 'MULOK') continue; isAny = true; const st = currentSelectedCpStatuses[cpId]; const cp = allCpTpData.find(c => c.id_cp_tp === cpId); if (cp) { let dp = cp.deskripsi ? cp.deskripsi.toLowerCase().replace(/[.,;!?]$/, '') : ''; if (!dp && st === "Tercapai") dp = cp.deskripsi_tercapai ? cp.deskripsi_tercapai.toLowerCase().replace(/[.,;!?]$/, '') : ''; if (!dp && st === "Perlu Bimbingan") dp = cp.deskripsi_perlu_bimbingan ? cp.deskripsi_perlu_bimbingan.toLowerCase().replace(/[.,;!?]$/, '') : ''; if (dp) { if (st === "Tercapai") descT.push(dp); else if (st === "Perlu Bimbingan") descB.push(dp); } } } } if (!isMulokActive) { let finalD = ""; const si = selectSiswa ? selectSiswa.selectedIndex : -1; const nama = si > 0 && selectSiswa.options.length > si ? selectSiswa.options[si].text : "Ananda"; const pembT = currentPembukaTercapai || " menunj..."; const pembB = currentPembukaBimbingan || " perlu bim..."; if (descT.length > 0) finalD += nama + pembT + descT.join(', '); if (descB.length > 0) finalD += (finalD !== "" ? ", namun" : nama + " ") + pembB + descB.join(', '); if (finalD !== "") finalD += "."; finalDescriptionInput.value = finalD.trim(); } if (!isAny && !isMulokActive) { finalDescriptionInput.placeholder = "Pilih status..."; finalDescriptionInput.readOnly = true; if (editDeskripsiBtn) editDeskripsiBtn.disabled = true; } else { finalDescriptionInput.placeholder = isMulokActive ? "Input Mulok..." : "Deskripsi..."; finalDescriptionInput.readOnly = false; if (editDeskripsiBtn) editDeskripsiBtn.disabled = isMulokActive; } validateAndToggleButton(); }
-function resetMulok() { isMulokActive = false; if (mulokIndicator) mulokIndicator.style.display = 'none'; if (!isMulokActive && finalDescriptionInput) { finalDescriptionInput.readOnly = true; finalDescriptionInput.placeholder = "Deskripsi dibuat otomatis..."; } if (editDeskripsiBtn) editDeskripsiBtn.style.display = 'block'; }
-function handleDownloadTemplate() { showNotification("Membuat template...", "info"); const payload = { action: "handleSiswaActions", subAction: "getSiswaTemplate", spreadsheetId: user.spreadsheetId }; fetch(GAS_URL, { method: "POST", body: JSON.stringify(payload), headers: { "Content-Type": "text/plain;charset=utf-8" } }).then(r => r.ok ? r.json() : Promise.reject(`HTTP ${r.status}`)).then(d => { if (d.success) { hideNotification(); const b = new Blob([d.template],{type:'text/csv;charset=utf-8;'}); const l = document.createElement("a"); const u = URL.createObjectURL(b); l.setAttribute("href", u); l.setAttribute("download", "template_siswa.csv"); l.style.visibility='hidden'; document.body.appendChild(l); l.click(); document.body.removeChild(l); URL.revokeObjectURL(u); } else { showNotification("Gagal: " + (d.message||"Error"), "error"); } }).catch(e => { hideNotification(); console.error("DL template err:", e); showNotification("Jaringan error.", "error"); }); }
-function handleImportCSV(event) { const file = event.target.files[0]; if (!file) return; showNotification("Membaca CSV...", "info"); const reader = new FileReader(); reader.onload = (e) => { try { const text = e.target.result; const data = parseCSV(text); if (!data || data.length === 0) { showNotification("CSV kosong/format salah.", "warning"); return; } uploadSiswaData(data); } catch (err) { console.error("CSV Parse err:", err); showNotification("Gagal baca CSV: " + err.message, "error"); } }; reader.onerror = () => { console.error("FileReader err:", reader.error); showNotification("Gagal baca file.", "error"); }; reader.readAsText(file); event.target.value = null; }
-function parseCSV(text) { const lines = text.split(/[\r\n]+/).filter(l => l.trim() !== ''); if (lines.length < 2) return []; const parseLine = (line) => { const v = []; let c = ''; let q = false; for (let i = 0; i < line.length; i++) { const char = line[i]; if (char === '"') { if (q && line[i + 1] === '"') { c += '"'; i++; } else { q = !q; } } else if (char === ',' && !q) { v.push(c.trim()); c = ''; } else { c += char; } } v.push(c.trim()); return v; }; const headers = parseLine(lines[0]).map(h => h.toLowerCase()); const data = []; const expected = ["nisn", "nis", "nama_siswa", "tempat_lahir", "tanggal_lahir", "jenis_kelamin", "agama", "kelas", "fase", "tahun_ajaran_masuk", "nama_ayah", "pekerjaan_ayah", "nama_ibu", "pekerjaan_ibu", "alamat_siswa", "asal_sekolah", "nama_wali", "alamat_orang_tua"]; let headerMap = {}; let missing = []; expected.forEach(eh => { const i = headers.indexOf(eh); if (i === -1) missing.push(eh); else headerMap[eh] = i; }); if (missing.length > 0) console.warn("CSV headers missing:", missing); for (let i = 1; i < lines.length; i++) { const values = parseLine(lines[i]); if (values.length >= headers.length) { let obj = {}; expected.forEach(eh => { const index = headerMap[eh]; obj[eh] = (index !== undefined && index < values.length) ? values[index] : null; }); if (obj.nama_siswa || obj.nisn || obj.nis) data.push(obj); } else console.warn(`Skip line ${i+1}`); } return data; }
-function uploadSiswaData(siswaDataArray) { showNotification(`Mengimpor ${siswaDataArray.length} siswa...`, "info"); const payload = { action: "handleSiswaActions", subAction: "importSiswa", spreadsheetId: user.spreadsheetId, data: siswaDataArray }; fetch(GAS_URL, { method: "POST", body: JSON.stringify(payload), headers: { "Content-Type": "text/plain;charset=utf-8" } }).then(r => r.ok ? r.json() : Promise.reject(`HTTP ${r.status}`)).then(d => { if (d.success) { showNotification(d.message, "success"); loadInitialData(); } else { showNotification("Gagal impor: " + (d.message || "Error"), "error"); } }).catch(e => { console.error("Import error:", e); showNotification("Jaringan error.", "error"); }); }
-function loadSiswaList() { if (!siswaTableBody) { console.warn("#siswa-table-body missing."); return; } if (toggleSiswaListBtn) toggleSiswaListBtn.style.display = 'none'; if (siswaTableContainer) siswaTableContainer.classList.remove('is-expanded'); if (toggleSiswaListBtn) toggleSiswaListBtn.innerText = 'Tampilkan Semua Siswa'; if (allSiswaData && allSiswaData.length > 0) { siswaTableBody.innerHTML = ''; allSiswaData.forEach(siswa => { const tr = document.createElement('tr'); let tglLahir = 'N/A'; if (siswa.tanggal_lahir) { try { const d = new Date(siswa.tanggal_lahir); if (!isNaN(d.getTime())) tglLahir = d.toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' }); else tglLahir = siswa.tanggal_lahir; } catch(e){ tglLahir = siswa.tanggal_lahir; } } tr.innerHTML = `<td>${siswa.nisn||'N/A'}</td><td>${siswa.nama_siswa||'N/A'}</td><td>${siswa.kelas||'N/A'}</td><td>${tglLahir}</td><td><a href="#" class="edit-btn" data-siswa-id="${siswa.id_siswa||''}">Edit</a></td>`; siswaTableBody.appendChild(tr); }); if (allSiswaData.length > 3 && toggleSiswaListBtn) { toggleSiswaListBtn.style.display = 'block'; } } else { siswaTableBody.innerHTML = `<tr><td colspan="5" style="text-align: center;">Belum ada data siswa.</td></tr>`; } }
+
+    } catch (error) {
+        console.error("[TEST] Error di dalam DOMContentLoaded:", error);
+        alert("Terjadi error saat inisialisasi: " + error.message);
+    }
+
+    console.log("[TEST] Akhir event DOMContentLoaded.");
+});
+
+console.log("[TEST] Akhir file dashboard.js.");
