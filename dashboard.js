@@ -363,4 +363,234 @@ function handleAgamaChange(e) {
   resetMulok();
 }
 
+// ===========================================================
+// === BAGIAN 3 : DAFTAR CP/TP, DESKRIPSI OTOMATIS & VALIDASI ===
+// ===========================================================
+
+/**
+ * Membuat daftar checkbox CP berdasarkan mapel/fase/agama
+ */
+function loadCpCheckboxList(selectedMapelId, selectedFase, selectedAgama) {
+  if (!cpSelectionList || !allCpTpData) {
+    console.warn("#cp-selection-list or CP data missing.");
+    return;
+  }
+
+  cpSelectionList.innerHTML = '';
+  currentSelectedCpStatuses = {};
+  resetFinalDescriptionAndGrade();
+  resetMulok();
+
+  if (!selectedMapelId || !selectedFase || !selectedAgama) {
+    cpSelectionList.innerHTML = `<p style="color: #6c757d;"><i>Pilih kelas, mapel, & agama...</i></p>`;
+    return;
+  }
+
+  const cpTpFiltered = allCpTpData.filter(cp =>
+    cp.id_mapel === selectedMapelId &&
+    cp.fase === selectedFase &&
+    (cp.agama === selectedAgama || cp.agama === "Semua" || !cp.agama)
+  );
+
+  if (cpTpFiltered.length === 0) {
+    // === MODE MULOK ===
+    isMulokActive = true;
+    cpSelectionList.innerHTML = `<p style="color: #6c757d;"><i>Tidak ada CP. Input manual Mulok aktif.</i></p>`;
+    if (mulokIndicator) mulokIndicator.style.display = 'inline';
+    if (finalDescriptionInput) {
+      finalDescriptionInput.readOnly = false;
+      finalDescriptionInput.placeholder = "Input deskripsi Mulok...";
+    }
+    if (nilaiAkhirInput) nilaiAkhirInput.disabled = false;
+    currentSelectedCpStatuses['MULOK'] = { isMulok: true };
+    if (editDeskripsiBtn) editDeskripsiBtn.style.display = 'none';
+    validateAndToggleButton();
+  } else {
+    // === MODE CP NORMAL ===
+    isMulokActive = false;
+    if (mulokIndicator) mulokIndicator.style.display = 'none';
+    if (finalDescriptionInput) {
+      finalDescriptionInput.readOnly = true;
+      finalDescriptionInput.placeholder = "Deskripsi dibuat otomatis...";
+    }
+    if (nilaiAkhirInput) nilaiAkhirInput.disabled = false;
+    if (editDeskripsiBtn) {
+      editDeskripsiBtn.style.display = 'block';
+      editDeskripsiBtn.disabled = true;
+    }
+
+    cpTpFiltered.forEach(cp => {
+      const cpId = cp.id_cp_tp;
+      if (!cpId) return;
+
+      const itemDiv = document.createElement('div');
+      itemDiv.classList.add('cp-item');
+      const tercapaiId = `cp_${cpId}_tercapai`;
+      const bimbinganId = `cp_${cpId}_bimbingan`;
+      itemDiv.innerHTML = `
+        <div class="cp-item-header">${cp.deskripsi || '[No TP Desc]'}</div>
+        <div class="cp-item-options">
+          <label for="${tercapaiId}">
+            <input type="checkbox" id="${tercapaiId}" name="cp_status_${cpId}" value="Tercapai" data-cp-id="${cpId}" data-status="Tercapai"> Tercapai
+          </label>
+          <label for="${bimbinganId}">
+            <input type="checkbox" id="${bimbinganId}" name="cp_status_${cpId}" value="Perlu Bimbingan" data-cp-id="${cpId}" data-status="Perlu Bimbingan"> P. Bimbingan
+          </label>
+        </div>
+      `;
+      cpSelectionList.appendChild(itemDiv);
+
+      const checkboxes = itemDiv.querySelectorAll(`input[name="cp_status_${cpId}"]`);
+      checkboxes.forEach(cb => {
+        cb.addEventListener('change', e => handleCpCheckboxChange(e.target, cpId, checkboxes));
+      });
+    });
+
+    validateAndToggleButton();
+  }
+}
+
+/**
+ * Menangani perubahan checkbox CP
+ */
+function handleCpCheckboxChange(changedCheckbox, cpId, allCheckboxesForThisCp) {
+  const status = changedCheckbox.dataset.status;
+  const isChecked = changedCheckbox.checked;
+
+  if (isChecked) {
+    allCheckboxesForThisCp.forEach(cb => {
+      if (cb !== changedCheckbox) cb.checked = false;
+    });
+    currentSelectedCpStatuses[cpId] = status;
+  } else {
+    delete currentSelectedCpStatuses[cpId];
+  }
+
+  generateFinalDescription();
+}
+
+/**
+ * Membuat deskripsi otomatis dari CP terpilih
+ */
+function generateFinalDescription() {
+  if (!finalDescriptionInput || !allCpTpData) return;
+
+  let deskripsiTercapaiList = [];
+  let deskripsiBimbinganList = [];
+  let isAnyCpSelected = false;
+
+  if (isMulokActive) {
+    finalDescriptionInput.readOnly = false;
+    finalDescriptionInput.placeholder = "Input deskripsi Mulok...";
+    isAnyCpSelected = true;
+  } else {
+    for (const cpId in currentSelectedCpStatuses) {
+      if (cpId === 'MULOK') continue;
+      isAnyCpSelected = true;
+      const status = currentSelectedCpStatuses[cpId];
+      const cpData = allCpTpData.find(cp => cp.id_cp_tp === cpId);
+      if (cpData) {
+        let descPart = cpData.deskripsi ? cpData.deskripsi.toLowerCase().replace(/[.,;!?]$/, '') : '';
+        if (!descPart && status === "Tercapai")
+          descPart = cpData.deskripsi_tercapai ? cpData.deskripsi_tercapai.toLowerCase().replace(/[.,;!?]$/, '') : '';
+        if (!descPart && status === "Perlu Bimbingan")
+          descPart = cpData.deskripsi_perlu_bimbingan ? cpData.deskripsi_perlu_bimbingan.toLowerCase().replace(/[.,;!?]$/, '') : '';
+
+        if (descPart) {
+          if (status === "Tercapai") deskripsiTercapaiList.push(descPart);
+          else if (status === "Perlu Bimbingan") deskripsiBimbinganList.push(descPart);
+        }
+      }
+    }
+  }
+
+  if (!isMulokActive) {
+    let finalDesc = "";
+    const siswaSelectedIndex = selectSiswa ? selectSiswa.selectedIndex : -1;
+    const namaSiswa = siswaSelectedIndex > 0 && selectSiswa.options.length > siswaSelectedIndex
+      ? selectSiswa.options[siswaSelectedIndex].text
+      : "";
+    const pembukaTercapai = currentPembukaTercapai || " menunjukkan penguasaan yang baik dalam ";
+    const pembukaBimbingan = currentPembukaBimbingan || " perlu bimbingan dalam ";
+    const prefixNama = namaSiswa ? `Ananda ${namaSiswa}` : "Ananda";
+
+    if (deskripsiTercapaiList.length > 0)
+      finalDesc += prefixNama + pembukaTercapai + deskripsiTercapaiList.join(', ');
+    if (deskripsiBimbinganList.length > 0)
+      finalDesc += (finalDesc !== "" ? ", namun" : prefixNama + " ") + pembukaBimbingan + deskripsiBimbinganList.join(', ');
+    if (finalDesc !== "") finalDesc += ".";
+    finalDescriptionInput.value = finalDesc.trim();
+  }
+
+  if (!isAnyCpSelected && !isMulokActive) {
+    finalDescriptionInput.placeholder = "Pilih status capaian...";
+    finalDescriptionInput.readOnly = true;
+    if (editDeskripsiBtn) editDeskripsiBtn.disabled = true;
+  } else {
+    finalDescriptionInput.placeholder = isMulokActive ? "Input Mulok..." : "Deskripsi rapor...";
+    finalDescriptionInput.readOnly = false;
+    if (editDeskripsiBtn) editDeskripsiBtn.disabled = isMulokActive;
+  }
+
+  // Tambahan fix agar deskripsi bisa diketik manual setelah CP dipilih
+  if (finalDescriptionInput && !isMulokActive) finalDescriptionInput.readOnly = false;
+
+  validateAndToggleButton();
+}
+
+/**
+ * Reset deskripsi dan nilai akhir
+ */
+function resetFinalDescriptionAndGrade() {
+  if (finalDescriptionInput) {
+    finalDescriptionInput.value = '';
+    finalDescriptionInput.readOnly = true;
+    finalDescriptionInput.placeholder = "Deskripsi dibuat otomatis...";
+  }
+  if (nilaiAkhirInput) {
+    nilaiAkhirInput.value = '';
+    nilaiAkhirInput.disabled = true;
+  }
+  currentSelectedCpStatuses = {};
+  if (editDeskripsiBtn) editDeskripsiBtn.disabled = true;
+  if (simpanNilaiBtn) simpanNilaiBtn.disabled = true;
+}
+
+/**
+ * Reset status Mulok
+ */
+function resetMulok() {
+  isMulokActive = false;
+  if (mulokIndicator) mulokIndicator.style.display = 'none';
+  if (!isMulokActive && finalDescriptionInput) {
+    finalDescriptionInput.readOnly = true;
+    finalDescriptionInput.placeholder = "Deskripsi dibuat otomatis...";
+  }
+  if (editDeskripsiBtn) editDeskripsiBtn.style.display = 'block';
+}
+
+/**
+ * Validasi form input nilai dan aktifkan/nonaktifkan tombol simpan
+ */
+function validateAndToggleButton() {
+  if (!simpanNilaiBtn) return;
+
+  const id_kelas = selectKelas ? selectKelas.value : null;
+  const id_siswa = selectSiswa ? selectSiswa.value : null;
+  const id_mapel = selectMapel ? selectMapel.value : null;
+  const id_agama = selectAgama ? selectAgama.value : null;
+  const nilai_akhir = nilaiAkhirInput ? nilaiAkhirInput.value : null;
+  const deskripsi_rapor = finalDescriptionInput ? finalDescriptionInput.value : '';
+
+  let isValid = true;
+
+  if (!id_kelas || !id_siswa || !id_mapel || !id_agama) isValid = false;
+  const nilaiNum = parseFloat(nilai_akhir);
+  if (nilai_akhir === null || nilai_akhir === '' || isNaN(nilaiNum) || nilaiNum < 0 || nilaiNum > 100)
+    isValid = false;
+  if (isMulokActive && !deskripsi_rapor.trim()) isValid = false;
+
+  simpanNilaiBtn.disabled = !isValid;
+}
+
 
