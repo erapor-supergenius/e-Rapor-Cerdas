@@ -162,3 +162,205 @@ document.addEventListener("DOMContentLoaded", () => {
     showNotification("Gagal memuat dashboard.", "error");
   }
 });
+
+// ===========================================================
+// === BAGIAN 2 : LOAD DATA AWAL, DROPDOWN, DAN KALIMAT PEMBUKA ===
+// ===========================================================
+
+/**
+ * Memuat data awal dari server GAS (profil sekolah, kelas, mapel, CP/TP, frasa)
+ */
+function loadInitialData() {
+  showNotification("Memuat data awal sekolah...", "info");
+  const payload = { action: "getInitialData", spreadsheetId: user.spreadsheetId };
+  if (!user.spreadsheetId) {
+    console.error("Gagal load: spreadsheetId kosong!");
+    showNotification("Gagal: ID Sekolah kosong.", "error");
+    return;
+  }
+
+  fetch(GAS_URL, {
+    method: "POST",
+    body: JSON.stringify(payload),
+    headers: { "Content-Type": "text/plain;charset=utf-8" }
+  })
+    .then(response => {
+      if (!response.ok) throw new Error(`Server status ${response.status}`);
+      return response.json();
+    })
+    .then(data => {
+      hideNotification();
+      if (data.success) {
+        console.log("Data awal sekolah berhasil dimuat.");
+
+        const sidebarSchoolName = document.getElementById('sidebar-school-name');
+        if (sidebarSchoolName)
+          sidebarSchoolName.innerText = data.profil.nama_sekolah || "[Nama Sekolah]";
+
+        allKelasData = data.kelas || [];
+        allSiswaData = data.siswa || [];
+        allCpTpData = data.cptp || [];
+        allAgamaData = data.agama || [];
+        allFrasaTercapai = data.frasaTercapai || [];
+        allFrasaBimbingan = data.frasaBimbingan || [];
+
+        loadKelasDropdown(allKelasData);
+        loadMapelDropdown(data.mapel);
+        loadAgamaDropdown(allAgamaData);
+
+        loadPembukaOptions(selectPembukaTercapai, allFrasaTercapai);
+        loadPembukaOptions(selectPembukaBimbingan, allFrasaBimbingan);
+
+        const activePage = document.querySelector('.content-page.active');
+        if (activePage && activePage.id === 'page-data-siswa') {
+          loadSiswaList();
+        }
+
+        if (selectKelas && allKelasData.length > 0) selectKelas.disabled = false;
+        if (selectMapel && data.mapel && data.mapel.length > 0) selectMapel.disabled = false;
+
+      } else {
+        console.error("Gagal memuat data awal:", data.message);
+        showNotification("Gagal memuat data awal: " + (data.message || "Error"), "error");
+      }
+    })
+    .catch(error => {
+      hideNotification();
+      console.error("Fetch error:", error);
+      showNotification(`Jaringan error: ${error.message}.`, "error");
+    });
+}
+
+/**
+ * Memuat opsi dropdown kalimat pembuka (frasa otomatis)
+ */
+function loadPembukaOptions(selectElement, optionsArray) {
+  if (!selectElement) return;
+  const customOption = selectElement.querySelector('option[value="custom"]');
+  selectElement.innerHTML = '';
+  if (optionsArray && optionsArray.length > 0) {
+    optionsArray.forEach((frasa, index) => {
+      const trimmed = frasa.trim();
+      const option = new Option(trimmed, ` ${trimmed} `);
+      selectElement.add(option);
+      if (index === 0) option.selected = true;
+    });
+  } else {
+    selectElement.add(new Option("-- Tidak ada pilihan --", ""));
+  }
+  if (customOption)
+    selectElement.add(customOption);
+  else
+    selectElement.add(new Option("-- Tulis Manual --", "custom"));
+}
+
+/**
+ * Mengisi dropdown kelas
+ */
+function loadKelasDropdown(kelasArray) {
+  if (!selectKelas) return;
+  selectKelas.innerHTML = '';
+  selectKelas.add(new Option("Pilih Kelas...", ""));
+  if (kelasArray && kelasArray.length > 0) {
+    kelasArray.forEach(kelas => {
+      const displayText = `${kelas.nama_kelas} (Fase ${kelas.fase || '?'})`;
+      selectKelas.add(new Option(displayText, kelas.id_kelas));
+    });
+    selectKelas.disabled = false;
+  } else {
+    selectKelas.add(new Option("Belum ada data kelas", ""));
+    selectKelas.disabled = true;
+  }
+}
+
+/**
+ * Mengisi dropdown siswa sesuai kelas terpilih
+ */
+function loadSiswaDropdown(selectedKelasId) {
+  if (!selectSiswa) return;
+  selectSiswa.innerHTML = '';
+  selectSiswa.disabled = true;
+  if (!selectedKelasId) {
+    selectSiswa.add(new Option("Pilih kelas dahulu...", ""));
+    return;
+  }
+  const siswaDiKelas = allSiswaData.filter(s => s.id_kelas === selectedKelasId);
+  if (siswaDiKelas.length > 0) {
+    selectSiswa.add(new Option(`Pilih Siswa (${siswaDiKelas.length} siswa)...`, ""));
+    siswaDiKelas.forEach(s => {
+      selectSiswa.add(new Option(s.nama_siswa, s.id_siswa));
+    });
+    selectSiswa.disabled = false;
+  } else {
+    selectSiswa.add(new Option("Tidak ada siswa di kelas ini", ""));
+  }
+}
+
+/**
+ * Mengisi dropdown mapel
+ */
+function loadMapelDropdown(mapelArray) {
+  if (!selectMapel) return;
+  selectMapel.innerHTML = '';
+  selectMapel.add(new Option("Pilih Mata Pelajaran...", ""));
+  if (mapelArray && mapelArray.length > 0) {
+    mapelArray.forEach(mapel => {
+      selectMapel.add(new Option(mapel.nama_mapel, mapel.id_mapel));
+    });
+    selectMapel.disabled = false;
+  } else {
+    selectMapel.add(new Option("Belum ada data mapel", ""));
+    selectMapel.disabled = true;
+  }
+}
+
+/**
+ * Mengisi dropdown agama
+ */
+function loadAgamaDropdown(agamaArray) {
+  if (!selectAgama) return;
+  selectAgama.innerHTML = '';
+  selectAgama.add(new Option("Pilih Agama...", ""));
+  let hasAgama = false;
+  if (agamaArray && agamaArray.length > 0) {
+    selectAgama.add(new Option("Semua (Umum)", "Semua"));
+    agamaArray.forEach(ag => {
+      if (ag && ag.toLowerCase() !== 'semua') {
+        selectAgama.add(new Option(ag, ag));
+        hasAgama = true;
+      }
+    });
+  }
+  if (!hasAgama) {
+    selectAgama.add(new Option("Tidak ada data agama", ""));
+    selectAgama.disabled = true;
+  } else {
+    selectAgama.disabled = !selectMapel || !selectMapel.value;
+  }
+}
+
+// === Event handler perubahan dropdown utama ===
+function handleKelasChange(e) {
+  const selectedId = e.target.value;
+  const selectedKelas = allKelasData.find(k => k.id_kelas === selectedId);
+  currentFase = selectedKelas ? selectedKelas.fase : null;
+  loadSiswaDropdown(selectedId);
+  loadCpCheckboxList(selectMapel ? selectMapel.value : null, currentFase, selectAgama ? selectAgama.value : null);
+  resetFinalDescriptionAndGrade();
+  resetMulok();
+}
+function handleMapelChange(e) {
+  const mapelId = e.target.value;
+  loadAgamaDropdown(allAgamaData);
+  if (selectAgama) selectAgama.disabled = !mapelId;
+  loadCpCheckboxList(mapelId, currentFase, selectAgama ? selectAgama.value : null);
+  resetFinalDescriptionAndGrade();
+  resetMulok();
+}
+function handleAgamaChange(e) {
+  loadCpCheckboxList(selectMapel ? selectMapel.value : null, currentFase, e.target.value);
+  resetFinalDescriptionAndGrade();
+  resetMulok();
+}
+
+
