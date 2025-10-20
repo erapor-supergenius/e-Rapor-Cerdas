@@ -1,7 +1,7 @@
 /* === e-Rapor Cerdas - Dashboard Script (Final V3.1 + Fix Input Nilai & Deskripsi Aktif) === */
 
 // !!! PENTING !!! PASTIKAN INI ADALAH URL DARI "DATABASE ADMIN v2" ANDA !!!
-const GAS_URL = "https://script.google.com/macros/s/AKfycby-empDcPt5BndGZnjLNyTKt9wbMIP3iRtvoQELdWWoOvZnu2om_Uoh9Zsj5I0Wdq7ZLw/exec"; // <-- GANTI JIKA URL ANDA BERBEDA
+const GAS_URL = "https://script.google.com/macros/s/AKfycbw1Jc7JXssFYq_KMQ6Up34zBGm4XYyOEEORsCeJI7DwJfG-xj3mGY930FbU5a5c5ZCJew/exec"; // <-- GANTI JIKA URL ANDA BERBEDA
 
 // --- Variabel Global ---
 let user = {};
