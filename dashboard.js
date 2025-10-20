@@ -594,6 +594,44 @@ function validateAndToggleButton() {
 }
 
 // ===========================================================
+// === FIX TAMBAHAN : HANDLER PEMBUKA DESKRIPSI ===
+// ===========================================================
+
+function handlePembukaTercapaiChange(e) {
+  const val = e.target.value;
+  if (val === 'custom') {
+    inputCustomTercapai.style.display = 'block';
+    currentPembukaTercapai = inputCustomTercapai.value.trim();
+  } else {
+    inputCustomTercapai.style.display = 'none';
+    currentPembukaTercapai = val;
+  }
+  generateFinalDescription();
+}
+
+function handleCustomTercapaiInput(e) {
+  currentPembukaTercapai = e.target.value.trim();
+  generateFinalDescription();
+}
+
+function handlePembukaBimbinganChange(e) {
+  const val = e.target.value;
+  if (val === 'custom') {
+    inputCustomBimbingan.style.display = 'block';
+    currentPembukaBimbingan = inputCustomBimbingan.value.trim();
+  } else {
+    inputCustomBimbingan.style.display = 'none';
+    currentPembukaBimbingan = val;
+  }
+  generateFinalDescription();
+}
+
+function handleCustomBimbinganInput(e) {
+  currentPembukaBimbingan = e.target.value.trim();
+  generateFinalDescription();
+}
+
+// ===========================================================
 // === BAGIAN 4 : SIMPAN NILAI, IMPORT/EXPORT CSV, DATA SISWA ===
 // ===========================================================
 
