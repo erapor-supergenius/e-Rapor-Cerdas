@@ -1,4 +1,4 @@
-/* === e-Rapor Cerdas - Dashboard Script (Final V3.1 + Fix Input/Simpan + Final Logging) === */
+/* === e-Rapor Cerdas - Dashboard Script (Final V3.1 + Fix Input/Simpan + Final Logging V2) === */
 
 // !!! PENTING !!! PASTIKAN INI ADALAH URL DARI "DATABASE ADMIN v2" ANDA !!!
 const GAS_URL = "https://script.google.com/macros/s/AKfycbw1Jc7JXssFYq_KMQ6Up34zBGm4XYyOEEORsCeJI7DwJfG-xj3mGY930FbU5a5c5ZCJew/exec"; // <-- GANTI JIKA URL ANDA BERBEDA
@@ -183,7 +183,7 @@ function loadMapelDropdown(mapelArray) { if (!selectMapel) return; selectMapel.i
 function loadAgamaDropdown(agamaArray) { if (!selectAgama) return; selectAgama.innerHTML = ''; selectAgama.add(new Option("Pilih Agama...", "")); let hasAgama = false; if (agamaArray && agamaArray.length > 0) { selectAgama.add(new Option("Semua (Umum)", "Semua")); hasAgama = true; agamaArray.forEach(agama => { if (agama && agama.toLowerCase() !== 'semua') { selectAgama.add(new Option(agama, agama)); hasAgama = true; } }); } if (!hasAgama) { selectAgama.add(new Option("Tidak ada data agama", "")); selectAgama.disabled = true; } else { selectAgama.disabled = !selectMapel || !selectMapel.value; } }
 
 /**
- * Membuat daftar Checkbox CP + Deteksi Mulok (MEMASTIKAN INPUT NILAI AKTIF)
+ * Membuat daftar Checkbox CP + Deteksi Mulok (MEMASTIKAN INPUT NILAI AKTIF V2)
  */
 function loadCpCheckboxList(selectedMapelId, selectedFase, selectedAgama) {
     if (!cpSelectionList || !allCpTpData) { console.warn("#cp-selection-list or CP data missing."); return; }
@@ -213,20 +213,25 @@ function loadCpCheckboxList(selectedMapelId, selectedFase, selectedAgama) {
         });
     }
 
-    // --- PAKSA AKTIVASI INPUT NILAI DI AKHIR ---
+    // --- PERBAIKAN DI SINI ---
     console.log("[LOG AKTIVASI FINAL] Mencoba mengaktifkan #nilai-akhir-input...");
     if (nilaiAkhirInput) {
-        nilaiAkhirInput.disabled = false; // Paksa aktifkan
-        console.log(`[LOG AKTIVASI FINAL] Status #nilai-akhir-input disabled SEKARANG: ${nilaiAkhirInput.disabled}`);
-        if (nilaiAkhirInput.disabled) {
-             console.error("[LOG AKTIVASI FINAL] GAGAL mengaktifkan input nilai meskipun sudah dipaksa!");
-        } else {
+        // Gunakan kedua metode untuk memastikan
+        nilaiAkhirInput.disabled = false; // Metode 1: Set Properti
+        nilaiAkhirInput.removeAttribute('disabled'); // Metode 2: Hapus Atribut
+        
+        console.log(`[LOG AKTIVASI FINAL] Status #nilai-akhir-input disabled SEKARANG (dicek via properti): ${nilaiAkhirInput.disabled}`);
+        console.log(`[LOG AKTIVASI FINAL] Apakah atribut 'disabled' masih ada? (dicek via atribut): ${nilaiAkhirInput.hasAttribute('disabled')}`);
+        
+        if (nilaiAkhirInput.disabled === false && !nilaiAkhirInput.hasAttribute('disabled')) {
              console.log("[LOG AKTIVASI FINAL] Input nilai BERHASIL diaktifkan.");
+        } else {
+             console.error("[LOG AKTIVASI FINAL] GAGAL mengaktifkan input nilai! Properti/Atribut masih ada.");
         }
     } else {
         console.error("[LOG AKTIVASI FINAL] Elemen #nilai-akhir-input TIDAK DITEMUKAN saat akan diaktifkan!");
     }
-    // --- AKHIR PAKSA AKTIVASI ---
+    // --- AKHIR PERBAIKAN ---
 
     validateAndToggleButton(); // Panggil validasi setelah mencoba aktivasi
 }
@@ -248,7 +253,7 @@ function generateFinalDescription() {
     if (!finalDescriptionInput || !allCpTpData) return;
     let descT = [], descB = [], isAny = false;
     if (isMulokActive) { finalDescriptionInput.readOnly = false; finalDescriptionInput.placeholder = "Input deskripsi Mulok..."; isAny = true; }
-    else { for (const cpId in currentSelectedCpStatuses) { if (cpId === 'MULOK') continue; isAny = true; const st = currentSelectedCpStatuses[cpId]; const cp = allCpTpData.find(c => c.id_cp_tp === cpId); if (cp) { let dp = cp.deskripsi ? cp.deskripsi.toLowerCase().replace(/[.,;!?]$/, '') : ''; if (!dp && st === "Tercapai") dp = cp.deskripsi_tercapai ? cp.deskripsi_tercapai.toLowerCase().replace(/[.,;!?]$/, '') : ''; if (!dp && st === "Perlu Bimbingan") dp = cp.deskripsi_perlu_bimbingan ? cp.deskripsi_perlu_bimbingan.toLowerCase().replace(/[.,;!?]$/, '') : ''; if (dp) { if (st === "Tercapai") descT.push(dp); else if (st === "Perlu Bimbingan") descB.push(dp); } } } }
+    else { for (const cpId in currentSelectedCpStatuses) { if (cpId === 'MULOK') continue; isAny = true; const st = currentSelectedCpStatuses[cpId]; const cp = allCpTpData.find(c => c.id_cp_tp === cpId); if (cp) { let dp = cp.deskripsi ? cp.deskripsi.toLowerCase().replace(/[.,;!?]$/, '') : ''; if (!dp && st === "Tercapai") dp = cp.deskripsi_tercapai ? cp.deskisipsi_tercapai.toLowerCase().replace(/[.,;!?]$/, '') : ''; if (!dp && st === "Perlu Bimbingan") dp = cp.deskripsi_perlu_bimbingan ? cp.deskripsi_perlu_bimbingan.toLowerCase().replace(/[.,;!?]$/, '') : ''; if (dp) { if (st === "Tercapai") descT.push(dp); else if (st === "Perlu Bimbingan") descB.push(dp); } } } }
     if (!isMulokActive) {
         let finalD = ""; const si = selectSiswa ? selectSiswa.selectedIndex : -1; const nama = si > 0 && selectSiswa.options.length > si ? selectSiswa.options[si].text : ""; const pembT = currentPembukaTercapai || " menunj..."; const pembB = currentPembukaBimbingan || " perlu bim..."; const prefix = nama ? `Ananda ${nama}` : "Ananda";
         if (descT.length > 0) finalD += prefix + pembT + descT.join(', ');
@@ -274,7 +279,7 @@ function generateFinalDescription() {
 /**
  * Reset status Mulok
  */
-function resetMulok() { isMulokActive = false; if (mulokIndicator) mulokIndicator.style.display = 'none'; if (!isMulokActive && finalDescriptionInput) { finalDescriptionInput.readOnly = true; finalDescriptionInput.placeholder = "Deskripsi dibuat otomatis..."; } if (editDeskripsiBtn) editDeskripsiBtn.style.display = 'block'; }
+function resetMulok() { isMulokActive = false; if (mulokIndicator) mulokIndicator.style.display = 'none'; if (!isMulokActive && finalDescriptionInput) { finalDescriptionInput.readOnly = true; finalDescriptionInput.placeholder = "Deskripsi dibuat otomatis..."; } if (editDeskiriBtn) editDeskripsiBtn.style.display = 'block'; }
 
 /**
  * Validasi input form dan aktifkan/nonaktifkan tombol simpan (Log Super Detail)
