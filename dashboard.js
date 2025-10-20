@@ -1,7 +1,7 @@
-/* === e-Rapor Cerdas - Dashboard Script (Final V3.1 + Fix Input Nilai & Deskripsi Aktif) === */
+/* === e-Rapor Cerdas - Dashboard Script (Final V3.1 + Fix Input/Simpan + Final Logging) === */
 
 // !!! PENTING !!! PASTIKAN INI ADALAH URL DARI "DATABASE ADMIN v2" ANDA !!!
-const GAS_URL = "https://script.google.com/macros/s/AKfycbw1Jc7JXssFYq_KMQ6Up34zBGm4XYyOEEORsCeJI7DwJfG-xj3mGY930FbU5a5c5ZCJew/exec"; // <-- GANTI JIKA URL ANDA BERBEDA
+const GAS_URL = "https://script.google.com/macros/s/AKfycby-empDcPt5BndGZnjLNyTKt9wbMIP3iRtvoQELdWWoOvZnu2om_Uoh9Zsj5I0Wdq7ZLw/exec"; // <-- GANTI JIKA URL ANDA BERBEDA
 
 // --- Variabel Global ---
 let user = {};
@@ -41,11 +41,12 @@ const siswaTableContainer = document.querySelector('.data-table-container');
 
 // --- Notifikasi ---
 function showNotification(message, type = 'info') { if (!notificationToast || !notificationMessage) return; notificationMessage.innerText = message; notificationToast.className = 'notification-toast'; notificationToast.classList.add(type); notificationToast.style.display = 'flex'; if (notificationToast.timer) clearTimeout(notificationToast.timer); notificationToast.timer = setTimeout(() => { hideNotification(); }, 5000); }
-function hideNotification() { if (!notificationToast) return; notificationToast.style.display = 'none'; if (notificationToast.timer) clearTimeout(notificationToast.timer); notificationToast.timer = null; } // Ditambahkan reset timer
+function hideNotification() { if (!notificationToast) return; notificationToast.style.display = 'none'; if (notificationToast.timer) clearTimeout(notificationToast.timer); notificationToast.timer = null; }
 if (notificationClose) notificationClose.addEventListener('click', hideNotification);
 
 // --- Saat DOM Siap ---
 document.addEventListener("DOMContentLoaded", () => {
+    console.log("DOM siap.");
     try {
         // 1. Otentikasi
         user.name = localStorage.getItem('userName');
@@ -182,109 +183,52 @@ function loadMapelDropdown(mapelArray) { if (!selectMapel) return; selectMapel.i
 function loadAgamaDropdown(agamaArray) { if (!selectAgama) return; selectAgama.innerHTML = ''; selectAgama.add(new Option("Pilih Agama...", "")); let hasAgama = false; if (agamaArray && agamaArray.length > 0) { selectAgama.add(new Option("Semua (Umum)", "Semua")); hasAgama = true; agamaArray.forEach(agama => { if (agama && agama.toLowerCase() !== 'semua') { selectAgama.add(new Option(agama, agama)); hasAgama = true; } }); } if (!hasAgama) { selectAgama.add(new Option("Tidak ada data agama", "")); selectAgama.disabled = true; } else { selectAgama.disabled = !selectMapel || !selectMapel.value; } }
 
 /**
- * Membuat daftar Checkbox CP + Deteksi Mulok (Log Aktivasi Lebih Jelas)
+ * Membuat daftar Checkbox CP + Deteksi Mulok (MEMASTIKAN INPUT NILAI AKTIF)
  */
 function loadCpCheckboxList(selectedMapelId, selectedFase, selectedAgama) {
     if (!cpSelectionList || !allCpTpData) { console.warn("#cp-selection-list or CP data missing."); return; }
     cpSelectionList.innerHTML = ''; currentSelectedCpStatuses = {}; resetFinalDescriptionAndGrade(); resetMulok();
     if (!selectedMapelId || !selectedFase || !selectedAgama) { cpSelectionList.innerHTML = `<p style="color: #6c757d;"><i>Pilih kelas, mapel, & agama...</i></p>`; return; }
-
     const cpTpFiltered = allCpTpData.filter(cp => cp.id_mapel === selectedMapelId && cp.fase === selectedFase && (cp.agama === selectedAgama || cp.agama === "Semua" || !cp.agama));
-
-    let inputNilaiDiaktifkan = false; // Flag untuk memastikan aktivasi
+    console.log(`[LOG CP] Filtered CP count: ${cpTpFiltered.length}`);
 
     if (cpTpFiltered.length === 0) { // --- MULOK ---
         isMulokActive = true; cpSelectionList.innerHTML = `<p style="color: #6c757d;"><i>Tidak ada CP. Input manual Mulok aktif.</i></p>`;
         if (mulokIndicator) mulokIndicator.style.display = 'inline';
         if(finalDescriptionInput) { finalDescriptionInput.readOnly = false; finalDescriptionInput.placeholder = "Input deskripsi Mulok..."; }
-        if(nilaiAkhirInput) {
-             nilaiAkhirInput.disabled = false; // Aktifkan nilai
-             inputNilaiDiaktifkan = !nilaiAkhirInput.disabled; // Cek status setelah diubah
-             console.log(`[LOG AKTIVASI MULOK] Input nilai SEHARUSNYA aktif. Status disabled: ${nilaiAkhirInput.disabled}`);
-        } else { console.error("[LOG AKTIVASI MULOK] Gagal aktifkan: elemen #nilai-akhir-input tidak ada!"); }
         currentSelectedCpStatuses['MULOK'] = { isMulok: true };
         if (editDeskripsiBtn) editDeskripsiBtn.style.display = 'none';
-
     } else { // --- ADA CP ---
         isMulokActive = false; if (mulokIndicator) mulokIndicator.style.display = 'none';
         if(finalDescriptionInput) { finalDescriptionInput.readOnly = true; finalDescriptionInput.placeholder = "Deskripsi dibuat otomatis..."; }
-        if(nilaiAkhirInput) {
-            nilaiAkhirInput.disabled = false; // Aktifkan nilai
-            inputNilaiDiaktifkan = !nilaiAkhirInput.disabled; // Cek status setelah diubah
-            console.log(`[LOG AKTIVASI CP] Input nilai SEHARUSNYA aktif. Status disabled: ${nilaiAkhirInput.disabled}`);
-        } else { console.error("[LOG AKTIVASI CP] Gagal aktifkan: elemen #nilai-akhir-input tidak ada!"); }
         if (editDeskripsiBtn) { editDeskripsiBtn.style.display = 'block'; editDeskripsiBtn.disabled = true; }
-
-        cpTpFiltered.forEach(cp => { /* ... kode buat checkbox sama ... */ });
+        cpTpFiltered.forEach(cp => {
+            const cpId = cp.id_cp_tp; if (!cpId) return;
+            const itemDiv = document.createElement('div'); itemDiv.classList.add('cp-item');
+            const tercapaiId = `cp_${cpId}_tercapai`; const bimbinganId = `cp_${cpId}_bimbingan`;
+            itemDiv.innerHTML = `<div class="cp-item-header">${cp.deskripsi || '[No TP Desc]'}</div> <div class="cp-item-options"> <label for="${tercapaiId}"><input type="checkbox" id="${tercapaiId}" name="cp_status_${cpId}" value="Tercapai" data-cp-id="${cpId}" data-status="Tercapai"> Tercapai</label> <label for="${bimbinganId}"><input type="checkbox" id="${bimbinganId}" name="cp_status_${cpId}" value="Perlu Bimbingan" data-cp-id="${cpId}" data-status="Perlu Bimbingan"> P. Bimbingan</label> </div>`;
+            cpSelectionList.appendChild(itemDiv);
+            const checkboxes = itemDiv.querySelectorAll(`input[name="cp_status_${cpId}"]`);
+            checkboxes.forEach(cb => { cb.addEventListener('change', (e) => handleCpCheckboxChange(e.target, cpId, checkboxes)); });
+        });
     }
 
-    // Panggil validasi HANYA jika input nilai berhasil diaktifkan
-    if (inputNilaiDiaktifkan) {
-         console.log("[LOG AKTIVASI] Memanggil validateAndToggleButton karena input nilai aktif.");
-         validateAndToggleButton();
+    // --- PAKSA AKTIVASI INPUT NILAI DI AKHIR ---
+    console.log("[LOG AKTIVASI FINAL] Mencoba mengaktifkan #nilai-akhir-input...");
+    if (nilaiAkhirInput) {
+        nilaiAkhirInput.disabled = false; // Paksa aktifkan
+        console.log(`[LOG AKTIVASI FINAL] Status #nilai-akhir-input disabled SEKARANG: ${nilaiAkhirInput.disabled}`);
+        if (nilaiAkhirInput.disabled) {
+             console.error("[LOG AKTIVASI FINAL] GAGAL mengaktifkan input nilai meskipun sudah dipaksa!");
+        } else {
+             console.log("[LOG AKTIVASI FINAL] Input nilai BERHASIL diaktifkan.");
+        }
     } else {
-         console.warn("[LOG AKTIVASI] Input nilai GAGAL diaktifkan, validasi tombol simpan mungkin tidak akurat.");
-         // Nonaktifkan tombol simpan secara paksa jika input nilai gagal aktif
-         if (simpanNilaiBtn) simpanNilaiBtn.disabled = true;
+        console.error("[LOG AKTIVASI FINAL] Elemen #nilai-akhir-input TIDAK DITEMUKAN saat akan diaktifkan!");
     }
-}
+    // --- AKHIR PAKSA AKTIVASI ---
 
-/**
- * Validasi input form dan aktifkan/nonaktifkan tombol simpan (Log Super Detail)
- */
-function validateAndToggleButton() {
-    if (!simpanNilaiBtn) { console.warn("[LOG VALIDATE] Tombol Simpan (#simpan-nilai-btn) tidak ditemukan!"); return; }
-    if (!nilaiAkhirInput) { console.warn("[LOG VALIDATE] Input Nilai (#nilai-akhir-input) tidak ditemukan!"); return; } // Cek input nilai juga
-
-    const id_kelas = selectKelas ? selectKelas.value : 'NULL'; // Beri nilai default jika elemen null
-    const id_siswa = selectSiswa ? selectSiswa.value : 'NULL';
-    const id_mapel = selectMapel ? selectMapel.value : 'NULL';
-    const id_agama = selectAgama ? selectAgama.value : 'NULL';
-    const nilai_akhir_str = nilaiAkhirInput.value; // Baca langsung dari elemen
-    const deskripsi_rapor = finalDescriptionInput ? finalDescriptionInput.value : '';
-
-    let isValid = true;
-    let reasonsInvalid = []; // Kumpulkan alasan kenapa tidak valid
-
-    // Log Nilai Mentah
-    console.groupCollapsed("[LOG VALIDATE] Memulai Validasi"); // Grup log agar rapi
-    console.log(`Dropdowns: Kelas='${id_kelas}', Siswa='${id_siswa}', Mapel='${id_mapel}', Agama='${id_agama}'`);
-    console.log(`Input Nilai (string): '${nilai_akhir_str}'`);
-    console.log(`Status Mulok: ${isMulokActive}`);
-    console.log(`Deskripsi (trimmed): '${deskripsi_rapor.trim()}'`);
-
-    // Cek Dropdown Wajib
-    if (!id_kelas) { isValid = false; reasonsInvalid.push("Kelas belum dipilih"); }
-    if (!id_siswa) { isValid = false; reasonsInvalid.push("Siswa belum dipilih"); }
-    if (!id_mapel) { isValid = false; reasonsInvalid.push("Mapel belum dipilih"); }
-    if (!id_agama) { isValid = false; reasonsInvalid.push("Agama belum dipilih"); }
-
-    // Cek Input Nilai Angka
-    const nilaiNum = parseFloat(nilai_akhir_str);
-    if (nilai_akhir_str.trim() === '' || isNaN(nilaiNum) || nilaiNum < 0 || nilaiNum > 100) {
-        isValid = false;
-        reasonsInvalid.push(`Nilai akhir '${nilai_akhir_str}' tidak valid (harus angka 0-100)`);
-    }
-
-    // Cek Deskripsi jika Mulok
-    if (isMulokActive && !deskripsi_rapor.trim()) {
-        isValid = false;
-        reasonsInvalid.push("Deskripsi Mulok wajib diisi");
-    }
-
-    // Log Hasil Akhir
-    console.log(`Hasil: ${isValid ? 'VALID' : 'TIDAK VALID'}`);
-    if (!isValid) {
-        console.warn("Alasan Tidak Valid:", reasonsInvalid.join('; '));
-    }
-    console.groupEnd(); // Tutup grup log
-
-    // Set Status Tombol
-    const oldState = simpanNilaiBtn.disabled;
-    simpanNilaiBtn.disabled = !isValid;
-    if (oldState !== simpanNilaiBtn.disabled) { // Hanya log jika status berubah
-         console.log(`[LOG VALIDATE] Status Tombol Simpan diubah menjadi disabled = ${simpanNilaiBtn.disabled}`);
-    }
+    validateAndToggleButton(); // Panggil validasi setelah mencoba aktivasi
 }
 
 /**
@@ -333,29 +277,57 @@ function generateFinalDescription() {
 function resetMulok() { isMulokActive = false; if (mulokIndicator) mulokIndicator.style.display = 'none'; if (!isMulokActive && finalDescriptionInput) { finalDescriptionInput.readOnly = true; finalDescriptionInput.placeholder = "Deskripsi dibuat otomatis..."; } if (editDeskripsiBtn) editDeskripsiBtn.style.display = 'block'; }
 
 /**
- * Validasi input form dan aktifkan/nonaktifkan tombol simpan
+ * Validasi input form dan aktifkan/nonaktifkan tombol simpan (Log Super Detail)
  */
 function validateAndToggleButton() {
-    if (!simpanNilaiBtn) return;
+    if (!simpanNilaiBtn) { console.warn("[LOG VALIDATE] Tombol Simpan (#simpan-nilai-btn) tidak ditemukan!"); return; }
+    if (!nilaiAkhirInput) { console.warn("[LOG VALIDATE] Input Nilai (#nilai-akhir-input) tidak ditemukan!"); return; }
 
-    const id_kelas = selectKelas ? selectKelas.value : null;
-    const id_siswa = selectSiswa ? selectSiswa.value : null;
-    const id_mapel = selectMapel ? selectMapel.value : null;
-    const id_agama = selectAgama ? selectAgama.value : null;
-    const nilai_akhir = nilaiAkhirInput ? nilaiAkhirInput.value : null;
+    const id_kelas = selectKelas ? selectKelas.value : 'NULL';
+    const id_siswa = selectSiswa ? selectSiswa.value : 'NULL';
+    const id_mapel = selectMapel ? selectMapel.value : 'NULL';
+    const id_agama = selectAgama ? selectAgama.value : 'NULL';
+    const nilai_akhir_str = nilaiAkhirInput.value;
     const deskripsi_rapor = finalDescriptionInput ? finalDescriptionInput.value : '';
 
     let isValid = true;
+    let reasonsInvalid = [];
 
-    if (!id_kelas || !id_siswa || !id_mapel || !id_agama) isValid = false;
+    console.groupCollapsed("[LOG VALIDATE] Memulai Validasi");
+    console.log(`Dropdowns: Kelas='${id_kelas}', Siswa='${id_siswa}', Mapel='${id_mapel}', Agama='${id_agama}'`);
+    console.log(`Input Nilai (string): '${nilai_akhir_str}'`);
+    console.log(`Status Mulok: ${isMulokActive}`);
+    console.log(`Deskripsi (trimmed): '${deskripsi_rapor.trim()}'`);
 
-    const nilaiNum = parseFloat(nilai_akhir);
-    if (nilai_akhir === null || nilai_akhir === '' || isNaN(nilaiNum) || nilaiNum < 0 || nilaiNum > 100) isValid = false;
+    if (!id_kelas || id_kelas === 'NULL') { isValid = false; reasonsInvalid.push("Kelas belum dipilih"); }
+    if (!id_siswa || id_siswa === 'NULL') { isValid = false; reasonsInvalid.push("Siswa belum dipilih"); }
+    if (!id_mapel || id_mapel === 'NULL') { isValid = false; reasonsInvalid.push("Mapel belum dipilih"); }
+    if (!id_agama || id_agama === 'NULL') { isValid = false; reasonsInvalid.push("Agama belum dipilih"); }
 
-    if (isMulokActive && !deskripsi_rapor.trim()) isValid = false;
+    const nilaiNum = parseFloat(nilai_akhir_str);
+    if (nilai_akhir_str.trim() === '' || isNaN(nilaiNum) || nilaiNum < 0 || nilaiNum > 100) {
+        isValid = false;
+        reasonsInvalid.push(`Nilai akhir '${nilai_akhir_str}' tidak valid (harus angka 0-100)`);
+    } else {
+         console.log(`[LOG VALIDATE] Nilai akhir OK (Parsed: ${nilaiNum})`);
+    }
 
+    if (isMulokActive && !deskripsi_rapor.trim()) {
+        isValid = false;
+        reasonsInvalid.push("Deskripsi Mulok wajib diisi");
+    }
+
+    console.log(`Hasil: ${isValid ? 'VALID' : 'TIDAK VALID'}`);
+    if (!isValid) {
+        console.warn("Alasan Tidak Valid:", reasonsInvalid.join('; '));
+    }
+    console.groupEnd();
+
+    const oldState = simpanNilaiBtn.disabled;
     simpanNilaiBtn.disabled = !isValid;
-    // console.log(`Validasi: Tombol Simpan disabled = ${simpanNilaiBtn.disabled}`); // Log jika perlu
+    if (oldState !== simpanNilaiBtn.disabled) {
+         console.log(`[LOG VALIDATE] Status Tombol Simpan diubah menjadi disabled = ${simpanNilaiBtn.disabled}`);
+    }
 }
 
 // --- Fungsi-fungsi Halaman Data Siswa ---
