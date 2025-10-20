@@ -530,6 +530,48 @@ textarea.form-control:not(:read-only) {
      cursor: not-allowed;
 }
 /* === AKHIR CSS BARU === */
+/* === CSS BARU UNTUK CHECKBOX CP === */
+.cp-checkbox-list {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 1rem;
+    max-height: 250px; /* Batasi tinggi & buat scroll jika perlu */
+    overflow-y: auto;
+    background-color: #f9f9f9;
+}
+
+.cp-item {
+    margin-bottom: 0.8rem;
+    padding-bottom: 0.8rem;
+    border-bottom: 1px dashed #eee;
+}
+.cp-item:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.cp-item-header {
+    font-weight: 500;
+    margin-bottom: 0.4rem;
+    font-size: 0.95em;
+    color: #333;
+}
+
+.cp-item-options label {
+    display: inline-flex; /* Agar sejajar */
+    align-items: center;
+    margin-right: 1.5rem;
+    font-size: 0.9em;
+    cursor: pointer;
+}
+
+.cp-item-options input[type="checkbox"] {
+    margin-right: 0.4rem;
+    cursor: pointer;
+}
+
+/* === AKHIR CSS BARU === */
     </style>
 </head>
 <body class="dashboard-wrapper">
@@ -784,6 +826,7 @@ textarea.form-control:not(:read-only) {
     <script src="dashboard.js"></script>
 </body>
 </html>
+
 
 
 
