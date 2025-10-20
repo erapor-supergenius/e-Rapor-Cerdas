@@ -1,17 +1,16 @@
-/* === e-Rapor Cerdas - Dashboard Script (Versi Final Lengkap) === */
+/* === e-Rapor Cerdas - Dashboard Script (Final V3 - Frasa dari Sheet) === */
 
 // !!! PENTING !!! GANTI DENGAN URL WEB APP BARU DARI DATABASE ADMIN v2 ANDA !!!
 const GAS_URL = "https://script.google.com/macros/s/AKfycby-empDcPt5BndGZnjLNyTKt9wbMIP3iRtvoQELdWWoOvZnu2om_Uoh9Zsj5I0Wdq7ZLw/exec"; // <-- GANTI INI
 
 // --- Variabel Global ---
 let user = {};
-let allKelasData = [];
-let allSiswaData = [];
-let allCpTpData = [];
-let allAgamaData = [];
-let currentFase = null;
-let isMulokActive = false;
-let currentSelectedCpStatuses = {}; // Menyimpan status { cpId: "Tercapai" / "Perlu Bimbingan" }
+let allKelasData = [], allSiswaData = [], allCpTpData = [], allAgamaData = [];
+let allFrasaTercapai = [], allFrasaBimbingan = []; // Daftar frasa dari sheet
+let currentFase = null, isMulokActive = false;
+let currentSelectedCpStatuses = {}; // { cpId: "Tercapai" / "Perlu Bimbingan" }
+let currentPembukaTercapai = ""; // Kalimat pembuka terpilih/diketik
+let currentPembukaBimbingan = ""; // Kalimat pembuka terpilih/diketik
 
 // --- Elemen Notifikasi ---
 const notificationToast = document.getElementById('notification-toast');
@@ -24,13 +23,17 @@ const selectKelas = document.getElementById('pilih-kelas');
 const selectSiswa = document.getElementById('pilih-siswa');
 const selectMapel = document.getElementById('pilih-mapel');
 const selectAgama = document.getElementById('pilih-agama');
-const cpSelectionList = document.getElementById('cp-selection-list'); // Div untuk checkbox CP
-const mulokIndicator = document.getElementById('mulok-indicator'); // Span indikator Mulok
-const finalDescriptionInput = document.getElementById('final-description-input'); // Textarea deskripsi final
-const nilaiAkhirInput = document.getElementById('nilai-akhir-input'); // Input nilai angka
+const cpSelectionList = document.getElementById('cp-selection-list');
+const mulokIndicator = document.getElementById('mulok-indicator');
+const selectPembukaTercapai = document.getElementById('kalimat-pembuka-tercapai');
+const inputCustomTercapai = document.getElementById('custom-pembuka-tercapai');
+const selectPembukaBimbingan = document.getElementById('kalimat-pembuka-bimbingan');
+const inputCustomBimbingan = document.getElementById('custom-pembuka-bimbingan');
+const finalDescriptionInput = document.getElementById('final-description-input');
+const nilaiAkhirInput = document.getElementById('nilai-akhir-input');
 const simpanNilaiBtn = document.getElementById('simpan-nilai-btn');
-// Tombol edit deskripsi (opsional, textarea sudah bisa diedit)
-const editDeskripsiBtn = document.getElementById('edit-deskripsi-btn'); // Mungkin tidak diperlukan lagi jika textarea selalu editable setelah ada CP
+const editDeskripsiBtn = document.getElementById('edit-deskripsi-btn'); // Tombol edit lama (mungkin tidak perlu)
+
 
 // --- Elemen Halaman Data Siswa ---
 const downloadTemplateBtn = document.getElementById('download-template-btn');
@@ -43,396 +46,270 @@ const siswaTableContainer = document.querySelector('.data-table-container');
 
 // --- Fungsi Notifikasi Elegan ---
 function showNotification(message, type = 'info') {
-    if (!notificationToast || !notificationMessage) {
-        console.warn("Elemen notifikasi tidak ditemukan.");
-        return;
-    }
+    if (!notificationToast || !notificationMessage) { console.warn("Notif elements missing."); return; }
     notificationMessage.innerText = message;
-    notificationToast.className = 'notification-toast'; // Reset class
-    notificationToast.classList.add(type);
+    notificationToast.className = 'notification-toast'; notificationToast.classList.add(type);
     notificationToast.style.display = 'flex';
-    if (notificationToast.timer) clearTimeout(notificationToast.timer); // Hapus timer lama
+    if (notificationToast.timer) clearTimeout(notificationToast.timer);
     notificationToast.timer = setTimeout(() => { hideNotification(); }, 5000);
 }
 function hideNotification() {
     if (!notificationToast) return;
     notificationToast.style.display = 'none';
-     if (notificationToast.timer) clearTimeout(notificationToast.timer);
-     notificationToast.timer = null;
+    if (notificationToast.timer) clearTimeout(notificationToast.timer); notificationToast.timer = null;
 }
-if (notificationClose) {
-    notificationClose.addEventListener('click', hideNotification);
-} else {
-    console.warn("Elemen notification-toast-close tidak ditemukan.");
-}
+if (notificationClose) { notificationClose.addEventListener('click', hideNotification); }
+else { console.warn("#notification-toast-close missing."); }
 
 
 // --- Fungsi Utama (DOMContentLoaded) ---
 document.addEventListener("DOMContentLoaded", () => {
     try {
         // 1. OTENTIKASI
-        user.name = localStorage.getItem('userName');
-        user.spreadsheetId = localStorage.getItem('spreadsheetId');
-        user.username = localStorage.getItem('userUsername');
+        user.name = localStorage.getItem('userName'); user.spreadsheetId = localStorage.getItem('spreadsheetId'); user.username = localStorage.getItem('userUsername');
         const welcomeMsgEl = document.getElementById('welcome-message');
-
-        if (!user.name || !user.spreadsheetId || !user.username) {
-            alert("Sesi Anda telah berakhir. Silakan login kembali.");
-            window.location.href = 'index.html';
-            return;
-        }
-        if (welcomeMsgEl) welcomeMsgEl.innerText = `Selamat Datang, ${user.name}!`;
-        else console.error("Elemen #welcome-message tidak ditemukan.");
+        if (!user.name || !user.spreadsheetId || !user.username) { alert("Sesi berakhir. Login ulang."); window.location.href = 'index.html'; return; }
+        if (welcomeMsgEl) welcomeMsgEl.innerText = `Selamat Datang, ${user.name}!`; else console.error("#welcome-message missing.");
 
         // 2. LOGIKA LOGOUT
         const logoutBtn = document.getElementById('logout-button');
-        if (logoutBtn) {
-            logoutBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                if (confirm("Apakah Anda yakin ingin logout?")) {
-                    localStorage.clear();
-                    window.location.href = 'index.html';
-                }
-            });
-        } else console.error("Elemen #logout-button tidak ditemukan.");
+        if (logoutBtn) { logoutBtn.addEventListener('click', (e) => { e.preventDefault(); if (confirm("Yakin logout?")) { localStorage.clear(); window.location.href = 'index.html'; } }); }
+        else console.error("#logout-button missing.");
 
         // 3. LOGIKA NAVIGASI SIDEBAR
-        const navLinks = document.querySelectorAll('.nav-link');
-        const contentPages = document.querySelectorAll('.content-page');
+        const navLinks = document.querySelectorAll('.nav-link'); const contentPages = document.querySelectorAll('.content-page');
         if (navLinks.length > 0 && contentPages.length > 0) {
             navLinks.forEach(link => {
                 link.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    const targetPageId = link.getAttribute('data-page');
-                    if (!targetPageId) {
-                        console.warn("Link navigasi tidak punya 'data-page':", link);
-                        return;
-                    }
-                    navLinks.forEach(nav => nav.classList.remove('active'));
-                    contentPages.forEach(page => page.classList.remove('active'));
-                    link.classList.add('active');
-                    const targetPage = document.getElementById(targetPageId);
-                    if (targetPage) {
-                        targetPage.classList.add('active');
-                        if (targetPageId === 'page-data-siswa') {
-                            loadSiswaList(); // Muat data tabel siswa saat halaman aktif
-                        }
-                    } else {
-                        console.error(`Target page #${targetPageId} tidak ditemukan.`);
-                        showNotification(`Halaman ${targetPageId} tidak ditemukan!`, "error");
-                    }
+                    e.preventDefault(); const targetPageId = link.getAttribute('data-page'); if (!targetPageId) return;
+                    navLinks.forEach(nav => nav.classList.remove('active')); contentPages.forEach(page => page.classList.remove('active'));
+                    link.classList.add('active'); const targetPage = document.getElementById(targetPageId);
+                    if (targetPage) { targetPage.classList.add('active'); if (targetPageId === 'page-data-siswa') loadSiswaList(); }
+                    else { console.error(`Target page #${targetPageId} missing.`); showNotification(`Halaman ${targetPageId} tidak ada!`, "error"); }
                 });
             });
-             // Aktifkan halaman default (Dashboard) saat load
-             const defaultLink = document.querySelector('.nav-link[data-page="page-home"]');
-             const defaultPage = document.getElementById('page-home');
-             if (defaultLink && defaultPage) {
-                 navLinks.forEach(nav => nav.classList.remove('active'));
-                 contentPages.forEach(page => page.classList.remove('active'));
-                 defaultLink.classList.add('active');
-                 defaultPage.classList.add('active');
-             }
-
-        } else console.error("Elemen .nav-link atau .content-page tidak ditemukan.");
+            // Aktifkan default page
+             const defaultLink = document.querySelector('.nav-link[data-page="page-home"]'); const defaultPage = document.getElementById('page-home');
+             if (defaultLink && defaultPage) { defaultLink.classList.add('active'); defaultPage.classList.add('active'); }
+        } else console.error(".nav-link or .content-page missing.");
 
         // 4. MEMUAT DATA AWAL
         loadInitialData();
 
         // 5. LOGIKA HALAMAN DATA SISWA
         if (downloadTemplateBtn) downloadTemplateBtn.addEventListener('click', handleDownloadTemplate);
-        else console.warn("Elemen #download-template-btn tidak ditemukan.");
         if (importCsvBtn && csvFileInput) importCsvBtn.addEventListener('click', () => csvFileInput.click());
-        else console.warn("Elemen #import-csv-btn atau #csv-file-input tidak ditemukan.");
         if (csvFileInput) csvFileInput.addEventListener('change', handleImportCSV);
-        else console.warn("Elemen #csv-file-input tidak ditemukan.");
 
         // 6. LOGIKA DROPDOWN FILTER INPUT NILAI
-        if (selectKelas) {
-            selectKelas.addEventListener('change', (e) => {
-                const selectedKelasId = e.target.value;
-                const selectedKelas = allKelasData.find(k => k.id_kelas === selectedKelasId);
-                currentFase = selectedKelas ? selectedKelas.fase : null;
-                loadSiswaDropdown(selectedKelasId);
-                loadCpCheckboxList(selectMapel ? selectMapel.value : null, currentFase, selectAgama ? selectAgama.value : null);
-                resetFinalDescriptionAndGrade();
-                resetMulok();
-            });
-        } else console.warn("Elemen #pilih-kelas tidak ditemukan.");
+        if (selectKelas) selectKelas.addEventListener('change', handleKelasChange); else console.warn("#pilih-kelas missing.");
+        if (selectMapel) selectMapel.addEventListener('change', handleMapelChange); else console.warn("#pilih-mapel missing.");
+        if (selectAgama) selectAgama.addEventListener('change', handleAgamaChange); else console.warn("#pilih-agama missing.");
 
-        if (selectMapel) {
-            selectMapel.addEventListener('change', (e) => {
-                const selectedMapelId = e.target.value;
-                loadAgamaDropdown(allAgamaData);
-                if (selectAgama) selectAgama.disabled = !selectedMapelId;
-                loadCpCheckboxList(selectedMapelId, currentFase, selectAgama ? selectAgama.value : null);
-                resetFinalDescriptionAndGrade();
-                resetMulok();
-            });
-        } else console.warn("Elemen #pilih-mapel tidak ditemukan.");
-
-        if (selectAgama) {
-            selectAgama.addEventListener('change', (e) => {
-                loadCpCheckboxList(selectMapel ? selectMapel.value : null, currentFase, e.target.value);
-                resetFinalDescriptionAndGrade();
-                resetMulok();
-            });
-        } else console.warn("Elemen #pilih-agama tidak ditemukan.");
-
-        // Event listener untuk checkbox CP dibuat di dalam loadCpCheckboxList
-
-        // 7. LOGIKA TOMBOL EDIT DESKRIPSI (Sekarang hanya untuk mengaktifkan textarea jika dinonaktifkan)
-        if (editDeskripsiBtn && finalDescriptionInput) {
-             editDeskripsiBtn.addEventListener('click', () => {
-                 finalDescriptionInput.readOnly = false;
-                 editDeskripsiBtn.disabled = true; // Nonaktifkan setelah diklik
-                 showNotification("Deskripsi rapor sekarang bisa diedit manual.", "info");
-                 finalDescriptionInput.focus(); // Fokus ke textarea
-             });
-        } else {
-             // console.warn("Elemen #edit-deskripsi-btn atau #final-description-input tidak ditemukan.");
-             // Tombol edit mungkin tidak terlalu krusial lagi
-        }
-
+        // 7. Event Listener Dropdown Kalimat Pembuka
+        if (selectPembukaTercapai && inputCustomTercapai) { selectPembukaTercapai.addEventListener('change', handlePembukaTercapaiChange); inputCustomTercapai.addEventListener('input', handleCustomTercapaiInput); } else console.warn("Phrase elements (Tercapai) missing.");
+        if (selectPembukaBimbingan && inputCustomBimbingan) { selectPembukaBimbingan.addEventListener('change', handlePembukaBimbinganChange); inputCustomBimbingan.addEventListener('input', handleCustomBimbinganInput); } else console.warn("Phrase elements (Bimbingan) missing.");
 
         // 8. LOGIKA TOMBOL TAMPILKAN SEMUA SISWA
-        if (toggleSiswaListBtn && siswaTableContainer) {
-             toggleSiswaListBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                const isExpanded = siswaTableContainer.classList.toggle('is-expanded');
-                toggleSiswaListBtn.innerText = isExpanded ? 'Sembunyikan' : 'Tampilkan Semua Siswa';
-            });
-         } else console.warn("Elemen #toggle-siswa-list atau .data-table-container tidak ditemukan.");
+        if (toggleSiswaListBtn && siswaTableContainer) { toggleSiswaListBtn.addEventListener('click', (e) => { e.preventDefault(); const isExpanded = siswaTableContainer.classList.toggle('is-expanded'); toggleSiswaListBtn.innerText = isExpanded ? 'Sembunyikan' : 'Tampilkan Semua Siswa'; }); }
+        else console.warn("#toggle-siswa-list or .data-table-container missing.");
 
         // 9. LOGIKA TOMBOL SIMPAN NILAI
-        if (simpanNilaiBtn && formInputNilai) {
-             simpanNilaiBtn.addEventListener('click', (e) => {
-                e.preventDefault(); // Mencegah submit form HTML standar
-                handleSimpanNilai();
-            });
-        } else console.error("Elemen #simpan-nilai-btn atau #form-input-nilai tidak ditemukan.");
+        if (simpanNilaiBtn && formInputNilai) { simpanNilaiBtn.addEventListener('click', (e) => { e.preventDefault(); handleSimpanNilai(); }); }
+        else console.error("#simpan-nilai-btn or #form-input-nilai missing.");
 
-    } catch (error) {
-        console.error("Error kritikal saat inisialisasi dashboard:", error);
-        showNotification("Gagal memuat dashboard: " + error.message, "error");
-        // Mungkin tampilkan pesan error yang lebih jelas di body
-        document.body.innerHTML = `<div style="padding: 20px; text-align: center; color: red;"><h1>Terjadi Kesalahan</h1><p>Gagal memuat dashboard. Silakan coba refresh halaman atau hubungi administrator.</p><pre>${error.stack}</pre></div>`;
-    }
+         // 10. (Opsional) Tombol Edit Deskripsi jika masih ada
+         if (editDeskripsiBtn && finalDescriptionInput) {
+             editDeskripsiBtn.addEventListener('click', () => {
+                 finalDescriptionInput.readOnly = false;
+                 editDeskripsiBtn.disabled = true;
+                 showNotification("Deskripsi rapor bisa diedit manual.", "info");
+                 finalDescriptionInput.focus();
+             });
+         }
+
+
+    } catch (error) { console.error("Critical init error:", error); showNotification("Gagal memuat: " + error.message, "error"); }
 }); // --- AKHIR DOMContentLoaded ---
 
 
+// --- Handler Perubahan Dropdown Filter ---
+function handleKelasChange(e) {
+    const selectedKelasId = e.target.value;
+    const selectedKelas = allKelasData.find(k => k.id_kelas === selectedKelasId);
+    currentFase = selectedKelas ? selectedKelas.fase : null;
+    loadSiswaDropdown(selectedKelasId);
+    loadCpCheckboxList(selectMapel ? selectMapel.value : null, currentFase, selectAgama ? selectAgama.value : null);
+    resetFinalDescriptionAndGrade();
+    resetMulok();
+}
+function handleMapelChange(e) {
+    const selectedMapelId = e.target.value;
+    loadAgamaDropdown(allAgamaData);
+    if (selectAgama) selectAgama.disabled = !selectedMapelId;
+    loadCpCheckboxList(selectedMapelId, currentFase, selectAgama ? selectAgama.value : null);
+    resetFinalDescriptionAndGrade();
+    resetMulok();
+}
+function handleAgamaChange(e) {
+    loadCpCheckboxList(selectMapel ? selectMapel.value : null, currentFase, e.target.value);
+    resetFinalDescriptionAndGrade();
+    resetMulok();
+}
+
+// --- Handler Perubahan Dropdown/Input Kalimat Pembuka ---
+function handlePembukaTercapaiChange() {
+    if (!selectPembukaTercapai || !inputCustomTercapai) return;
+    const selVal = selectPembukaTercapai.value;
+    if (selVal === 'custom') {
+        inputCustomTercapai.style.display = 'block'; inputCustomTercapai.value = ''; inputCustomTercapai.focus();
+        currentPembukaTercapai = " "; // Default spasi jika custom kosong
+    } else {
+        inputCustomTercapai.style.display = 'none';
+        currentPembukaTercapai = selVal ? ` ${selVal.trim()} ` : " "; // Ambil value (sudah ada spasi)
+        generateFinalDescription(); // Regenerate
+    }
+}
+function handleCustomTercapaiInput() {
+    if (!inputCustomTercapai) return;
+    currentPembukaTercapai = inputCustomTercapai.value.trim() ? ` ${inputCustomTercapai.value.trim()} ` : " ";
+    generateFinalDescription();
+}
+function handlePembukaBimbinganChange() {
+    if (!selectPembukaBimbingan || !inputCustomBimbingan) return;
+    const selVal = selectPembukaBimbingan.value;
+    if (selVal === 'custom') {
+        inputCustomBimbingan.style.display = 'block'; inputCustomBimbingan.value = ''; inputCustomBimbingan.focus();
+        currentPembukaBimbingan = " ";
+    } else {
+        inputCustomBimbingan.style.display = 'none';
+        currentPembukaBimbingan = selVal ? ` ${selVal.trim()} ` : " ";
+        generateFinalDescription();
+    }
+}
+function handleCustomBimbinganInput() {
+    if (!inputCustomBimbingan) return;
+    currentPembukaBimbingan = inputCustomBimbingan.value.trim() ? ` ${inputCustomBimbingan.value.trim()} ` : " ";
+    generateFinalDescription();
+}
+
+
 /**
- * Memuat data awal lengkap dari Backend
+ * Memuat data awal + Memuat Opsi Frasa
  */
 function loadInitialData() {
     showNotification("Memuat data awal sekolah...", "info");
     const payload = { action: "getInitialData", spreadsheetId: user.spreadsheetId };
-
-    fetch(GAS_URL, {
-        method: "POST",
-        body: JSON.stringify(payload),
-        headers: { "Content-Type": "text/plain;charset=utf-8" }
-    })
-    .then(response => {
-        if (!response.ok) throw new Error(`Server merespon dengan status ${response.status}`);
-        return response.json();
-    })
+    fetch(GAS_URL, { method: "POST", body: JSON.stringify(payload), headers: { "Content-Type": "text/plain;charset=utf-8" }})
+    .then(response => { if (!response.ok) throw new Error(`Server status ${response.status}`); return response.json(); })
     .then(data => {
-        hideNotification(); // Sembunyikan notif loading
+        hideNotification();
         if (data.success) {
             const sidebarSchoolName = document.getElementById('sidebar-school-name');
-            if (sidebarSchoolName) sidebarSchoolName.innerText = data.profil.nama_sekolah || "[Nama Sekolah Belum Diisi]";
+            if (sidebarSchoolName) sidebarSchoolName.innerText = data.profil.nama_sekolah || "[Nama Sekolah]";
 
-            allKelasData = data.kelas || [];
-            loadKelasDropdown(allKelasData);
+            allKelasData = data.kelas || []; loadKelasDropdown(allKelasData);
+            loadMapelDropdown(data.mapel);
+            allAgamaData = data.agama || []; loadAgamaDropdown(allAgamaData);
+            allSiswaData = data.siswa || []; allCpTpData = data.cptp || [];
 
-            loadMapelDropdown(data.mapel); // Muat mapel dulu
+            // Muat opsi frasa ke dropdown
+            allFrasaTercapai = data.frasaTercapai || [];
+            allFrasaBimbingan = data.frasaBimbingan || [];
+            loadPembukaOptions(selectPembukaTercapai, allFrasaTercapai);
+            loadPembukaOptions(selectPembukaBimbingan, allFrasaBimbingan);
+            // Set default kalimat pembuka dari opsi pertama
+            currentPembukaTercapai = allFrasaTercapai.length > 0 ? ` ${allFrasaTercapai[0].trim()} ` : " menunjukkan penguasaan yang baik dalam ";
+            currentPembukaBimbingan = allFrasaBimbingan.length > 0 ? ` ${allFrasaBimbingan[0].trim()} ` : " perlu bimbingan dalam ";
 
-            allAgamaData = data.agama || [];
-            loadAgamaDropdown(allAgamaData); // Baru muat agama
-
-            allSiswaData = data.siswa || [];
-            allCpTpData = data.cptp || [];
-
-            // Muat daftar siswa jika halaman data siswa aktif saat ini
             const activePage = document.querySelector('.content-page.active');
-            if (activePage && activePage.id === 'page-data-siswa') {
-                loadSiswaList();
-            }
-             // Aktifkan dropdown pertama (Kelas) jika ada data
-             if (selectKelas && allKelasData.length > 0) selectKelas.disabled = false;
-             if (selectMapel && data.mapel && data.mapel.length > 0) selectMapel.disabled = false;
-
+            if (activePage && activePage.id === 'page-data-siswa') { loadSiswaList(); }
+            if (selectKelas && allKelasData.length > 0) selectKelas.disabled = false;
+            if (selectMapel && data.mapel && data.mapel.length > 0) selectMapel.disabled = false;
         } else {
-            showNotification("Gagal memuat data awal: " + (data.message || "Error tidak diketahui"), "error");
-            console.error("Server returned error:", data.message);
+            showNotification("Gagal memuat data awal: " + (data.message || "Error"), "error");
+            console.error("Server init error:", data.message);
         }
     })
     .catch(error => {
-        hideNotification(); // Sembunyikan notif loading
-        console.error("Error fetching initial data:", error);
-        showNotification(`Kesalahan jaringan saat memuat data: ${error.message}. Periksa console (F12).`, "error");
-        // Nonaktifkan semua dropdown jika load awal gagal
-        if (selectKelas) selectKelas.disabled = true;
-        if (selectMapel) selectMapel.disabled = true;
-        if (selectAgama) selectAgama.disabled = true;
-        if (selectSiswa) selectSiswa.disabled = true;
+        hideNotification();
+        console.error("Initial load fetch error:", error);
+        showNotification(`Jaringan error: ${error.message}.`, "error");
+        // Nonaktifkan semua form jika gagal load
+        if (formInputNilai) formInputNilai.style.opacity = '0.5';
+        if (formInputNilai) formInputNilai.style.pointerEvents = 'none';
+        const formElements = formInputNilai ? formInputNilai.elements : [];
+        for(let el of formElements) el.disabled = true;
     });
 }
 
-// --- Fungsi-fungsi Pengisian Dropdown ---
-function loadKelasDropdown(kelasArray) {
-    if (!selectKelas) return;
-    selectKelas.innerHTML = '';
-    selectKelas.add(new Option("Pilih Kelas...", ""));
-    if (kelasArray && kelasArray.length > 0) {
-        kelasArray.forEach(kelas => {
-            const displayText = `${kelas.nama_kelas} (Fase ${kelas.fase || '?'})`;
-            selectKelas.add(new Option(displayText, kelas.id_kelas));
+/**
+ * Memuat opsi dropdown kalimat pembuka
+ */
+function loadPembukaOptions(selectElement, optionsArray) {
+    if (!selectElement) return;
+    const customOption = selectElement.querySelector('option[value="custom"]'); // Simpan opsi custom
+    selectElement.innerHTML = ''; // Hapus placeholder "Memuat..."
+
+    if (optionsArray && optionsArray.length > 0) {
+        optionsArray.forEach((frasa, index) => {
+            const trimmedFrasa = frasa.trim();
+            // Value pakai spasi agar langsung bisa dipakai, Text tidak
+            const option = new Option(trimmedFrasa, ` ${trimmedFrasa} `);
+            selectElement.add(option);
+            if (index === 0) option.selected = true; // Pilih opsi pertama by default
         });
-        selectKelas.disabled = false; // Aktifkan jika ada data
     } else {
-        selectKelas.add(new Option("Belum ada data kelas", ""));
-        selectKelas.disabled = true;
+        selectElement.add(new Option("-- Tidak ada pilihan dari sheet --", "")); // Fallback jika sheet kosong
     }
+    // Tambahkan kembali opsi custom
+    if (customOption) selectElement.add(customOption);
+    else selectElement.add(new Option("-- Tulis Manual --", "custom")); // Tambahkan jika hilang
 }
 
-function loadSiswaDropdown(selectedKelasId) {
-    if (!selectSiswa) return;
-    selectSiswa.innerHTML = '';
-    selectSiswa.disabled = true;
-    if (!selectedKelasId) {
-        selectSiswa.add(new Option("Pilih kelas dahulu...", ""));
-        return;
-    }
-    const siswaDiKelas = allSiswaData.filter(siswa => siswa.id_kelas === selectedKelasId);
-    if (siswaDiKelas.length > 0) {
-        selectSiswa.add(new Option(`Pilih Siswa (${siswaDiKelas.length} siswa)...`, ""));
-        siswaDiKelas.forEach(siswa => {
-            selectSiswa.add(new Option(siswa.nama_siswa, siswa.id_siswa));
-        });
-        selectSiswa.disabled = false;
-    } else {
-        selectSiswa.add(new Option("Tidak ada siswa di kelas ini", ""));
-    }
-}
-
-function loadMapelDropdown(mapelArray) {
-    if (!selectMapel) return;
-    selectMapel.innerHTML = '';
-    selectMapel.add(new Option("Pilih Mata Pelajaran...", ""));
-    if (mapelArray && mapelArray.length > 0) {
-        mapelArray.forEach(mapel => {
-            selectMapel.add(new Option(mapel.nama_mapel, mapel.id_mapel));
-        });
-         selectMapel.disabled = false; // Aktifkan jika ada data
-    } else {
-        selectMapel.add(new Option("Belum ada data mapel", ""));
-        selectMapel.disabled = true;
-    }
-}
-
-function loadAgamaDropdown(agamaArray) {
-    if (!selectAgama) return;
-    selectAgama.innerHTML = '';
-    selectAgama.add(new Option("Pilih Agama...", ""));
-    let hasAgama = false;
-    if (agamaArray && agamaArray.length > 0) {
-        // Tambahkan "Semua" secara eksplisit
-        selectAgama.add(new Option("Semua (Umum)", "Semua"));
-        hasAgama = true; // Anggap "Semua" sudah cukup
-        agamaArray.forEach(agama => {
-            if (agama && agama.toLowerCase() !== 'semua') {
-                 selectAgama.add(new Option(agama, agama));
-                 hasAgama = true;
-            }
-        });
-    }
-    if (!hasAgama) {
-        selectAgama.add(new Option("Tidak ada data agama", ""));
-        selectAgama.disabled = true;
-    } else {
-        // Tetap nonaktif sampai mapel dipilih
-        selectAgama.disabled = !selectMapel || !selectMapel.value;
-    }
-}
+// --- Fungsi-fungsi Pengisian Dropdown Awal ---
+function loadKelasDropdown(kelasArray) { if (!selectKelas) return; selectKelas.innerHTML = ''; selectKelas.add(new Option("Pilih Kelas...", "")); if (kelasArray && kelasArray.length > 0) { kelasArray.forEach(kelas => { const displayText = `${kelas.nama_kelas} (Fase ${kelas.fase || '?'})`; selectKelas.add(new Option(displayText, kelas.id_kelas)); }); selectKelas.disabled = false; } else { selectKelas.add(new Option("Belum ada data kelas", "")); selectKelas.disabled = true; } }
+function loadSiswaDropdown(selectedKelasId) { if (!selectSiswa) return; selectSiswa.innerHTML = ''; selectSiswa.disabled = true; if (!selectedKelasId) { selectSiswa.add(new Option("Pilih kelas dahulu...", "")); return; } const siswaDiKelas = allSiswaData.filter(siswa => siswa.id_kelas === selectedKelasId); if (siswaDiKelas.length > 0) { selectSiswa.add(new Option(`Pilih Siswa (${siswaDiKelas.length} siswa)...`, "")); siswaDiKelas.forEach(siswa => { selectSiswa.add(new Option(siswa.nama_siswa, siswa.id_siswa)); }); selectSiswa.disabled = false; } else { selectSiswa.add(new Option("Tidak ada siswa di kelas ini", "")); } }
+function loadMapelDropdown(mapelArray) { if (!selectMapel) return; selectMapel.innerHTML = ''; selectMapel.add(new Option("Pilih Mata Pelajaran...", "")); if (mapelArray && mapelArray.length > 0) { mapelArray.forEach(mapel => { selectMapel.add(new Option(mapel.nama_mapel, mapel.id_mapel)); }); selectMapel.disabled = false; } else { selectMapel.add(new Option("Belum ada data mapel", "")); selectMapel.disabled = true; } }
+function loadAgamaDropdown(agamaArray) { if (!selectAgama) return; selectAgama.innerHTML = ''; selectAgama.add(new Option("Pilih Agama...", "")); let hasAgama = false; if (agamaArray && agamaArray.length > 0) { selectAgama.add(new Option("Semua (Umum)", "Semua")); hasAgama = true; agamaArray.forEach(agama => { if (agama && agama.toLowerCase() !== 'semua') { selectAgama.add(new Option(agama, agama)); hasAgama = true; } }); } if (!hasAgama) { selectAgama.add(new Option("Tidak ada data agama", "")); selectAgama.disabled = true; } else { selectAgama.disabled = !selectMapel || !selectMapel.value; } }
 
 
 /**
  * Membuat daftar Checkbox CP + Deteksi Mulok
  */
 function loadCpCheckboxList(selectedMapelId, selectedFase, selectedAgama) {
-    if (!cpSelectionList || !allCpTpData) {
-        console.warn("Elemen #cp-selection-list atau data CP belum siap.");
-        return;
-    }
-    cpSelectionList.innerHTML = '';
-    currentSelectedCpStatuses = {};
-    resetFinalDescriptionAndGrade();
-    resetMulok(); // Reset status Mulok setiap kali filter berubah
+    if (!cpSelectionList || !allCpTpData) { console.warn("#cp-selection-list or CP data missing."); return; }
+    cpSelectionList.innerHTML = ''; currentSelectedCpStatuses = {}; resetFinalDescriptionAndGrade(); resetMulok();
+    if (!selectedMapelId || !selectedFase || !selectedAgama) { cpSelectionList.innerHTML = `<p style="color: #6c757d;"><i>Pilih kelas, mapel, & agama...</i></p>`; return; }
 
-    if (!selectedMapelId || !selectedFase || !selectedAgama) {
-        cpSelectionList.innerHTML = `<p style="color: #6c757d;"><i>Pilih kelas, mapel, dan agama terlebih dahulu...</i></p>`;
-        return;
-    }
-
-    const cpTpFiltered = allCpTpData.filter(cp =>
-        cp.id_mapel === selectedMapelId &&
-        cp.fase === selectedFase &&
-        (cp.agama === selectedAgama || cp.agama === "Semua" || !cp.agama) // Handle agama null/kosong + "Semua"
-    );
+    const cpTpFiltered = allCpTpData.filter(cp => cp.id_mapel === selectedMapelId && cp.fase === selectedFase && (cp.agama === selectedAgama || cp.agama === "Semua" || !cp.agama));
 
     if (cpTpFiltered.length === 0) {
-        // --- MULOK ---
-        isMulokActive = true;
-        cpSelectionList.innerHTML = `<p style="color: #6c757d;"><i>Tidak ada CP ditemukan. Input manual deskripsi untuk Muatan Lokal diaktifkan di bawah.</i></p>`;
-        if (mulokIndicator) mulokIndicator.style.display = 'inline'; // Tampilkan "(Muatan Lokal)"
-
-        if(finalDescriptionInput) {
-            finalDescriptionInput.readOnly = false; // Aktifkan textarea
-            finalDescriptionInput.placeholder = "Masukkan deskripsi Muatan Lokal secara manual...";
-        }
-        if(nilaiAkhirInput) nilaiAkhirInput.disabled = false; // Aktifkan input nilai
-        currentSelectedCpStatuses['MULOK'] = { isMulok: true }; // Tandai Mulok
-
+        isMulokActive = true; cpSelectionList.innerHTML = `<p style="color: #6c757d;"><i>Tidak ada CP. Input manual Mulok aktif.</i></p>`;
+        if (mulokIndicator) mulokIndicator.style.display = 'inline';
+        if(finalDescriptionInput) { finalDescriptionInput.readOnly = false; finalDescriptionInput.placeholder = "Input deskripsi Mulok..."; }
+        if(nilaiAkhirInput) nilaiAkhirInput.disabled = false;
+        currentSelectedCpStatuses['MULOK'] = { isMulok: true };
+        // Sembunyikan tombol edit deskripsi (tidak relevan untuk Mulok)
+        if (editDeskripsiBtn) editDeskripsiBtn.style.display = 'none';
     } else {
-        // --- ADA CP ---
-        isMulokActive = false;
-        if (mulokIndicator) mulokIndicator.style.display = 'none'; // Sembunyikan indikator Mulok
-
-        if(finalDescriptionInput) {
-             finalDescriptionInput.readOnly = true; // Kunci textarea awal
-             finalDescriptionInput.placeholder = "Deskripsi akan dibuat otomatis setelah memilih CP...";
-        }
-        if(nilaiAkhirInput) nilaiAkhirInput.disabled = false; // Aktifkan input nilai
+        isMulokActive = false; if (mulokIndicator) mulokIndicator.style.display = 'none';
+        if(finalDescriptionInput) { finalDescriptionInput.readOnly = true; finalDescriptionInput.placeholder = "Deskripsi dibuat otomatis..."; }
+        if(nilaiAkhirInput) nilaiAkhirInput.disabled = false;
+        // Tampilkan tombol edit deskripsi
+         if (editDeskripsiBtn) {
+             editDeskripsiBtn.style.display = 'block'; // Atau 'inline-block'
+             editDeskripsiBtn.disabled = true; // Awalnya nonaktif
+         }
 
         cpTpFiltered.forEach(cp => {
-            const cpId = cp.id_cp_tp;
-            if (!cpId) return; // Lewati jika ID CP tidak valid
-            const itemDiv = document.createElement('div');
-            itemDiv.classList.add('cp-item');
-            // Pastikan ID unik untuk checkbox dan label
-            const tercapaiId = `cp_${cpId}_tercapai`;
-            const bimbinganId = `cp_${cpId}_bimbingan`;
-
-            itemDiv.innerHTML = `
-                <div class="cp-item-header">${cp.deskripsi || '[Tanpa Deskripsi TP]'}</div>
-                <div class="cp-item-options">
-                    <label for="${tercapaiId}">
-                        <input type="checkbox" id="${tercapaiId}" name="cp_status_${cpId}" value="Tercapai" data-cp-id="${cpId}" data-status="Tercapai"> Tercapai
-                    </label>
-                    <label for="${bimbinganId}">
-                        <input type="checkbox" id="${bimbinganId}" name="cp_status_${cpId}" value="Perlu Bimbingan" data-cp-id="${cpId}" data-status="Perlu Bimbingan"> Perlu Bimbingan
-                    </label>
-                </div>
-            `;
+            const cpId = cp.id_cp_tp; if (!cpId) return;
+            const itemDiv = document.createElement('div'); itemDiv.classList.add('cp-item');
+            const tercapaiId = `cp_${cpId}_tercapai`; const bimbinganId = `cp_${cpId}_bimbingan`;
+            itemDiv.innerHTML = `<div class="cp-item-header">${cp.deskripsi || '[No TP Desc]'}</div> <div class="cp-item-options"> <label for="${tercapaiId}"><input type="checkbox" id="${tercapaiId}" name="cp_status_${cpId}" value="Tercapai" data-cp-id="${cpId}" data-status="Tercapai"> Tercapai</label> <label for="${bimbinganId}"><input type="checkbox" id="${bimbinganId}" name="cp_status_${cpId}" value="Perlu Bimbingan" data-cp-id="${cpId}" data-status="Perlu Bimbingan"> P. Bimbingan</label> </div>`;
             cpSelectionList.appendChild(itemDiv);
-
             const checkboxes = itemDiv.querySelectorAll(`input[name="cp_status_${cpId}"]`);
-            checkboxes.forEach(checkbox => {
-                checkbox.addEventListener('change', (e) => {
-                    handleCpCheckboxChange(e.target, cpId, checkboxes);
-                });
-            });
+            checkboxes.forEach(cb => { cb.addEventListener('change', (e) => handleCpCheckboxChange(e.target, cpId, checkboxes)); });
         });
     }
 }
@@ -441,80 +318,70 @@ function loadCpCheckboxList(selectedMapelId, selectedFase, selectedAgama) {
  * Menangani perubahan pada checkbox CP
  */
 function handleCpCheckboxChange(changedCheckbox, cpId, allCheckboxesForThisCp) {
-    const status = changedCheckbox.dataset.status;
-    const isChecked = changedCheckbox.checked;
-
-    if (isChecked) {
-        allCheckboxesForThisCp.forEach(cb => {
-            if (cb !== changedCheckbox) cb.checked = false;
-        });
-        currentSelectedCpStatuses[cpId] = status;
-    } else {
-        delete currentSelectedCpStatuses[cpId];
-    }
-    generateFinalDescription(); // Regenerate deskripsi setiap ada perubahan
+    const status = changedCheckbox.dataset.status; const isChecked = changedCheckbox.checked;
+    if (isChecked) { allCheckboxesForThisCp.forEach(cb => { if (cb !== changedCheckbox) cb.checked = false; }); currentSelectedCpStatuses[cpId] = status; }
+    else { delete currentSelectedCpStatuses[cpId]; }
+    generateFinalDescription(); // Regenerate deskripsi
+     // Aktifkan/nonaktifkan tombol edit berdasarkan apakah ada CP dipilih
+     if (editDeskripsiBtn) {
+        editDeskripsiBtn.disabled = Object.keys(currentSelectedCpStatuses).filter(k => k !== 'MULOK').length === 0;
+     }
 }
 
 /**
- * Membuat Deskripsi Naratif Akhir
+ * Membuat Deskripsi Naratif Akhir (Format Baru)
  */
 function generateFinalDescription() {
     if (!finalDescriptionInput || !allCpTpData) return;
 
-    let deskripsiTercapaiList = [];
-    let deskripsiBimbinganList = [];
-    let isAnyCpSelected = false; // Flag jika ada CP yang diceklis
+    let deskripsiTercapaiList = []; let deskripsiBimbinganList = [];
+    let isAnyCpSelected = false;
 
-    // Jangan generate jika Mulok aktif
     if (isMulokActive) {
-        finalDescriptionInput.readOnly = false;
-        finalDescriptionInput.placeholder = "Masukkan deskripsi Muatan Lokal secara manual...";
-        // Jangan hapus isi textarea jika user sudah mengetik untuk Mulok
-        return;
+        finalDescriptionInput.readOnly = false; finalDescriptionInput.placeholder = "Input deskripsi Mulok..."; return;
     }
 
-    // Kumpulkan deskripsi dari CP yang diceklis
     for (const cpId in currentSelectedCpStatuses) {
-         if (cpId === 'MULOK') continue; // Lewati flag Mulok
-        isAnyCpSelected = true; // Tandai ada CP yg dipilih
+        if (cpId === 'MULOK') continue; isAnyCpSelected = true;
         const status = currentSelectedCpStatuses[cpId];
         const cpData = allCpTpData.find(cp => cp.id_cp_tp === cpId);
         if (cpData) {
-            if (status === "Tercapai" && cpData.deskripsi_tercapai) {
-                // Ambil bagian awal deskripsi (lebih singkat)
-                let descPart = cpData.deskripsi_tercapai.split(/[.,;!?]/)[0].trim().toLowerCase();
-                if (descPart) deskripsiTercapaiList.push(descPart);
-            } else if (status === "Perlu Bimbingan" && cpData.deskripsi_perlu_bimbingan) {
-                let descPart = cpData.deskripsi_perlu_bimbingan.split(/[.,;!?]/)[0].trim().toLowerCase();
-                if (descPart) deskripsiBimbinganList.push(descPart);
+            let descPart = cpData.deskripsi ? cpData.deskripsi.toLowerCase().replace(/[.,;!?]$/, '') : ''; // Ambil TP
+            if (!descPart && status === "Tercapai") descPart = cpData.deskripsi_tercapai ? cpData.deskripsi_tercapai.toLowerCase().replace(/[.,;!?]$/, '') : ''; // Fallback ke desk tercapai
+            if (!descPart && status === "Perlu Bimbingan") descPart = cpData.deskripsi_perlu_bimbingan ? cpData.deskripsi_perlu_bimbingan.toLowerCase().replace(/[.,;!?]$/, '') : ''; // Fallback ke desk bimbingan
+
+            if (descPart) {
+                 if (status === "Tercapai") deskripsiTercapaiList.push(descPart);
+                 else if (status === "Perlu Bimbingan") deskripsiBimbinganList.push(descPart);
             }
         }
     }
 
     let finalDescription = "";
     const siswaSelectedIndex = selectSiswa ? selectSiswa.selectedIndex : -1;
-    const namaSiswa = siswaSelectedIndex > 0 && selectSiswa.options.length > siswaSelectedIndex
-                    ? selectSiswa.options[siswaSelectedIndex].text
-                    : "Ananda";
+    const namaSiswa = siswaSelectedIndex > 0 && selectSiswa.options.length > siswaSelectedIndex ? selectSiswa.options[siswaSelectedIndex].text : "Ananda";
 
-    // Contoh kalimat pembuka (bisa dibuat lebih dinamis nanti)
-    const pembukaTercapai = `Ananda ${namaSiswa} menunjukkan penguasaan yang baik dalam `;
-    const pembukaBimbingan = `Namun, ${namaSiswa} masih memerlukan bimbingan dalam `;
-    const pembukaHanyaBimbingan = `Ananda ${namaSiswa} perlu meningkatkan pemahaman dalam `;
+    const pembukaTercapai = currentPembukaTercapai || " menunjukkan penguasaan yang baik dalam ";
+    const pembukaBimbingan = currentPembukaBimbingan || " perlu bimbingan dalam ";
 
     if (deskripsiTercapaiList.length > 0) {
-        finalDescription += pembukaTercapai + deskripsiTercapaiList.join(', ') + ". ";
+        finalDescription += namaSiswa + pembukaTercapai + deskripsiTercapaiList.join(', ');
     }
 
     if (deskripsiBimbinganList.length > 0) {
-        if (finalDescription !== "") { // Jika sudah ada bagian Tercapai
-            finalDescription += pembukaBimbingan + deskripsiBimbinganList.join(', ') + ".";
-        } else { // Jika hanya Perlu Bimbingan
-            finalDescription += pembukaHanyaBimbingan + deskripsiBimbinganList.join(', ') + ".";
+        if (finalDescription !== "") { // Jika sudah ada tercapai
+            // Format: ..., namun perlu bimbingan dalam A, B, C
+            finalDescription += ", namun" + pembukaBimbingan + deskripsiBimbinganList.join(', ');
+        } else { // Jika hanya perlu bimbingan
+             // Format: Ananda perlu bimbingan dalam A, B, C
+            finalDescription += namaSiswa + " " + pembukaBimbingan + deskripsiBimbinganList.join(', ');
         }
     }
 
-    finalDescriptionInput.value = finalDescription.trim(); // Masukkan ke textarea
+    // Akhiri dengan titik jika ada deskripsi
+    if (finalDescription !== "") finalDescription += ".";
+
+    finalDescriptionInput.value = finalDescription.trim();
 
     // Atur status readonly dan placeholder
     if (!isAnyCpSelected) {
@@ -523,8 +390,9 @@ function generateFinalDescription() {
          if (editDeskripsiBtn) editDeskripsiBtn.disabled = true;
     } else {
         finalDescriptionInput.placeholder = "Deskripsi rapor...";
-        finalDescriptionInput.readOnly = false; // Buat bisa diedit
-         if (editDeskripsiBtn) editDeskripsiBtn.disabled = false; // Aktifkan tombol edit
+        finalDescriptionInput.readOnly = false; // Selalu bisa diedit jika ada CP terpilih
+         // Tombol edit bisa disembunyikan saja, atau dinonaktifkan jika readonly=false
+         if (editDeskripsiBtn) editDeskripsiBtn.disabled = false; // Aktifkan jika ada CP
     }
 }
 
@@ -532,17 +400,10 @@ function generateFinalDescription() {
  * Reset deskripsi akhir dan nilai
  */
  function resetFinalDescriptionAndGrade() {
-    if(finalDescriptionInput) {
-        finalDescriptionInput.value = '';
-        finalDescriptionInput.readOnly = true;
-        finalDescriptionInput.placeholder = "Deskripsi akan dibuat otomatis setelah memilih CP...";
-    }
-    if(nilaiAkhirInput) {
-        nilaiAkhirInput.value = '';
-        nilaiAkhirInput.disabled = true; // Nonaktifkan sampai ada CP/Mulok
-    }
-    currentSelectedCpStatuses = {}; // Kosongkan status CP
-    if (editDeskripsiBtn) editDeskripsiBtn.disabled = true; // Nonaktifkan tombol edit
+    if(finalDescriptionInput) { finalDescriptionInput.value = ''; finalDescriptionInput.readOnly = true; finalDescriptionInput.placeholder = "Deskripsi dibuat otomatis..."; }
+    if(nilaiAkhirInput) { nilaiAkhirInput.value = ''; nilaiAkhirInput.disabled = true; }
+    currentSelectedCpStatuses = {};
+    if (editDeskripsiBtn) editDeskripsiBtn.disabled = true;
  }
 
 /**
@@ -550,16 +411,10 @@ function generateFinalDescription() {
  */
 function resetMulok() {
     isMulokActive = false;
-    // Tampilkan kembali dropdown CP lama (jika ada) dan sembunyikan indikator Mulok
-    // const selectCPElement = document.getElementById('pilih-cp'); // Dropdown lama mungkin sudah dihapus
-    // if (selectCPElement) selectCPElement.style.display = 'block';
     if (mulokIndicator) mulokIndicator.style.display = 'none';
-
-    // Pastikan textarea deskripsi final terkunci lagi jika bukan Mulok
-    if (!isMulokActive && finalDescriptionInput) {
-        finalDescriptionInput.readOnly = true;
-        finalDescriptionInput.placeholder = "Deskripsi akan dibuat otomatis setelah memilih CP...";
-    }
+    if (!isMulokActive && finalDescriptionInput) { finalDescriptionInput.readOnly = true; finalDescriptionInput.placeholder = "Deskripsi dibuat otomatis..."; }
+    // Tampilkan tombol edit jika tidak Mulok (dan ada CP nanti)
+     if (editDeskripsiBtn) editDeskripsiBtn.style.display = 'block'; // Atau 'inline-block'
 }
 
 
@@ -569,264 +424,70 @@ function handleDownloadTemplate() {
     const payload = { action: "handleSiswaActions", subAction: "getSiswaTemplate", spreadsheetId: user.spreadsheetId };
     fetch(GAS_URL, { method: "POST", body: JSON.stringify(payload), headers: { "Content-Type": "text/plain;charset=utf-8" } })
     .then(response => response.ok ? response.json() : Promise.reject(`HTTP ${response.status}`))
-    .then(data => {
-        if (data.success) {
-            hideNotification();
-            const blob = new Blob([data.template], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a");
-            const url = URL.createObjectURL(blob);
-            link.setAttribute("href", url);
-            link.setAttribute("download", "template_siswa.csv");
-            link.style.visibility = 'hidden';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url); // Bersihkan memori
-        } else {
-            showNotification("Gagal membuat template: " + (data.message || "Error tidak diketahui"), "error");
-        }
-    })
-    .catch(error => {
-        hideNotification();
-        console.error("Error downloading template:", error);
-        showNotification("Kesalahan jaringan saat download.", "error");
-    });
+    .then(data => { if (data.success) { hideNotification(); const blob = new Blob([data.template], { type: 'text/csv;charset=utf-8;' }); const link = document.createElement("a"); const url = URL.createObjectURL(blob); link.setAttribute("href", url); link.setAttribute("download", "template_siswa.csv"); link.style.visibility = 'hidden'; document.body.appendChild(link); link.click(); document.body.removeChild(link); URL.revokeObjectURL(url); } else { showNotification("Gagal: " + (data.message || "Error"), "error"); } })
+    .catch(error => { hideNotification(); console.error("DL template error:", error); showNotification("Jaringan error.", "error"); });
 }
 function handleImportCSV(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    showNotification("Membaca file CSV...", "info");
+    const file = event.target.files[0]; if (!file) return; showNotification("Membaca CSV...", "info");
     const reader = new FileReader();
-    reader.onload = function(e) {
-        try {
-            const text = e.target.result;
-            const data = parseCSV(text);
-            if (!data || data.length === 0) {
-                showNotification("File CSV kosong atau format header tidak sesuai.", "warning");
-                return;
-            }
-            uploadSiswaData(data);
-        } catch (parseError) {
-             console.error("Error parsing CSV:", parseError);
-             showNotification("Gagal membaca file CSV: " + parseError.message, "error");
-        }
-    };
-     reader.onerror = function() {
-         console.error("FileReader error:", reader.error);
-         showNotification("Gagal membaca file.", "error");
-     };
-    reader.readAsText(file);
-    event.target.value = null; // Reset input file agar bisa pilih file yg sama lagi
+    reader.onload = (e) => { try { const text = e.target.result; const data = parseCSV(text); if (!data || data.length === 0) { showNotification("CSV kosong/format salah.", "warning"); return; } uploadSiswaData(data); } catch (err) { console.error("CSV Parse error:", err); showNotification("Gagal baca CSV: " + err.message, "error"); } };
+    reader.onerror = () => { console.error("FileReader error:", reader.error); showNotification("Gagal baca file.", "error"); }; reader.readAsText(file); event.target.value = null;
 }
-function parseCSV(text) {
-    // Implementasi parseCSV yang lebih robust (seperti di jawaban sebelumnya)
-    const lines = text.split(/[\r\n]+/).filter(line => line.trim() !== '');
-    if (lines.length < 2) return []; // Butuh header + minimal 1 data
-
-    const parseLine = (line) => { /* ... (fungsi parseLine dari jawaban sebelumnya) ... */
-        const values = []; let currentVal = ''; let inQuotes = false;
-        for (let i = 0; i < line.length; i++) {
-            const char = line[i];
-            if (char === '"') {
-                if (inQuotes && line[i + 1] === '"') { currentVal += '"'; i++; }
-                else { inQuotes = !inQuotes; }
-            } else if (char === ',' && !inQuotes) {
-                values.push(currentVal.trim()); currentVal = '';
-            } else { currentVal += char; }
-        }
-        values.push(currentVal.trim()); return values;
-    };
-
-    const headers = parseLine(lines[0]).map(h => h.toLowerCase());
-    const data = [];
-    const expectedHeaders = ["nisn", "nis", "nama_siswa", "tempat_lahir", "tanggal_lahir", "jenis_kelamin", "agama", "kelas", "fase", "tahun_ajaran_masuk", "nama_ayah", "pekerjaan_ayah", "nama_ibu", "pekerjaan_ibu", "alamat_siswa", "asal_sekolah", "nama_wali", "alamat_orang_tua"];
-
-    // Validasi header
-     let headerMap = {};
-     let missingHeaders = [];
-     expectedHeaders.forEach(eh => {
-         const index = headers.indexOf(eh);
-         if (index === -1) {
-             missingHeaders.push(eh);
-         } else {
-             headerMap[eh] = index; // Simpan index header yang ditemukan
-         }
-     });
-
-     if (missingHeaders.length > 0) {
-         console.warn("CSV headers missing:", missingHeaders);
-         showNotification(`Header CSV tidak lengkap. Header hilang: ${missingHeaders.join(', ')}`, "warning");
-         // return []; // Batalkan import jika header tidak lengkap?
-     }
-
-
-    for (let i = 1; i < lines.length; i++) {
-        const values = parseLine(lines[i]);
-        // Cukup periksa apakah jumlah value minimal sama dengan header yg ada
-        if (values.length >= headers.length) {
-            let obj = {};
-            // Gunakan headerMap untuk mengambil data berdasarkan nama header
-             expectedHeaders.forEach(eh => {
-                 const index = headerMap[eh];
-                 if (index !== undefined && index < values.length) { // Pastikan index valid
-                     obj[eh] = values[index];
-                 } else {
-                      obj[eh] = null; // Isi null jika header hilang atau kolom tidak ada
-                 }
-             });
-            // Pastikan ada data siswa sebelum di push
-            if (obj.nama_siswa || obj.nisn || obj.nis) {
-                 data.push(obj);
-            }
-        } else {
-            console.warn(`Skipping line ${i + 1} due to column count mismatch.`);
-        }
-    }
-    return data;
+function parseCSV(text) { // Versi robust
+    const lines = text.split(/[\r\n]+/).filter(l => l.trim() !== ''); if (lines.length < 2) return [];
+    const parseLine = (line) => { const v = []; let c = ''; let q = false; for (let i = 0; i < line.length; i++) { const char = line[i]; if (char === '"') { if (q && line[i + 1] === '"') { c += '"'; i++; } else { q = !q; } } else if (char === ',' && !q) { v.push(c.trim()); c = ''; } else { c += char; } } v.push(c.trim()); return v; };
+    const headers = parseLine(lines[0]).map(h => h.toLowerCase()); const data = [];
+    const expected = ["nisn", "nis", "nama_siswa", "tempat_lahir", "tanggal_lahir", "jenis_kelamin", "agama", "kelas", "fase", "tahun_ajaran_masuk", "nama_ayah", "pekerjaan_ayah", "nama_ibu", "pekerjaan_ibu", "alamat_siswa", "asal_sekolah", "nama_wali", "alamat_orang_tua"];
+    let headerMap = {}; let missing = []; expected.forEach(eh => { const i = headers.indexOf(eh); if (i === -1) missing.push(eh); else headerMap[eh] = i; });
+    if (missing.length > 0) console.warn("CSV headers missing:", missing);
+    for (let i = 1; i < lines.length; i++) { const values = parseLine(lines[i]); if (values.length >= headers.length) { let obj = {}; expected.forEach(eh => { const index = headerMap[eh]; obj[eh] = (index !== undefined && index < values.length) ? values[index] : null; }); if (obj.nama_siswa || obj.nisn || obj.nis) data.push(obj); } else console.warn(`Skip line ${i+1}`); } return data;
 }
 function uploadSiswaData(siswaDataArray) {
-    showNotification(`Mengimpor ${siswaDataArray.length} data siswa...`, "info");
+    showNotification(`Mengimpor ${siswaDataArray.length} siswa...`, "info");
     const payload = { action: "handleSiswaActions", subAction: "importSiswa", spreadsheetId: user.spreadsheetId, data: siswaDataArray };
     fetch(GAS_URL, { method: "POST", body: JSON.stringify(payload), headers: { "Content-Type": "text/plain;charset=utf-8" } })
     .then(response => response.ok ? response.json() : Promise.reject(`HTTP ${response.status}`))
-    .then(data => {
-        if (data.success) {
-            showNotification(data.message, "success");
-            loadInitialData(); // Muat ulang semua data agar tabel & dropdown update
-        } else {
-            showNotification("Gagal mengimpor: " + (data.message || "Error tidak diketahui"), "error");
-        }
-    })
-    .catch(error => {
-        console.error("Error importing data:", error);
-        showNotification("Kesalahan jaringan saat impor.", "error");
-    });
+    .then(data => { if (data.success) { showNotification(data.message, "success"); loadInitialData(); } else { showNotification("Gagal impor: " + (data.message || "Error"), "error"); } })
+    .catch(error => { console.error("Import error:", error); showNotification("Jaringan error.", "error"); });
 }
 function loadSiswaList() {
-    if (!siswaTableBody) {
-        console.warn("Elemen #siswa-table-body tidak ditemukan saat loadSiswaList.");
-        return;
-    }
-
-    // Reset tampilan tombol lipat
-    if (toggleSiswaListBtn) toggleSiswaListBtn.style.display = 'none';
-    if (siswaTableContainer) siswaTableContainer.classList.remove('is-expanded');
-    if (toggleSiswaListBtn) toggleSiswaListBtn.innerText = 'Tampilkan Semua Siswa';
-
+    if (!siswaTableBody) { console.warn("#siswa-table-body missing."); return; }
+    if (toggleSiswaListBtn) toggleSiswaListBtn.style.display = 'none'; if (siswaTableContainer) siswaTableContainer.classList.remove('is-expanded'); if (toggleSiswaListBtn) toggleSiswaListBtn.innerText = 'Tampilkan Semua Siswa';
     if (allSiswaData && allSiswaData.length > 0) {
-        siswaTableBody.innerHTML = ''; // Kosongkan tabel
+        siswaTableBody.innerHTML = '';
         allSiswaData.forEach(siswa => {
-            const tr = document.createElement('tr');
-            let tglLahir = 'N/A';
-            if(siswa.tanggal_lahir) {
-                 try {
-                     const tglValue = siswa.tanggal_lahir;
-                     let dateObj = (tglValue instanceof Date) ? tglValue : (new Date(tglValue));
-                     if (dateObj && !isNaN(dateObj.getTime())) {
-                        tglLahir = dateObj.toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
-                     } else tglLahir = tglValue; // Tampilkan string asli jika invalid
-                 } catch(e) { tglLahir = siswa.tanggal_lahir; }
-            }
-            tr.innerHTML = `
-                <td>${siswa.nisn || 'N/A'}</td>
-                <td>${siswa.nama_siswa || 'N/A'}</td>
-                <td>${siswa.kelas || 'N/A'}</td>
-                <td>${tglLahir}</td>
-                <td><a href="#" class="edit-btn" data-siswa-id="${siswa.id_siswa || ''}">Edit</a></td>
-            `;
+            const tr = document.createElement('tr'); let tglLahir = 'N/A';
+            if (siswa.tanggal_lahir) { try { const d = new Date(siswa.tanggal_lahir); if (!isNaN(d.getTime())) tglLahir = d.toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' }); else tglLahir = siswa.tanggal_lahir; } catch(e){ tglLahir = siswa.tanggal_lahir; } }
+            tr.innerHTML = `<td>${siswa.nisn||'N/A'}</td><td>${siswa.nama_siswa||'N/A'}</td><td>${siswa.kelas||'N/A'}</td><td>${tglLahir}</td><td><a href="#" class="edit-btn" data-siswa-id="${siswa.id_siswa||''}">Edit</a></td>`;
             siswaTableBody.appendChild(tr);
         });
-
-        // Tampilkan tombol lipat jika perlu
-        if (allSiswaData.length > 3 && toggleSiswaListBtn) {
-            toggleSiswaListBtn.style.display = 'block';
-        }
-    } else {
-        siswaTableBody.innerHTML = `<tr><td colspan="5" style="text-align: center;">Belum ada data siswa. Silakan import.</td></tr>`;
-    }
+        if (allSiswaData.length > 3 && toggleSiswaListBtn) { toggleSiswaListBtn.style.display = 'block'; }
+    } else { siswaTableBody.innerHTML = `<tr><td colspan="5" style="text-align: center;">Belum ada data siswa.</td></tr>`; }
 }
 
 
 /**
- * Simpan Nilai & Deskripsi Akhir (handle Mulok)
+ * Simpan Nilai & Deskripsi Akhir (handle Mulok) - SAMA DENGAN V2
  */
 function handleSimpanNilai() {
-    const id_kelas = selectKelas ? selectKelas.value : null;
-    const id_siswa = selectSiswa ? selectSiswa.value : null;
-    const id_mapel = selectMapel ? selectMapel.value : null;
-    const nilai_akhir = nilaiAkhirInput ? nilaiAkhirInput.value : null;
-    const deskripsi_rapor = finalDescriptionInput ? finalDescriptionInput.value : '';
+    const id_kelas = selectKelas ? selectKelas.value : null; const id_siswa = selectSiswa ? selectSiswa.value : null; const id_mapel = selectMapel ? selectMapel.value : null;
+    const nilai_akhir = nilaiAkhirInput ? nilaiAkhirInput.value : null; const deskripsi_rapor = finalDescriptionInput ? finalDescriptionInput.value : '';
 
-    if (!id_kelas || !id_siswa || !id_mapel || nilai_akhir === null || nilai_akhir === undefined) {
-        showNotification("Pilihan Kelas, Siswa, Mapel, dan Nilai Akhir wajib diisi!", "warning");
-        return;
-    }
-     // Validasi nilai angka
-    const nilaiNum = parseFloat(nilai_akhir);
-    if (isNaN(nilaiNum) || nilaiNum < 0 || nilaiNum > 100) {
-        showNotification("Nilai Akhir harus berupa angka antara 0 dan 100.", "warning");
-        return;
-    }
+    if (!id_kelas || !id_siswa || !id_mapel || nilai_akhir === null || nilai_akhir === undefined) { showNotification("Kelas, Siswa, Mapel, & Nilai Akhir wajib!", "warning"); return; }
+    const nilaiNum = parseFloat(nilai_akhir); if (isNaN(nilaiNum) || nilaiNum < 0 || nilaiNum > 100) { showNotification("Nilai Akhir 0-100.", "warning"); return; }
 
-    let id_cp_tp_tosend = null; // Default null (jika tidak ada CP dipilih sama sekali)
-    const hasSelectedCp = Object.keys(currentSelectedCpStatuses).length > 0;
+    let id_cp_tp_tosend = null; const hasSelectedCp = Object.keys(currentSelectedCpStatuses).filter(k => k !== 'MULOK').length > 0;
+    if (isMulokActive) { id_cp_tp_tosend = null; if (!deskripsi_rapor) { showNotification("Deskripsi Mulok wajib.", "warning"); return; } }
+    else if (hasSelectedCp) { id_cp_tp_tosend = 'REKAP'; if (!deskripsi_rapor) { if (!confirm("Deskripsi kosong. Yakin simpan?")) return; } }
+    else { if (!confirm("Tidak ada CP dipilih. Simpan nilai akhir saja?")) return; }
 
-    if (hasSelectedCp) {
-        id_cp_tp_tosend = isMulokActive ? null : 'REKAP'; // Backend akan generate ID Mulok
-    }
+    showNotification("Menyimpan...", "info"); if(simpanNilaiBtn) simpanNilaiBtn.disabled = true;
 
+    const payload = { action: "saveNilaiCp", spreadsheetId: user.spreadsheetId, id_kelas, id_siswa, id_mapel, id_cp_tp: id_cp_tp_tosend, nilai: nilaiNum, deskripsi_tercapai: deskripsi_rapor, deskripsi_perlu_bimbingan: "" };
 
-    if (isMulokActive && !deskripsi_rapor) {
-         showNotification("Untuk Muatan Lokal, deskripsi wajib diisi.", "warning");
-         return;
-    }
-     // Konfirmasi jika deskripsi kosong tapi BUKAN mulok
-     if (!isMulokActive && !deskripsi_rapor && hasSelectedCp) {
-         if (!confirm("Deskripsi rapor kosong padahal ada CP dipilih. Yakin ingin menyimpan?")) {
-             return;
-         }
-     }
-
-
-    showNotification("Menyimpan nilai akhir & deskripsi...", "info");
-    if(simpanNilaiBtn) simpanNilaiBtn.disabled = true;
-
-    const payload = {
-        action: "saveNilaiCp", spreadsheetId: user.spreadsheetId,
-        id_kelas, id_siswa, id_mapel,
-        id_cp_tp: id_cp_tp_tosend, // Kirim REKAP, null (untuk Mulok), atau null jika tidak ada CP dipilih
-        nilai: nilaiNum, // Kirim nilai angka yang sudah divalidasi
-        deskripsi_tercapai: deskripsi_rapor, // Deskripsi final
-        deskripsi_perlu_bimbingan: "" // Kosongkan
-    };
-
-    fetch(GAS_URL, {
-        method: "POST",
-        body: JSON.stringify(payload),
-        headers: { "Content-Type": "text/plain;charset=utf-8" }
-    })
-    .then(response => {
-        if (!response.ok) throw new Error(`Server merespon dengan status ${response.status}`);
-        return response.json();
-    })
-    .then(data => {
-        if (data.success) {
-            showNotification(data.message, "success");
-            // Reset form yang relevan
-            resetFinalDescriptionAndGrade();
-            if (cpSelectionList) cpSelectionList.innerHTML = '<p style="color: #6c757d;"><i>Pilih kelas, mapel, dan agama terlebih dahulu...</i></p>';
-             // Mungkin reset pilihan siswa? Atau biarkan agar bisa input siswa lain di kelas yg sama?
-             // if(selectSiswa) selectSiswa.selectedIndex = 0;
-        } else {
-             showNotification("Gagal menyimpan: " + (data.message || "Error tidak diketahui"), "error");
-             console.error("Server save error:", data.message);
-        }
-    })
-    .catch(error => {
-        console.error("Error saving nilai:", error);
-        showNotification(`Kesalahan jaringan saat menyimpan: ${error.message}. Periksa console.`, "error");
-    })
-    .finally(() => {
-        if(simpanNilaiBtn) simpanNilaiBtn.disabled = false;
-    });
+    fetch(GAS_URL, { method: "POST", body: JSON.stringify(payload), headers: { "Content-Type": "text/plain;charset=utf-8" } })
+    .then(response => { if (!response.ok) throw new Error(`Server status ${response.status}`); return response.json(); })
+    .then(data => { if (data.success) { showNotification(data.message, "success"); resetFinalDescriptionAndGrade(); if (cpSelectionList) cpSelectionList.innerHTML = '<p>...</p>'; if (isMulokActive) resetMulok(); } else { showNotification("Gagal: " + (data.message || "Error"), "error"); console.error("Save error:", data.message); } })
+    .catch(error => { console.error("Save fetch error:", error); showNotification(`Jaringan error: ${error.message}.`, "error"); })
+    .finally(() => { if(simpanNilaiBtn) simpanNilaiBtn.disabled = false; });
 }
