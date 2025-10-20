@@ -678,65 +678,43 @@ textarea.form-control:not(:read-only) {
                 <p>Silakan pilih siswa dan masukkan data capaian pembelajaran di bawah ini.</p>
                 
                 <form id="form-input-nilai">
-        <div class="form-row">
-            <div class="form-group">
-                <label for="pilih-kelas">Pilih Kelas:</label>
-                <select id="pilih-kelas" name="pilih-kelas" disabled>
-                    <option value="">Memuat...</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="pilih-siswa">Pilih Siswa:</label>
-                <select id="pilih-siswa" name="pilih-siswa" disabled>
-                    <option value="">Pilih kelas dahulu...</option>
-                </select>
-            </div>
-        </div>
-
-        <div class="form-row">
-            <div class="form-group">
-                <label for="pilih-mapel">Pilih Mata Pelajaran:</label>
-                <select id="pilih-mapel" name="pilih-mapel" disabled>
-                    <option value="">Memuat...</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="pilih-agama">Pilih Agama:</label>
-                <select id="pilih-agama" name="pilih-agama" disabled>
-                    <option value="">Pilih mapel dahulu...</option>
-                </select>
-            </div>
-        </div>
-
+    <div class="form-row">
         <div class="form-group">
-            <label for="pilih-cp">Pilih Elemen CP / TP:</label>
-            <span id="mulok-indicator" style="display: none; font-style: italic; color: #6c757d; margin-left: 10px;">(Input Manual untuk Muatan Lokal)</span>
-            <select id="pilih-cp" name="pilih-cp" disabled>
-                <option value="">Pilih mapel & agama...</option>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label for="deskripsi-tercapai-input">Deskripsi Tercapai:</label>
-            <textarea id="deskripsi-tercapai-input" class="form-control" rows="3" readonly placeholder="Pilih CP atau input manual untuk Mulok..."></textarea>
+            <label for="pilih-kelas">Pilih Kelas:</label>
+            <select id="pilih-kelas" name="pilih-kelas" disabled><option value="">Memuat...</option></select>
         </div>
         <div class="form-group">
-            <label for="deskripsi-bimbingan-input">Deskripsi Perlu Bimbingan:</label>
-            <textarea id="deskripsi-bimbingan-input" class="form-control" rows="3" readonly placeholder="Pilih CP atau input manual untuk Mulok..."></textarea>
+            <label for="pilih-siswa">Pilih Siswa:</label>
+            <select id="pilih-siswa" name="pilih-siswa" disabled><option value="">Pilih kelas dahulu...</option></select>
         </div>
-        <button type="button" id="edit-deskripsi-btn" class="btn btn-secondary btn-sm" disabled>Edit Deskripsi</button>
-
+    </div>
+    <div class="form-row">
         <div class="form-group">
-            <label for="pilih-nilai">Pilih Nilai:</label>
-            <select id="pilih-nilai" name="pilih-nilai">
-                <option value="">Pilih nilai...</option>
-                <option value="Tercapai">Tercapai</option>
-                <option value="Perlu Bimbingan">Perlu Bimbingan</option>
-            </select>
+            <label for="pilih-mapel">Pilih Mata Pelajaran:</label>
+            <select id="pilih-mapel" name="pilih-mapel" disabled><option value="">Memuat...</option></select>
         </div>
+        <div class="form-group">
+            <label for="pilih-agama">Pilih Agama:</label>
+            <select id="pilih-agama" name="pilih-agama" disabled><option value="">Pilih mapel dahulu...</option></select>
+        </div>
+    </div>
 
-        <button id="simpan-nilai-btn" class="btn btn-primary">Simpan Nilai</button>
-    </form>
+    <div class="form-group">
+        <label>Pilih Capaian Pembelajaran (CP) yang Dinilai:</label>
+        <div id="cp-selection-list" class="cp-checkbox-list">
+            <p style="color: #6c757d;"><i>Pilih kelas, mapel, dan agama terlebih dahulu...</i></p>
+        </div>
+    </div>
+    <div class="form-group">
+        <label for="final-description-input">Deskripsi Rapor (Otomatis & Bisa Diedit):</label>
+        <textarea id="final-description-input" class="form-control" rows="5" placeholder="Deskripsi akan dibuat otomatis setelah memilih CP..."></textarea>
+    </div>
+    <div class="form-group">
+        <label for="nilai-akhir-input">Nilai Akhir (Angka):</label>
+        <input type="number" id="nilai-akhir-input" class="form-control" min="0" max="100" placeholder="Masukkan nilai 0-100">
+    </div>
+    <button id="simpan-nilai-btn" class="btn btn-primary">Simpan Nilai & Deskripsi</button>
+</form>
     </div>
                 </div>
             </div>
@@ -806,6 +784,7 @@ textarea.form-control:not(:read-only) {
     <script src="dashboard.js"></script>
 </body>
 </html>
+
 
 
 
