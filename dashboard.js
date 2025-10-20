@@ -782,8 +782,8 @@ async function importSiswa(fileData) {
 }
 
 // Tombol Import CSV
-document.getElementById("import-siswa-btn").addEventListener("click", () => {
-  const fileInput = document.getElementById("import-siswa-file");
+document.getElementById("import-csv-btn").addEventListener("click", () => {
+  const fileInput = document.getElementById("csv-file-input");
   if (fileInput.files.length === 0) {
     showNotification("Pilih file CSV siswa terlebih dahulu.", "warning");
     return;
