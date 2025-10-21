@@ -687,6 +687,38 @@ function handleSimpanProfil() {
     });
 }
 
+// === Tambahan Baru: Memuat data siswa perlu bimbingan ===
+async function loadSiswaPerluBimbingan() {
+  try {
+    const response = await fetch(`${URL_GAS}?action=getSiswaPerluBimbingan`);
+    const data = await response.json();
+
+    if (!data || data.error) {
+      console.warn("Error:", data.error || "Tidak ada data siswa perlu bimbingan.");
+      return;
+    }
+
+    // Menampilkan hasil di card dashboard
+    const infoCard = document.getElementById("info-bimbingan");
+    if (infoCard) {
+      infoCard.innerHTML = `
+        <div class="p-4 rounded-2xl shadow-md bg-white border border-gray-100 transition hover:shadow-lg">
+          <div class="flex items-center justify-between mb-2">
+            <h4 class="text-lg font-semibold text-gray-800">Siswa Perlu Bimbingan</h4>
+            <span class="text-sm text-blue-600 font-medium">Total: ${data.total}</span>
+          </div>
+          <ul class="list-disc list-inside text-sm text-gray-700 space-y-1">
+            ${data.siswa.map(s => `<li>${s.nama} - ${s.kelas}</li>`).join("")}
+          </ul>
+        </div>
+      `;
+    }
+
+  } catch (err) {
+    console.error("Gagal memuat data siswa perlu bimbingan:", err);
+  }
+}
+
 // === Navigasi antar halaman ===
 document.querySelectorAll('.nav-link').forEach(link => {
   link.addEventListener('click', (e) => {
