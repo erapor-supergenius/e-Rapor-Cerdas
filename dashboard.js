@@ -729,38 +729,56 @@ function handleSimpanProfil() {
 }
 
 // =========================
-// FUNGSI MEMUAT DATA SISWA PERLU BIMBINGAN
+// FUNGSI MEMUAT DATA SISWA PERLU BIMBINGAN (FIX)
 // =========================
-async function loadSiswaPerluBimbingan() {
-  try {
-    const response = await fetch(`${GAS_URL}?action=getSiswaPerluBimbingan`);
-    const data = await response.json();
+function loadSiswaPerluBimbingan() {
+  console.log("DOM siap, memuat data siswa perlu bimbingan...");
 
-    if (!data || data.error) {
-      console.warn("Error:", data.error || "Tidak ada data siswa perlu bimbingan.");
-      return;
-    }
-
-    // Menampilkan hasil di card dashboard
-    const infoCard = document.getElementById("info-bimbingan");
-    if (infoCard) {
-      infoCard.innerHTML = `
-        <div class="p-4 rounded-2xl shadow-md bg-white border border-gray-100 transition hover:shadow-lg">
-          <div class="flex items-center justify-between mb-2">
-            <h4 class="text-lg font-semibold text-gray-800">Siswa Perlu Bimbingan</h4>
-            <span class="text-sm text-blue-600 font-medium">Total: ${data.total}</span>
-          </div>
-          <ul class="list-disc list-inside text-sm text-gray-700 space-y-1">
-            ${data.siswa.map(s => `<li>${s.nama} - ${s.kelas}</li>`).join("")}
-          </ul>
-        </div>
-      `;
-    }
-
-  } catch (err) {
-    console.error("Gagal memuat data siswa perlu bimbingan:", err);
+  // Cek apakah user sudah memiliki ID Spreadsheet
+  if (!user || !user.spreadsheetId) {
+    console.error("Spreadsheet ID tidak ditemukan pada user.");
+    return;
   }
+
+  // Payload yang dikirim ke Apps Script
+  const payload = {
+    action: "getSiswaPerluBimbingan",
+    spreadsheetId: user.spreadsheetId
+  };
+
+  // Kirim data ke server via POST
+  fetch(GAS_URL, {
+    method: "POST",
+    body: JSON.stringify(payload),
+    headers: { "Content-Type": "text/plain;charset=utf-8" }
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data && data.siswa) {
+      console.log(`[BIMBINGAN] Total siswa perlu bimbingan: ${data.total}`);
+      const listEl = document.getElementById("list-siswa-bimbingan");
+
+      if (listEl) {
+        listEl.innerHTML = "";
+        if (data.siswa.length === 0) {
+          listEl.innerHTML = "<li>Tidak ada siswa yang perlu bimbingan.</li>";
+        } else {
+          data.siswa.forEach(s => {
+            const li = document.createElement("li");
+            li.textContent = `${s.nama} (${s.kelas})`;
+            listEl.appendChild(li);
+          });
+        }
+      }
+    } else {
+      console.error("Data siswa perlu bimbingan tidak valid:", data);
+    }
+  })
+  .catch(err => {
+    console.error("Gagal memuat data siswa perlu bimbingan:", err);
+  });
 }
+
 
 // =========================
 // PEMANGGILAN SAAT DOM SIAP
