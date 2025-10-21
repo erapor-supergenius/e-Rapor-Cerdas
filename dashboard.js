@@ -89,6 +89,128 @@ function showNotification(message, type = 'info') { if (!notificationToast || !n
 function hideNotification() { if (!notificationToast) return; notificationToast.style.display = 'none'; if (notificationToast.timer) clearTimeout(notificationToast.timer); notificationToast.timer = null; }
 if (notificationClose) notificationClose.addEventListener('click', hideNotification);
 
+/* === (BARU) FUNGSI UNTUK PROFIL SEKOLAH === */
+/**
+ * 1. Mengisi data form profil sekolah dari data yang sudah dimuat
+ */
+function populateProfilForm(profil) {
+  if (!profil) return;
+  
+  // Loop semua keys di profilInputs dan isi nilainya
+  for (const key in profilInputs) {
+    if (profilInputs[key] && profil[key] !== undefined) {
+      profilInputs[key].value = profil[key];
+    }
+  }
+  
+  // Set preview logo dari URL yang ada
+  if (profil.url_logo) {
+    logoPreview.src = profil.url_logo;
+  }
+}
+
+/**
+ * 2. Menangani upload file logo
+ * Ini akan membaca file, mengubahnya ke Base64, dan mengirimnya ke GAS
+ */
+function handleLogoUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  // Validasi tipe file
+  if (!['image/jpeg', 'image/png'].includes(file.type)) {
+    showToast('Format file tidak didukung. Gunakan .jpg atau .png', 'error');
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.readAsDataURL(file);
+  reader.onloadend = () => {
+    // Tampilkan loading & nonaktifkan tombol
+    showToast('Mengupload logo...', 'info');
+    btnSimpanProfil.disabled = true;
+    profilLoadingSpinner.style.display = 'inline-block';
+
+    const base64String = reader.result.split(',')[1]; // Ambil data Base64-nya saja
+    const fileData = {
+      base64: base64String,
+      mimeType: file.type,
+      fileName: file.name
+    };
+
+    // Kirim ke backend (GAS)
+    fetchData('uploadLogo', fileData)
+      .then(response => {
+        if (response.success) {
+          const newUrl = response.data.url;
+          showToast('Logo berhasil diupload!', 'success');
+          
+          // Perbarui preview dan input hidden
+          logoPreview.src = newUrl;
+          profilInputs.url_logo.value = newUrl; // SIMPAN URL BARU
+          
+          // Perbarui juga logo di sidebar
+          document.getElementById('sidebar-logo-img').src = newUrl;
+        } else {
+          throw new Error(response.message);
+        }
+      })
+      .catch(error => {
+        console.error('Error uploading logo:', error);
+        showToast(`Gagal upload logo: ${error.message}`, 'error');
+      })
+      .finally(() => {
+        // Sembunyikan loading & aktifkan tombol
+        btnSimpanProfil.disabled = false;
+        profilLoadingSpinner.style.display = 'none';
+        event.target.value = null; // Reset input file
+      });
+  };
+}
+
+/**
+ * 3. Mengumpulkan data dari form dan menyimpannya ke Sheet
+ */
+function simpanDataProfil() {
+  // Kumpulkan semua data dari form
+  let dataToSave = {};
+  for (const key in profilInputs) {
+    if (profilInputs[key]) {
+      dataToSave[key] = profilInputs[key].value;
+    }
+  }
+
+  // Tampilkan loading
+  btnSimpanProfil.disabled = true;
+  profilLoadingSpinner.style.display = 'inline-block';
+  showToast('Menyimpan data profil...', 'info');
+
+  // Kirim ke backend (GAS)
+  fetchData('simpanProfilSekolah', dataToSave)
+    .then(response => {
+      if (response.success) {
+        showToast('Profil sekolah berhasil diperbarui!', 'success');
+        
+        // Perbarui header sidebar secara real-time
+        document.getElementById('sidebar-nama-sekolah').textContent = dataToSave.nama_sekolah;
+        document.getElementById('sidebar-subtext').textContent = `NPSN: ${dataToSave.npsn}`;
+        
+      } else {
+        throw new Error(response.message);
+      }
+    })
+    .catch(error => {
+      console.error('Error saving profil:', error);
+      showToast(`Gagal menyimpan: ${error.message}`, 'error');
+    })
+    .finally(() => {
+      // Sembunyikan loading
+      btnSimpanProfil.disabled = false;
+      profilLoadingSpinner.style.display = 'none';
+    });
+}
+/* === (SELESAI) FUNGSI PROFIL SEKOLAH === */
+
 // --- Saat DOM Siap ---
 document.addEventListener("DOMContentLoaded", () => {
     console.log("DOM siap.");
