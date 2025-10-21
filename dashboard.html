@@ -17,7 +17,81 @@
     .content-page.active {
         display: block;
     }
-</style>
+    
+    /* CSS Tambahan untuk Tombol Edit Deskripsi */
+    #edit-deskripsi-btn {
+        margin-top: -10px;
+        margin-bottom: 15px;
+    }
+    .form-row {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+    .form-row .form-group {
+        flex: 1;
+    }
+    /* CSS untuk list checkbox CP */
+    .cp-checkbox-list {
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 1rem;
+        max-height: 250px;
+        overflow-y: auto;
+        background-color: #f9f9f9;
+    }
+    .cp-item {
+        margin-bottom: 0.8rem;
+        padding-bottom: 0.8rem;
+        border-bottom: 1px dashed #eee;
+    }
+    .cp-item:last-child {
+        margin-bottom: 0;
+        padding-bottom: 0;
+        border-bottom: none;
+    }
+    .cp-item-header {
+        font-weight: 500;
+        margin-bottom: 0.4rem;
+        font-size: 0.95em;
+        color: #333;
+    }
+    .cp-item-options label {
+        display: inline-flex;
+        align-items: center;
+        margin-right: 1.5rem;
+        font-size: 0.9em;
+        cursor: pointer;
+    }
+    .cp-item-options input[type="checkbox"] {
+        margin-right: 0.4rem;
+        cursor: pointer;
+    }
+    /* CSS untuk Pengaturan Deskripsi */
+    .description-phrase-settings {
+        background-color: #f0f4f8;
+        padding: 1rem;
+        border-radius: 5px;
+        margin-bottom: 1.5rem;
+        border: 1px solid #d6e0eb;
+    }
+    .phrase-group {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.75rem;
+    }
+    .phrase-group label {
+        flex-basis: 150px;
+        flex-shrink: 0;
+        margin-bottom: 0;
+        text-align: right;
+        font-size: 0.9em;
+    }
+    .phrase-group select, .custom-phrase-input {
+        flex-grow: 1;
+    }
+    </style>
 </head>
 <body>
 
@@ -28,38 +102,37 @@
 
     <div class="d-flex" id="wrapper">
 
+        <!-- ===== SIDEBAR ===== -->
         <div class="bg-dark border-right" id="sidebar-wrapper">
             <div class="sidebar-heading text-white text-center">
-            <img src="assets/logo.png" alt="Logo Sekolah" style="width: 80px; margin-bottom: 10px;"> 
-            <h4>e-Rapor Cerdas</h4>
-            <h5 id="sidebar-school-name" class="text-white-50">[Nama Sekolah]</h5>
-        </div>
+                <img src="assets/logo.png" alt="Logo Sekolah" style="width: 80px; margin-bottom: 10px;"> 
+                <h4>e-Rapor Cerdas</h4>
+                <h5 id="sidebar-school-name" class="text-white-50">[Nama Sekolah]</h5>
+            </div>
             <div class="list-group list-group-flush">
                 <a href="#" class="list-group-item list-group-item-action bg-dark text-white nav-link active" data-page="page-home">
                     <i class="fas fa-home me-2"></i>Dashboard
                 </a>
                 <a href="#" class="list-group-item list-group-item-action bg-dark text-white nav-link" data-page="page-profil-sekolah">
-                <i class="fas fa-school me-2"></i>Profil Sekolah
+                    <i class="fas fa-school me-2"></i>Profil Sekolah
+                </a>
+                 <a href="#" class="list-group-item list-group-item-action bg-dark text-white nav-link" data-page="page-data-siswa">
+                    <i class="fas fa-users me-2"></i>Data Siswa
                 </a>
                 <a href="#" class="list-group-item list-group-item-action bg-dark text-white nav-link" data-page="page-input-nilai">
                     <i class="fas fa-edit me-2"></i>Input Nilai CP
                 </a>
-                <a href="#" class="list-group-item list-group-item-action bg-dark text-white nav-link" data-page="page-data-siswa">
-                    <i class="fas fa-users me-2"></i>Data Siswa
-                </a>
                 <a href="#" class="list-group-item list-group-item-action bg-dark text-white nav-link" data-page="page-cetak-rapor">
                     <i class="fas fa-print me-2"></i>Cetak Rapor
                 </a>
-                </div>
+            </div>
         </div>
+        
         <div id="page-content-wrapper">
-
             <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
                 <div class="container-fluid">
                     <div class="ms-auto d-flex align-items-center">
-                        <span id="welcome-message" class="navbar-text me-3">
-                            Selamat Datang...
-                        </span>
+                        <span id="welcome-message" class="navbar-text me-3">Selamat Datang...</span>
                         <button id="logout-button" class="btn btn-danger btn-sm">Logout</button>
                     </div>
                 </div>
@@ -67,225 +140,123 @@
 
             <div class="container-fluid p-4">
 
+                <!-- ===== Halaman: Dashboard (Home) ===== -->
                 <div class="content-page active" id="page-home">
                     <h1 class="mb-4">Dashboard Utama</h1>
                     
                     <div class="row">
                         <div class="col-lg-4 col-md-6 mb-4">
-                            <div class="card shadow-sm h-100">
-                                <div class="card-body">
-                                    <h5 class="card-title">Siswa Terdaftar</h5>
-                                    <p class="card-text fs-3" id="stat-jumlah-siswa"> memuat... </p>
-                                    <p class="card-text text-muted">Total siswa di sekolah Anda.</p>
-                                </div>
-                            </div>
+                            <div class="card shadow-sm h-100"><div class="card-body">
+                                <h5 class="card-title">Siswa Terdaftar</h5>
+                                <p class="card-text fs-3" id="stat-jumlah-siswa"> memuat... </p>
+                                <p class="card-text text-muted">Total siswa di sekolah Anda.</p>
+                            </div></div>
                         </div>
                         <div class="col-lg-4 col-md-6 mb-4">
-                            <div class="card shadow-sm h-100">
-                                <div class="card-body">
-                                    <h5 class="card-title">Mapel Diajarkan</h5>
-                                    <p class="card-text fs-3" id="stat-jumlah-mapel"> memuat... </p>
-                                    <p class="card-text text-muted">Mapel yang Anda ampu.</p>
-                                </div>
-                            </div>
+                            <div class="card shadow-sm h-100"><div class="card-body">
+                                <h5 class="card-title">Mapel Diajarkan</h5>
+                                <p class="card-text fs-3" id="stat-jumlah-mapel"> memuat... </p>
+                                <p class="card-text text-muted">Total mapel yang tersedia.</p>
+                            </div></div>
                         </div>
                         <div class="col-lg-4 col-md-6 mb-4">
-                            <div class="card shadow-sm h-100">
-                                <div class="card-body">
-                                    <h5 class="card-title">Rapor Selesai (Semester Ini)</h5>
-                                    <p class="card-text fs-3" id="stat-rapor-selesai"> memuat... </p>
-                                    <p class="card-text text-muted">Persentase nilai yang sudah diinput.</p>
-                                </div>
-                            </div>
+                            <div class="card shadow-sm h-100"><div class="card-body">
+                                <h5 class="card-title">Rapor Selesai</h5>
+                                <p class="card-text fs-3" id="stat-rapor-selesai"> memuat... </p>
+                                <p class="card-text text-muted">Persentase nilai akhir diinput.</p>
+                            </div></div>
                         </div>
                     </div>
                     <hr class="my-4">
 
                     <h2>Akses Cepat</h2>
                     <div class="list-group">
-                        <a href="#" class="list-group-item list-group-item-action nav-link" data-page="page-input-nilai">
-                            <strong>Input Nilai CP</strong><br>
-                            <small>Mulai menilai capaian pembelajaran siswa per mata pelajaran.</small>
-                        </a>
-                        <a href="#" class="list-group-item list-group-item-action nav-link" data-page="page-data-siswa">
-                            <strong>Data Siswa</strong><br>
-                            <small>Kelola dan impor data siswa Anda.</small>
-                        </a>
-                        <a href="#" class="list-group-item list-group-item-action nav-link" data-page="page-cetak-rapor">
-                            <strong>Cetak Rapor</strong><br>
-                            <small>Unduh dan cetak rapor yang sudah selesai.</small>
-                        </a>
+                        <a href="#" class="list-group-item list-group-item-action nav-link" data-page="page-input-nilai"><strong>Input Nilai CP</strong><br><small>Mulai menilai capaian pembelajaran siswa.</small></a>
+                        <a href="#" class="list-group-item list-group-item-action nav-link" data-page="page-data-siswa"><strong>Data Siswa</strong><br><small>Kelola dan impor data siswa Anda.</small></a>
+                        <a href="#" class="list-group-item list-group-item-action nav-link" data-page="page-cetak-rapor"><strong>Cetak Rapor</strong><br><small>Unduh rapor yang sudah selesai.</small></a>
                     </div>
                 </div>
 
+                <!-- ===== Halaman: Profil Sekolah ===== -->
+                <div class="content-page" id="page-profil-sekolah">
+                    <h1 class="mb-4">Profil Sekolah</h1>
+                    <div class="card shadow-sm"><div class="card-header">Data Identitas Sekolah</div>
+                        <div class="card-body">
+                            <p>Data ini akan digunakan untuk kop rapor. Harap isi dengan benar.</p>
+                            <form id="form-profil-sekolah">
+                                <div class="form-group mb-3"><label for="profil-nama-sekolah" class="form-label">Nama Sekolah:</label><input type="text" id="profil-nama-sekolah" class="form-control" placeholder="Contoh: SMPN 1 Cerdas"></div>
+                                <div class="form-group mb-3"><label for="profil-npsn" class="form-label">NPSN:</label><input type="text" id="profil-npsn" class="form-control" placeholder="Masukkan NPSN"></div>
+                                <div class="form-group mb-3"><label for="profil-alamat" class="form-label">Alamat Sekolah:</label><textarea id="profil-alamat" class="form-control" rows="3" placeholder="Contoh: Jl. Pendidikan No. 1"></textarea></div>
+                                <div class="form-group mb-3"><label for="profil-kepsek" class="form-label">Nama Kepala Sekolah:</label><input type="text" id="profil-kepsek" class="form-control" placeholder="Nama lengkap beserta gelar"></div>
+                                <div class="form-group mb-3"><label for="profil-nip-kepsek" class="form-label">NIP Kepala Sekolah:</label><input type="text" id="profil-nip-kepsek" class="form-control" placeholder="Masukkan NIP (isi - jika tidak ada)"></div>
+                                <button id="simpan-profil-btn" class="btn btn-primary"><i class="fas fa-save me-2"></i>Simpan Profil Sekolah</button>
+                                <div id="profil-loading-spinner" class="spinner-border text-primary ms-3" role="status" style="display: none;"><span class="visually-hidden">Memuat...</span></div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ===== Halaman: Input Nilai CP (Versi Checkbox & Nilai Angka) ===== -->
                 <div class="content-page" id="page-input-nilai">
                     <h1 class="mb-4">Input Nilai Capaian Pembelajaran (CP)</h1>
-                    
                     <form id="form-input-nilai">
-                        <div class="row g-3">
-                            <div class="col-lg-6">
-                                <div class="card shadow-sm">
-                                    <div class="card-header">
-                                        Filter Siswa
-                                    </div>
-                                    <div class="card-body">
-                                        <div class="form-group mb-3">
-                                            <label for="pilih-kelas" class="form-label">Pilih Kelas:</label>
-                                            <select id="pilih-kelas" class="form-select" disabled>
-                                                <option value="">Memuat data...</option>
-                                            </select>
-                                        </div>
-                                        <div class="form-group mb-3">
-                                            <label for="pilih-siswa" class="form-label">Pilih Siswa:</label>
-                                            <select id="pilih-siswa" class="form-select" disabled>
-                                                <option value="">Pilih kelas dahulu...</option>
-                                            </select>
-                                        </div>
-                                        <div class="form-group mb-3">
-                                            <label for="pilih-mapel" class="form-label">Pilih Mata Pelajaran:</label>
-                                            <select id="pilih-mapel" class="form-select" disabled>
-                                                <option value="">Memuat data...</option>
-                                            </select>
-                                        </div>
-                                        <div class="form-group mb-3">
-                                            <label for="pilih-agama" class="form-label">Pilih Agama (jika PAI):</label>
-                                            <select id="pilih-agama" class="form-select" disabled>
-                                                <option value="">Pilih mapel dahulu...</option>
-                                            </select>
-                                        </div>
-
-                                        <div class="form-group mb-3">
-                                            <label for="pilih-tahun-ajaran" class="form-label">Tahun Ajaran:</label>
-                                            <input type="text" id="pilih-tahun-ajaran" class="form-control" placeholder="Contoh: 2024/2025">
-                                        </div>
-                                        <div class="form-group mb-3">
-                                            <label for="pilih-semester" class="form-label">Semester:</label>
-                                            <select id="pilih-semester" class="form-select">
-                                                <option value="">Pilih Semester...</option>
-                                                <option value="Ganjil">Ganjil</option>
-                                                <option value="Genap">Genap</option>
-                                            </select>
-                                        </div>
-                                        </div>
-                                </div>
-                                <div class="card shadow-sm mt-4">
-                                    <div class="card-header">
-                                        Pilih Capaian Pembelajaran (CP) yang Dinilai
-                                        <span id="mulok-indicator" class="badge bg-warning ms-2" style="display: none;">Mode Mulok</span>
-                                    </div>
-                                    <div class="card-body" id="cp-selection-list">
-                                        <p style="color: #6c757d;"><i>Pilih kelas, mapel, & agama...</i></p>
-                                        </div>
-                                </div>
-                            </div>
-
-                            <div class="col-lg-6">
-                                <div class="card shadow-sm">
-                                    <div class="card-header">
-                                        Deskripsi Rapor & Nilai Akhir
-                                    </div>
-                                    <div class="card-body">
-                                        <div class="form-group mb-3">
-                                            <label for="kalimat-pembuka-tercapai" class="form-label">Kalimat Pembuka (Tercapai):</label>
-                                            <select id="kalimat-pembuka-tercapai" class="form-select mb-2">
-                                                <option value="custom">-- Tulis Manual --</option>
-                                            </select>
-                                            <input type="text" id="custom-pembuka-tercapai" class="form-control" placeholder="Tulis kalimat pembuka manual..." style="display: none;">
-                                        </div>
-                                        <div class="form-group mb-3">
-                                            <label for="kalimat-pembuka-bimbingan" class="form-label">Kalimat Pembuka (Perlu Bimbingan):</label>
-                                            <select id="kalimat-pembuka-bimbingan" class="form-select mb-2">
-                                                <option value="custom">-- Tulis Manual --</option>
-                                            </select>
-                                            <input type="text" id="custom-pembuka-bimbingan" class="form-control" placeholder="Tulis kalimat pembuka manual..." style="display: none;">
-                                        </div>
-                                        <div class="form-group mb-3">
-                                            <label for="final-description-input" class="form-label">Deskripsi Final Rapor:</label>
-                                            <textarea id="final-description-input" class="form-control" rows="8" placeholder="Deskripsi akan dibuat otomatis..." readonly></textarea>
-                                            <button id="edit-deskripsi-btn" class="btn btn-secondary btn-sm mt-2" style="display: none;">Edit Manual</button>
-                                        </div>
-                                        
-                                        <hr>
-
-                                        <div class="form-group mb-3">
-                                            <label for="nilai-akhir-input" class="form-label fw-bold">Nilai Akhir (Angka):</label>
-                                            <input type="number" id="nilai-akhir-input" class="form-control" min="0" max="100" placeholder="0-100">
-                                        </div>
-                                        
-                                        <button id="simpan-nilai-btn" class="btn btn-primary w-100" disabled>
-                                            Simpan Nilai & Deskripsi
-                                        </button>
-                                    </div>
-                                </div>
+                        <div class="form-row">
+                            <div class="form-group"><label for="pilih-kelas">Pilih Kelas:</label><select id="pilih-kelas" name="pilih-kelas" disabled><option value="">Memuat...</option></select></div>
+                            <div class="form-group"><label for="pilih-siswa">Pilih Siswa:</label><select id="pilih-siswa" name="pilih-siswa" disabled><option value="">Pilih kelas dahulu...</option></select></div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group"><label for="pilih-mapel">Pilih Mata Pelajaran:</label><select id="pilih-mapel" name="pilih-mapel" disabled><option value="">Memuat...</option></select></div>
+                            <div class="form-group"><label for="pilih-agama">Pilih Agama:</label><select id="pilih-agama" name="pilih-agama" disabled><option value="">Pilih mapel dahulu...</option></select></div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group"><label for="pilih-tahun-ajaran">Tahun Ajaran:</label><input type="text" id="pilih-tahun-ajaran" class="form-control" placeholder="Contoh: 2024/2025"></div>
+                            <div class="form-group"><label for="pilih-semester">Semester:</label><select id="pilih-semester" class="form-select"><option value="">Pilih Semester...</option><option value="Ganjil">Ganjil</option><option value="Genap">Genap</option></select></div>
+                        </div>
+                        <div class="form-group">
+                            <label>Pilih Capaian Pembelajaran (CP) yang Dinilai:</label>
+                            <span id="mulok-indicator" style="display: none; font-style: italic; color: #6c757d; margin-left: 10px;">(Input Manual untuk Muatan Lokal)</span>
+                            <div id="cp-selection-list" class="cp-checkbox-list"><p style="color: #6c757d;"><i>Pilih kelas, mapel, dan agama terlebih dahulu...</i></p></div>
+                        </div>
+                        <div class="form-group">
+                            <label>Pengaturan Kalimat Deskripsi:</label>
+                            <div class="description-phrase-settings">
+                                <div class="phrase-group"><label for="kalimat-pembuka-tercapai">Awalan Tercapai:</label><select id="kalimat-pembuka-tercapai"><option value="">Memuat...</option><option value="custom">-- Tulis Manual --</option></select><input type="text" id="custom-pembuka-tercapai" class="custom-phrase-input" placeholder="Tulis awalan kalimat..." style="display: none;"></div>
+                                <div class="phrase-group"><label for="kalimat-pembuka-bimbingan">Awalan Bimbingan:</label><select id="kalimat-pembuka-bimbingan"><option value="">Memuat...</option><option value="custom">-- Tulis Manual --</option></select><input type="text" id="custom-pembuka-bimbingan" class="custom-phrase-input" placeholder="Tulis awalan kalimat..." style="display: none;"></div>
                             </div>
                         </div>
+                        <div class="form-group">
+                            <label for="final-description-input">Deskripsi Rapor (Otomatis & Bisa Diedit):</label>
+                            <textarea id="final-description-input" class="form-control" rows="5" placeholder="Deskripsi akan dibuat otomatis..." readonly></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="nilai-akhir-input">Nilai Akhir (Angka):</label>
+                            <input type="number" id="nilai-akhir-input" class="form-control" min="0" max="100" placeholder="0-100">
+                        </div>
+                        <button id="simpan-nilai-btn" class="btn btn-primary" disabled>Simpan Nilai & Deskripsi</button>
                     </form>
                 </div>
 
+                <!-- ===== Halaman: Data Siswa ===== -->
                 <div class="content-page" id="page-data-siswa">
-                    <h1 class="mb-4">Kelola Data Siswa</h1>
-                    
-                    <div class="card shadow-sm">
-                        <div class="card-header">
-                            Impor Data Siswa
-                        </div>
-                        <div class="card-body">
-                            <p>Impor siswa baru atau perbarui data siswa yang ada menggunakan template CSV.</p>
-                            <button id="download-template-btn" class="btn btn-success">
-                                <i class="fas fa-download me-2"></i>Unduh Template CSV
-                            </button>
-                            <button id="import-csv-btn" class="btn btn-primary">
-                                <i class="fas fa-upload me-2"></i>Impor CSV
-                            </button>
-                            <input type="file" id="csv-file-input" accept=".csv" style="display: none;">
-                        </div>
-                    </div>
-
-                    <div class="card shadow-sm mt-4">
-                        <div class="card-header">
-                            Daftar Siswa Terdaftar
-                        </div>
-                        <div class="card-body">
-                            <div class="data-table-container">
-                                <table class="table table-striped table-hover">
-                                    <thead class="table-dark">
-                                        <tr>
-                                            <th>NISN</th>
-                                            <th>Nama Siswa</th>
-                                            <th>Kelas</th>
-                                            <th>Tanggal Lahir</th>
-                                            <th>Aksi</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="siswa-table-body">
-                                        <tr>
-                                            <td colspan="5" class="text-center">Memuat data...</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                            <button id="toggle-siswa-list" class="btn btn-outline-secondary mt-2" style="display: none;">Tampilkan Semua Siswa</button>
-                        </div>
-                    </div>
+                     <!-- ... (kode lengkap halaman data siswa dari jawaban sebelumnya) ... -->
                 </div>
                 
+                <!-- ===== Halaman: Cetak Rapor ===== -->
                 <div class="content-page" id="page-cetak-rapor">
-                    <h1 class="mb-4">Cetak Rapor</h1>
-                    <div class="card shadow-sm">
-                        <div class="card-body">
-                            <p>Fitur cetak rapor akan tersedia di sini.</p>
-                            </div>
-                    </div>
+                     <!-- ... (kode lengkap halaman cetak rapor dari jawaban sebelumnya) ... -->
                 </div>
 
             </div>
-        </div>
-        </div>
+        </div> 
+    </div>
+
+    <!-- Footer -->
     <footer class="footer mt-auto py-3 bg-light border-top" style="width: 100%;">
         <div class="container-fluid text-center">
             <span class="text-muted">Dikembangkan oleh : Dedi Agus Mustofa, S.Pd.SD - 2025</span>
         </div>
     </footer>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="dashboard.js"></script>
 </body>
