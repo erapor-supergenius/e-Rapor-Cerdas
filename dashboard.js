@@ -728,32 +728,43 @@ function handleSimpanProfil() {
     });
 }
 
-// === Tambahan Baru: Memuat data siswa perlu bimbingan ===
+// === Memuat data siswa perlu bimbingan ===
 async function loadSiswaPerluBimbingan() {
   try {
     const response = await fetch(`${GAS_URL}?action=getSiswaPerluBimbingan`);
-    const data = await response.json();
-
-    if (!data || data.error) {
-      console.warn("Error:", data.error || "Tidak ada data siswa perlu bimbingan.");
+    if (!response.ok) {
+      console.error("Gagal fetch data:", response.status, response.statusText);
       return;
     }
 
-    // Menampilkan hasil di card dashboard
-    const infoCard = document.getElementById("info-bimbingan");
-    if (infoCard) {
-      infoCard.innerHTML = `
-        <div class="p-4 rounded-2xl shadow-md bg-white border border-gray-100 transition hover:shadow-lg">
-          <div class="flex items-center justify-between mb-2">
-            <h4 class="text-lg font-semibold text-gray-800">Siswa Perlu Bimbingan</h4>
-            <span class="text-sm text-blue-600 font-medium">Total: ${data.total}</span>
-          </div>
-          <ul class="list-disc list-inside text-sm text-gray-700 space-y-1">
-            ${data.siswa.map(s => `<li>${s.nama} - ${s.kelas}</li>`).join("")}
-          </ul>
-        </div>
-      `;
+    const data = await response.json();
+
+    if (!data || data.error) {
+      console.warn("Error:", data?.error || "Tidak ada data siswa perlu bimbingan.");
+      return;
     }
+
+    // Pastikan ada elemen target
+    const infoCard = document.getElementById("info-bimbingan");
+    if (!infoCard) {
+      console.warn("Elemen #info-bimbingan tidak ditemukan di HTML.");
+      return;
+    }
+
+    // Pastikan data.siswa adalah array
+    const siswaList = Array.isArray(data.siswa) ? data.siswa : [];
+
+    infoCard.innerHTML = `
+      <div class="p-4 rounded-2xl shadow-md bg-white border border-gray-100 transition hover:shadow-lg">
+        <div class="flex items-center justify-between mb-2">
+          <h4 class="text-lg font-semibold text-gray-800">Siswa Perlu Bimbingan</h4>
+          <span class="text-sm text-blue-600 font-medium">Total: ${data.total || siswaList.length}</span>
+        </div>
+        <ul class="list-disc list-inside text-sm text-gray-700 space-y-1">
+          ${siswaList.map(s => `<li>${s.nama || "Nama tidak tersedia"} - ${s.kelas || "-"}</li>`).join("") || "<li>Tidak ada siswa</li>"}
+        </ul>
+      </div>
+    `;
 
   } catch (err) {
     console.error("Gagal memuat data siswa perlu bimbingan:", err);
