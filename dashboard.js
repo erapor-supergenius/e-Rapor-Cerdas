@@ -687,6 +687,54 @@ function handleSimpanProfil() {
     });
 }
 
+// === Navigasi antar halaman ===
+document.querySelectorAll('.nav-link').forEach(link => {
+  link.addEventListener('click', (e) => {
+    e.preventDefault();
+
+    document.querySelectorAll('.content-page').forEach(p => p.style.display = 'none');
+    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+
+    const targetPage = e.currentTarget.dataset.page;
+    const pageElement = document.getElementById(targetPage);
+
+    if (pageElement) {
+      pageElement.style.display = 'block';
+      e.currentTarget.classList.add('active');
+    } else {
+      console.warn('Halaman tidak ditemukan:', targetPage);
+    }
+  });
+});
+
+// === Akses Cepat dari Dashboard Home ===
+document.addEventListener('DOMContentLoaded', () => {
+  const quickActions = [
+    { buttonId: 'goto-input-nilai', targetPage: 'page-input-nilai' },
+    { buttonId: 'goto-data-siswa', targetPage: 'page-data-siswa' },
+    { buttonId: 'goto-profil', targetPage: 'page-profil-sekolah' },
+  ];
+
+  quickActions.forEach(({ buttonId, targetPage }) => {
+    const btn = document.getElementById(buttonId);
+    if (btn) {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+
+        document.querySelectorAll('.content-page').forEach(p => p.style.display = 'none');
+        document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+
+        const page = document.getElementById(targetPage);
+        if (page) {
+          page.style.display = 'block';
+          const menu = document.querySelector(`.nav-link[data-page="${targetPage}"]`);
+          if (menu) menu.classList.add('active');
+        }
+      });
+    }
+  });
+});
+
 // Kode Tambahan Chatgbt
 // === Navigasi antar halaman ===
 document.querySelectorAll('.nav-link').forEach(link => {
