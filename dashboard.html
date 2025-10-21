@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - e-Rapor Cerdas</title>
-    <!-- Bootstrap Icons (untuk ikon) -->
+    <!-- Ikon Bootstrap (Untuk ikon menu yang lebih bagus) -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <style>
         /* CSS Lengkap untuk Tampilan Elegan & Profesional */
@@ -13,14 +13,14 @@
             --sidebar-text: #ecf0f1;
             --sidebar-hover-bg: #34495e;
             --sidebar-active-bg: #007bff;
-            --content-bg: #f8f9fa;
+            --content-bg: #f8f9fa; /* Abu-abu sangat terang */
             --card-bg: #ffffff;
             --text-color: #343a40;
             --border-color: #dee2e6;
         }
 
         body {
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             margin: 0;
             background-color: var(--content-bg);
             color: var(--text-color);
@@ -84,12 +84,10 @@
         #logout-button:hover { background-color: #c82333; }
         .main-content { flex-grow: 1; padding: 2rem; }
         
-        /* === LOGIKA PEMISAH HALAMAN === */
         .content-page { display: none; }
         .content-page.active { display: block; animation: fadeIn 0.4s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
-        /* === AKHIR LOGIKA PEMISAH === */
-
+        
         .main-content h1 { margin-top: 0; margin-bottom: 1.5rem; color: #2c3e50; }
 
         /* === Style Umum (Card, Form, Tombol) === */
@@ -104,7 +102,7 @@
         /* === Notifikasi Elegan === */
         .notification-toast {
             position: fixed; top: 20px; right: 20px; z-index: 9999;
-            background: #fff; padding: 1.25rem 1.5rem; border-radius: 8px;
+            background: #fff; padding: 1rem 1.25rem; border-radius: 8px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.15); border-left: 5px solid #17a2b8; /* Info */
             display: none; align-items: center; gap: 1rem; animation: slideIn 0.3s ease-out;
             min-width: 300px; max-width: 400px;
@@ -112,8 +110,8 @@
         .notification-toast.success { border-left-color: #28a745; }
         .notification-toast.error { border-left-color: #dc3545; }
         .notification-toast.warning { border-left-color: #ffc107; }
-        #notification-toast-message { font-size: 1rem; font-weight: 500; }
-        .notification-toast-close { font-size: 1.6rem; color: #aaa; cursor: pointer; line-height: 1; margin-left: auto; background: none; border: none; }
+        #notification-toast-message { font-size: 0.95rem; font-weight: 500; }
+        .notification-toast-close { font-size: 1.6rem; color: #aaa; cursor: pointer; line-height: 1; margin-left: auto; background: none; border: none; padding: 0 0.5rem; }
         .notification-toast-close:hover { color: #555; }
         @keyframes slideIn { from { opacity: 0; transform: translateX(100%); } to { opacity: 1; transform: translateX(0); } }
 
@@ -197,7 +195,7 @@
                 <!-- ===== Halaman: Dashboard (Home) ===== -->
                 <div class="content-page active" id="page-home">
                      <h1>Dashboard Utama</h1>
-                     <p class="lead text-muted">Selamat datang di e-Rapor Cerdas. Ringkasan data sekolah Anda ada di bawah ini.</p>
+                     <p class="lead text-muted">Selamat datang! Ringkasan data sekolah Anda ada di bawah ini.</p>
                      <div class="row">
                         <div class="col-lg-4 col-md-6 mb-4">
                             <div class="card h-100"><div class="card-body">
@@ -235,6 +233,40 @@
                                 <button id="simpan-profil-btn" class="btn btn-primary"><i class="bi bi-save-fill me-2"></i>Simpan Profil Sekolah</button>
                                 <div id="profil-loading-spinner" class="spinner-border text-primary ms-3" role="status" style="display: none;"><span class="visually-hidden">Memuat...</span></div>
                             </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- ===== Halaman: Data Siswa ===== -->
+                <div class="content-page" id="page-data-siswa">
+                    <h1>Kelola Data Siswa</h1>
+                    <div class="card">
+                        <div class="card-header">Impor Data Siswa</div>
+                        <div class="card-body">
+                            <div class="info-box mb-3">
+                                <h4>Panduan Import</h4>
+                                <ol><li>Klik <strong>Unduh Template</strong>.</li><li>Buka & isi data siswa, lalu <strong>Simpan sebagai .csv</strong>.</li><li>Klik <strong>Impor CSV</strong>, pilih file .csv Anda.</li></ol>
+                                <p><strong>Penting:</strong> Format tanggal: <strong>YYYY-MM-DD</strong>.</p>
+                            </div>
+                            <div class="import-actions">
+                                <button id="download-template-btn" class="btn btn-success"><i class="bi bi-download me-2"></i>Unduh Template CSV</button>
+                                <button id="import-csv-btn" class="btn btn-primary"><i class="bi bi-upload me-2"></i>Impor CSV</button>
+                                <input type="file" id="csv-file-input" accept=".csv" style="display: none;">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card mt-4">
+                        <div class="card-header">Daftar Siswa Terdaftar</div>
+                        <div class="card-body">
+                            <div class="data-table-container">
+                                <div class="data-table-wrapper">
+                                    <table class="data-table">
+                                        <thead><tr><th>NISN</th><th>Nama Siswa</th><th>Kelas</th><th>Tgl Lahir</th><th>Aksi</th></tr></thead>
+                                        <tbody id="siswa-table-body"><tr><td colspan="5" class="text-center">Memuat data...</td></tr></tbody>
+                                    </table>
+                                </div>
+                                <button id="toggle-siswa-list" class="btn btn-sm btn-outline-primary" style="display:none; position: absolute; bottom: 1rem; left: 1.5rem;">Tampilkan Semua Siswa</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -279,40 +311,6 @@
                     </form>
                 </div>
 
-                <!-- ===== Halaman: Data Siswa ===== -->
-                <div class="content-page" id="page-data-siswa">
-                    <h1>Kelola Data Siswa</h1>
-                    <div class="card shadow-sm">
-                        <div class="card-header">Impor Data Siswa</div>
-                        <div class="card-body">
-                            <div class="info-box mb-3">
-                                <h4>Panduan Import</h4>
-                                <ol><li>Klik <strong>Unduh Template</strong>.</li><li>Buka & isi data siswa, lalu <strong>Simpan sebagai .csv</strong>.</li><li>Klik <strong>Impor CSV</strong>, pilih file .csv Anda.</li></ol>
-                                <p><strong>Penting:</strong> Format tanggal: <strong>YYYY-MM-DD</strong>.</p>
-                            </div>
-                            <div class="import-actions">
-                                <button id="download-template-btn" class="btn btn-success"><i class="bi bi-download me-2"></i>Unduh Template CSV</button>
-                                <button id="import-csv-btn" class="btn btn-primary"><i class="bi bi-upload me-2"></i>Impor CSV</button>
-                                <input type="file" id="csv-file-input" accept=".csv" style="display: none;">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card shadow-sm mt-4">
-                        <div class="card-header">Daftar Siswa Terdaftar</div>
-                        <div class="card-body">
-                            <div class="data-table-container">
-                                <div class="data-table-wrapper">
-                                    <table class="data-table">
-                                        <thead><tr><th>NISN</th><th>Nama Siswa</th><th>Kelas</th><th>Tgl Lahir</th><th>Aksi</th></tr></thead>
-                                        <tbody id="siswa-table-body"><tr><td colspan="5" class="text-center">Memuat data...</td></tr></tbody>
-                                    </table>
-                                </div>
-                                <button id="toggle-siswa-list" class="btn btn-sm btn-outline-primary" style="display:none; position: absolute; bottom: 1rem; left: 1.5rem;">Tampilkan Semua Siswa</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
                 <!-- ===== Halaman: Cetak Rapor ===== -->
                 <div class="content-page" id="page-cetak-rapor">
                     <h1>Cetak Rapor</h1>
