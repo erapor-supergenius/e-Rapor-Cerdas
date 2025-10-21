@@ -662,41 +662,141 @@
         <!-- === PAGE: PROFIL SEKOLAH === -->
         <section id="page-profil-sekolah" class="content-page" style="display:none">
           <div class="grid" style="grid-template-columns:repeat(12,1fr);gap:18px">
-            <div style="grid-column: span 6" class="panel">
-              <h3>Profil Sekolah</h3>
+            
+            <div style="grid-column: span 8" class="panel">
+              <h3 style="margin-top:0; margin-bottom: 20px; border-bottom:1px solid var(--border); padding-bottom:10px;">
+                Pengaturan Profil Sekolah (Data Rapor)
+              </h3>
+
               <form id="form-profil-sekolah">
-                <div style="margin-bottom:12px">
-                  <label>Nama Sekolah</label>
-                  <input type="text" id="profil-nama-sekolah" placeholder="Nama Sekolah">
-                </div>
-                <div style="margin-bottom:12px">
-                  <label>NPSN</label>
-                  <input type="text" id="profil-npsn" placeholder="NPSN">
-                </div>
-                <div style="margin-bottom:12px">
-                  <label>Alamat</label>
-                  <input type="text" id="profil-alamat" placeholder="Alamat Sekolah">
-                </div>
-                <div style="margin-bottom:12px">
-                  <label>Kepala Sekolah</label>
-                  <input type="text" id="profil-kepsek" placeholder="Nama Kepala Sekolah">
-                </div>
-                <div style="margin-bottom:12px">
-                  <label>NIP Kepala Sekolah</label>
-                  <input type="text" id="profil-nip-kepsek" placeholder="NIP Kepala Sekolah">
+                <input type="hidden" id="profil-token-sekolah">
+
+                <div style="margin-bottom: 24px;">
+                  <label>Logo Sekolah (untuk Kop Rapor)</label>
+                  <div style="display:flex; align-items:center; gap: 16px;">
+                    <img id="logo-preview" 
+                         src="assets/logo.png" 
+                         alt="Logo Preview" 
+                         style="width:84px; height:84px; border-radius:50%; background:#fff; padding:6px; object-fit:contain; border:1px solid var(--border);">
+                    <div>
+                      <label for="input-logo-file" class="file-input-label" style="cursor:pointer">
+                        <i class="bi bi-upload"></i> Ganti Logo...
+                      </label>
+                      <p style="font-size: 0.85rem; color: var(--muted); margin-top: 8px;">
+                        Gunakan file .png transparan jika ada.
+                      </p>
+                      <input type="file" id="input-logo-file" accept="image/png, image/jpeg" style="display:none;">
+                      <input type="hidden" id="profil-url-logo">
+                    </div>
+                  </div>
                 </div>
 
-                <div style="display:flex;gap:10px;align-items:center">
-                  <button id="simpan-profil-btn" type="button" class="btn">Simpan</button>
-                  <div id="profil-loading-spinner" style="display:none;color:var(--muted)">Memuat...</div>
+                <div class="form-grid">
+                  <div>
+                    <label for="profil-nama-sekolah">Nama Sekolah</label>
+                    <input type="text" id="profil-nama-sekolah" placeholder="Nama Sekolah">
+                  </div>
+                  <div>
+                    <label for="profil-npsn">NPSN</label>
+                    <input type="text" id="profil-npsn" placeholder="NPSN">
+                  </div>
+                  <div>
+                    <label for="profil-nss">NSS</label>
+                    <input type="text" id="profil-nss" placeholder="NSS">
+                  </div>
+                  <div>
+                    <label for="profil-status-sekolah">Status Sekolah</label>
+                    <select id="profil-status-sekolah">
+                      <option value="">Pilih Status...</option>
+                      <option value="Negeri">Negeri</option>
+                      <option value="Swasta">Swasta</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div style="margin-top: 24px;">
+                  <label for="profil-alamat-sekolah">Alamat Sekolah</label>
+                  <textarea id="profil-alamat-sekolah" placeholder="Jl. Pendidikan No. 1" style="min-height: 80px;"></textarea>
+                </div>
+
+                <div class="form-grid" style="margin-top: 16px;">
+                  <div>
+                    <label for="profil-kelurahan-desa">Kelurahan / Desa</label>
+                    <input type="text" id="profil-kelurahan-desa" placeholder="Nama Kelurahan/Desa">
+                  </div>
+                  <div>
+                    <label for="profil-kecamatan">Kecamatan</label>
+                    <input type="text" id="profil-kecamatan" placeholder="Nama Kecamatan">
+                  </div>
+                  <div>
+                    <label for="profil-kabupaten-kota">Kabupaten / Kota</label>
+                    <input type="text" id="profil-kabupaten-kota" placeholder="Nama Kabupaten/Kota">
+                  </div>
+                  <div>
+                    <label for="profil-provinsi">Provinsi</label>
+                    <input type="text" id="profil-provinsi" placeholder="Nama Provinsi">
+                  </div>
+                </div>
+                
+                <div class="form-grid" style="margin-top: 24px;">
+                  <div>
+                    <label for="profil-telepon">Telepon</label>
+                    <input type="tel" id="profil-telepon" placeholder="021-XXXXXX">
+                  </div>
+                  <div>
+                    <label for="profil-email">Email</label>
+                    <input type="email" id="profil-email" placeholder="info@sekolah.sch.id">
+                  </div>
+                  <div style="grid-column: span 2;">
+                    <label for="profil-website">Website</label>
+                    <input type="url" id="profil-website" placeholder="https://sekolah.sch.id">
+                  </div>
+                </div>
+
+                <div class="form-grid" style="margin-top: 24px;">
+                  <div>
+                    <label for="profil-kepala-sekolah">Nama Kepala Sekolah</label>
+                    <input type="text" id="profil-kepala-sekolah" placeholder="Nama Lengkap + Gelar">
+                  </div>
+                  <div>
+                    <label for="profil-nip-kepsek">NIP Kepala Sekolah</label>
+                    <input type="text" id="profil-nip-kepsek" placeholder="NIP (isi '-' jika tidak ada)">
+                  </div>
+                </div>
+
+                <div class="form-grid" style="margin-top: 24px;">
+                  <div>
+                    <label for="profil-kabupaten-kota-rapor">Tempat Tanda Tangan Rapor</label>
+                    <input type="text" id="profil-kabupaten-kota-rapor" placeholder="Contoh: Jakarta">
+                  </div>
+                  <div>
+                    <label for="profil-tanggal-rapor">Tanggal Tanda Tangan Rapor</label>
+                    <input type="date" id="profil-tanggal-rapor" placeholder="YYYY-MM-DD">
+                  </div>
+                </div>
+      
+                <div style="display:flex; gap:10px; align-items:center; border-top: 1px solid var(--border); margin-top: 30px; padding-top: 20px;">
+                  <button id="simpan-profil-btn" type="button" class="btn">
+                    <i class="bi bi-save"></i> Simpan Perubahan Profil
+                  </button>
+                  <div id="profil-loading-spinner" style="display:none; color:var(--muted)">Memuat...</div>
                 </div>
               </form>
             </div>
 
-            <div style="grid-column: span 6" class="panel">
-              <h3>Info Lain</h3>
-              <p style="color:var(--muted)">Pengaturan tambahan dan informasi terkait profil sekolah.</p>
+            <div style="grid-column: span 4" class="panel">
+              <h3>Petunjuk Pengisian</h3>
+              <p style="color:var(--muted); font-size: 0.9rem; line-height: 1.6;">
+                Data ini akan digunakan untuk mencetak kop surat dan halaman tanda tangan di rapor siswa.
+              </p>
+              <ul style="color:var(--muted); font-size: 0.9rem; line-height: 1.6; padding-left: 20px;">
+                <li>Pastikan <strong>Nama Sekolah</strong>, <strong>Kepala Sekolah</strong>, dan <strong>NIP</strong> diisi dengan benar.</li>
+                <li><strong>Tempat Tanda Tangan Rapor</strong> diisi dengan nama Kabupaten/Kota (Contoh: "Sleman").</li>
+                <li><strong>Tanggal Tanda Tangan Rapor</strong> adalah tanggal yang akan tercetak di lembar pengesahan.</li>
+                <li>Logo yang diupload akan otomatis diatur ukurannya di kop rapor.</li>
+              </ul>
             </div>
+
           </div>
         </section>
 
@@ -857,6 +957,7 @@
   <script src="dashboard.js"></script>
 </body>
 </html>
+
 
 
 
