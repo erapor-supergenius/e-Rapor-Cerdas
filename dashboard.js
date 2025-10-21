@@ -733,41 +733,6 @@ function handleSimpanProfil() {
 // =========================
 async function loadSiswaPerluBimbingan() {
   try {
-    // Tidak ada deklarasi GAS_URL lagi, pakai yang sudah ada
-    const response = await fetch(`${GAS_URL}?action=getSiswaPerluBimbingan`);
-    const data = await response.json();
-
-    if (!data || data.error) {
-      console.warn("Error:", data.error || "Tidak ada data siswa perlu bimbingan.");
-      return;
-    }
-
-    // Menampilkan hasil di card dashboard
-    const infoCard = document.getElementById("info-bimbingan");
-    if (infoCard) {
-      infoCard.innerHTML = `
-        <div class="p-4 rounded-2xl shadow-md bg-white border border-gray-100 transition hover:shadow-lg">
-          <div class="flex items-center justify-between mb-2">
-            <h4 class="text-lg font-semibold text-gray-800">Siswa Perlu Bimbingan</h4>
-            <span class="text-sm text-blue-600 font-medium">Total: ${data.total}</span>
-          </div>
-          <ul class="list-disc list-inside text-sm text-gray-700 space-y-1">
-            ${data.siswa.map(s => `<li>${s.nama} - ${s.kelas}</li>`).join("")}
-          </ul>
-        </div>
-      `;
-    }
-
-  } catch (err) {
-    console.error("Gagal memuat data siswa perlu bimbingan:", err);
-  }
-}
-
-// =========================
-// FUNGSI MEMUAT DATA SISWA PERLU BIMBINGAN
-// =========================
-async function loadSiswaPerluBimbingan() {
-  try {
     const response = await fetch(`${GAS_URL}?action=getSiswaPerluBimbingan`);
     const data = await response.json();
 
@@ -805,14 +770,20 @@ document.addEventListener("DOMContentLoaded", () => {
   loadSiswaPerluBimbingan();
 });
 
-// === Navigasi antar halaman ===
+// =========================
+// NAVIGASI ANTAR HALAMAN
+// =========================
 document.querySelectorAll('.nav-link').forEach(link => {
   link.addEventListener('click', (e) => {
     e.preventDefault();
 
+    // Sembunyikan semua halaman
     document.querySelectorAll('.content-page').forEach(p => p.style.display = 'none');
+
+    // Hapus status aktif di menu
     document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
 
+    // Tampilkan halaman yang sesuai
     const targetPage = e.currentTarget.dataset.page;
     const pageElement = document.getElementById(targetPage);
 
