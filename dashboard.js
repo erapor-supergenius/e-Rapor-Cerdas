@@ -79,7 +79,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (logoutBtn) {
             logoutBtn.addEventListener('click', (e) => {
                 e.preventDefault();
-                if (confirm("Yakin logout?")) {
+                if (confirm("Apakah Anda yakin ingin logout sekarang?")) {
                     localStorage.clear();
                     window.location.href = 'index.html';
                 }
