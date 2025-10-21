@@ -274,7 +274,7 @@ function generateFinalDescription() {
         if (finalD !== "") finalD += "."; finalDescriptionInput.value = finalD.trim();
     }
     if (!isAny && !isMulokActive) { finalDescriptionInput.placeholder = "Pilih status..."; finalDescriptionInput.readOnly = true; if (editDeskripsiBtn) editDeskripsiBtn.disabled = true; }
-    else { finalDescriptionInput.placeholder = isMulokActive ? "Input Mulok..." : "Deskripsi..."; finalDescriptionInput.readOnly = false; if (editDeskjsiBtn) editDeskripsiBtn.disabled = isMulokActive; }
+    else { finalDescriptionInput.placeholder = isMulokActive ? "Input Mulok..." : "Deskripsi..."; finalDescriptionInput.readOnly = false; if (editDeskripsiBtn) editDeskripsiBtn.disabled = isMulokActive; }
     validateAndToggleButton(); // ✅ Panggil validasi di akhir
 }
 
