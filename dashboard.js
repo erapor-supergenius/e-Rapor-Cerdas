@@ -728,10 +728,21 @@ function handleSimpanProfil() {
     });
 }
 
-// === Memuat data siswa perlu bimbingan ===
+// === Inisialisasi Spreadsheet ID dan GAS_URL ===
+const SPREADSHEET_ID = "1eK1ULOFhmCs2hqMARQ2nYtGVJU0Fh0evbY1MnlA1QgI"; 
+// Ganti YOUR_SCRIPT_ID dengan Script ID Web App GAS-mu
+const GAS_SCRIPT_ID = "AKfycbw1Jc7JXssFYq_KMQ6Up34zBGm4XYyOEEORsCeJI7DwJfG-xj3mGY930FbU5a5c5ZCJew"; 
+const GAS_URL = `https://script.google.com/macros/s/${GAS_SCRIPT_ID}/exec?spreadsheetId=${SPREADSHEET_ID}`;
+
+// === Fungsi memuat siswa perlu bimbingan ===
 async function loadSiswaPerluBimbingan() {
+  if (!SPREADSHEET_ID) {
+    console.error("Spreadsheet ID belum diatur. Fungsi dibatalkan.");
+    return;
+  }
+
   try {
-    const response = await fetch(`${GAS_URL}?action=getSiswaPerluBimbingan`);
+    const response = await fetch(`${GAS_URL}&action=getSiswaPerluBimbingan`);
     if (!response.ok) {
       console.error("Gagal fetch data:", response.status, response.statusText);
       return;
@@ -744,32 +755,32 @@ async function loadSiswaPerluBimbingan() {
       return;
     }
 
-    // Pastikan ada elemen target
+    // Menampilkan hasil di card dashboard
     const infoCard = document.getElementById("info-bimbingan");
-    if (!infoCard) {
-      console.warn("Elemen #info-bimbingan tidak ditemukan di HTML.");
-      return;
-    }
-
-    // Pastikan data.siswa adalah array
-    const siswaList = Array.isArray(data.siswa) ? data.siswa : [];
-
-    infoCard.innerHTML = `
-      <div class="p-4 rounded-2xl shadow-md bg-white border border-gray-100 transition hover:shadow-lg">
-        <div class="flex items-center justify-between mb-2">
-          <h4 class="text-lg font-semibold text-gray-800">Siswa Perlu Bimbingan</h4>
-          <span class="text-sm text-blue-600 font-medium">Total: ${data.total || siswaList.length}</span>
+    if (infoCard) {
+      infoCard.innerHTML = `
+        <div class="p-4 rounded-2xl shadow-md bg-white border border-gray-100 transition hover:shadow-lg">
+          <div class="flex items-center justify-between mb-2">
+            <h4 class="text-lg font-semibold text-gray-800">Siswa Perlu Bimbingan</h4>
+            <span class="text-sm text-blue-600 font-medium">Total: ${data.total}</span>
+          </div>
+          <ul class="list-disc list-inside text-sm text-gray-700 space-y-1">
+            ${data.siswa.map(s => `<li>${s.nama} - ${s.kelas}</li>`).join("")}
+          </ul>
         </div>
-        <ul class="list-disc list-inside text-sm text-gray-700 space-y-1">
-          ${siswaList.map(s => `<li>${s.nama || "Nama tidak tersedia"} - ${s.kelas || "-"}</li>`).join("") || "<li>Tidak ada siswa</li>"}
-        </ul>
-      </div>
-    `;
+      `;
+    }
 
   } catch (err) {
     console.error("Gagal memuat data siswa perlu bimbingan:", err);
   }
 }
+
+// === Contoh pemanggilan fungsi ===
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("[INIT] Dashboard siap digunakan!");
+  loadSiswaPerluBimbingan(); // Dipanggil setelah DOM siap dan Spreadsheet ID pasti ada
+});
 
 // === Navigasi antar halaman ===
 document.querySelectorAll('.nav-link').forEach(link => {
