@@ -1,201 +1,313 @@
 <!DOCTYPE html>
-
 <html lang="id">
-
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - e-Rapor Cerdas</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    :root {
+      --sidebar-bg: #2c3e50;
+      --sidebar-text: #ecf0f1;
+      --sidebar-hover-bg: #34495e;
+      --sidebar-active-bg: #007bff;
+      --content-bg: #f8f9fa;
+      --card-bg: #ffffff;
+      --text-color: #343a40;
+      --border-color: #dee2e6;
+      --success-bg: #28a745;
+      --error-bg: #dc3545;
+      --info-bg: #17a2b8;
+    }
 
-    <meta charset="UTF-8">
+    body {
+      font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      margin: 0;
+      background-color: var(--content-bg);
+      color: var(--text-color);
+    }
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    .dashboard-wrapper { display: flex; min-height: 100vh; }
 
-    <title>Dashboard - e-Rapor Cerdas</title>
+    /* --- SIDEBAR --- */
+    .sidebar {
+      width: 250px;
+      background-color: var(--sidebar-bg);
+      color: var(--sidebar-text);
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+    }
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    .sidebar-header {
+      padding: 1.5rem 1rem;
+      text-align: center;
+      border-bottom: 1px solid var(--sidebar-hover-bg);
+    }
 
-    <style>
+    .sidebar-header img {
+      max-width: 90px;
+      height: auto;
+      margin-bottom: 0.5rem;
+      border-radius: 50%;
+      background: #fff;
+      padding: 5px;
+    }
 
-        /* CSS Lengkap untuk Tampilan Elegan V1 */
+    .sidebar-header h4 {
+      color: #fff;
+      font-size: 1.15rem;
+      margin: 0.25rem 0;
+      letter-spacing: 0.5px;
+    }
 
-        :root {
+    .sidebar-header p {
+      font-size: 0.9rem;
+      color: #bdc3c7;
+      margin: 0;
+      font-weight: 500;
+    }
 
-            --sidebar-bg: #2c3e50;
+    .sidebar-menu {
+      padding: 1rem 0;
+      flex-grow: 1;
+      overflow-y: auto;
+    }
 
-            --sidebar-text: #ecf0f1;
+    .sidebar-menu h3 {
+      padding: 0 1.5rem 0.5rem;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      color: #95a5a6;
+      margin: 1rem 0 0.5rem;
+    }
 
-            --sidebar-hover-bg: #34495e;
+    .sidebar-menu ul { list-style: none; padding: 0; margin: 0; }
 
-            --sidebar-active-bg: #007bff;
+    .sidebar-menu ul li a {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.8rem 1.5rem;
+      text-decoration: none;
+      color: var(--sidebar-text);
+      border-radius: 4px;
+      margin: 0.2rem 0.5rem;
+      transition: background-color 0.2s ease;
+      font-size: 0.95rem;
+    }
 
-            --content-bg: #f8f9fa;
+    .sidebar-menu ul li a:hover { background-color: var(--sidebar-hover-bg); }
+    .sidebar-menu ul li a.active { background-color: var(--sidebar-active-bg); color: #fff; font-weight: 500; }
 
-            --card-bg: #ffffff;
+    .sidebar-footer {
+      padding: 1rem;
+      text-align: center;
+      font-size: 0.8rem;
+      color: #95a5a6;
+      border-top: 1px solid var(--sidebar-hover-bg);
+    }
 
-            --text-color: #343a40;
+    /* --- HEADER NAVBAR --- */
+    .content-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      background-color: var(--card-bg);
+      border-bottom: 1px solid var(--border-color);
+      position: sticky;
+      top: 0;
+      z-index: 900;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
 
-            --border-color: #dee2e6;
+    #welcome-message {
+      font-weight: 600;
+      color: var(--text-color);
+      font-size: 1rem;
+    }
 
-        }
+    #logout-button {
+      text-decoration: none;
+      color: #fff;
+      background-color: var(--error-bg);
+      padding: 0.4rem 0.9rem;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      border: none;
+      transition: 0.3s;
+    }
 
-        body {
+    #logout-button:hover {
+      background-color: #bb2d3b;
+    }
 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    .main-content {
+      flex-grow: 1;
+      padding: 2rem;
+    }
 
-            margin: 0;
+    .content-page { display: none; }
+    .content-page.active { display: block; }
 
-            background-color: var(--content-bg);
+    h1 { color: #2c3e50; }
 
-            color: var(--text-color);
+    /* --- NOTIFIKASI TOAST --- */
+    .notification-toast {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      min-width: 260px;
+      max-width: 350px;
+      background: var(--card-bg);
+      border-left: 5px solid var(--info-bg);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      border-radius: 8px;
+      padding: 1rem 1.2rem;
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      z-index: 9999;
+      animation: fadeInUp 0.4s ease;
+    }
 
-        }
+    .notification-toast.success { border-left-color: var(--success-bg); }
+    .notification-toast.error { border-left-color: var(--error-bg); }
+    .notification-toast.info { border-left-color: var(--info-bg); }
 
-        .dashboard-wrapper { display: flex; min-height: 100vh; }
+    .notification-toast p {
+      margin: 0;
+      font-size: 0.9rem;
+      color: var(--text-color);
+      flex-grow: 1;
+    }
 
-        .sidebar {
+    .notification-toast button {
+      border: none;
+      background: transparent;
+      font-size: 1.1rem;
+      color: #666;
+      cursor: pointer;
+    }
 
-            width: 250px; background-color: var(--sidebar-bg); color: var(--sidebar-text);
-
-            flex-shrink: 0; display: flex; flex-direction: column; box-shadow: 2px 0 5px rgba(0,0,0,0.1);
-
-        }
-
-        .sidebar-header { padding: 1.5rem; text-align: center; border-bottom: 1px solid var(--sidebar-hover-bg); }
-
-        .sidebar-header img { max-width: 80px; height: auto; margin-bottom: 0.75rem; border-radius: 50%; background: #fff; padding: 5px; }
-
-        .sidebar-header h4 { color: #fff; font-size: 1.2rem; margin: 0.5rem 0 0.25rem; }
-
-        .sidebar-header p { font-size: 0.9rem; color: #bdc3c7; margin: 0; font-weight: 500; }
-
-        .sidebar-menu { padding: 1rem 0; flex-grow: 1; overflow-y: auto; }
-
-        .sidebar-menu h3 { padding: 0 1.5rem 0.5rem; font-size: 0.75rem; text-transform: uppercase; color: #95a5a6; margin: 1rem 0 0.5rem; }
-
-        .sidebar-menu ul { list-style: none; padding: 0; margin: 0; }
-
-        .sidebar-menu ul li a { display: flex; align-items: center; gap: 0.75rem; padding: 0.8rem 1.5rem; text-decoration: none; color: var(--sidebar-text); border-radius: 4px; margin: 0.2rem 0.5rem; transition: background-color 0.2s ease; font-size: 0.95rem; }
-
-        .sidebar-menu ul li a:hover { background-color: var(--sidebar-hover-bg); }
-
-        .sidebar-menu ul li a.active { background-color: var(--sidebar-active-bg); color: #fff; font-weight: 500; }
-
-        .sidebar-footer { padding: 1.5rem; text-align: center; font-size: 0.8rem; color: #95a5a6; border-top: 1px solid var(--sidebar-hover-bg); }
-
-        .sidebar-footer p { margin: 0; line-height: 1.4; }
-
-        .main-wrapper { flex-grow: 1; display: flex; flex-direction: column; }
-
-        .content-header {
-
-            display: flex;
-
-            justify-content: flex-end; /* Logout ke kanan */
-
-            align-items: center;
-
-            padding: 1rem 2rem;
-
-            background-color: var(--card-bg); /* Header Putih */
-
-            color: var(--text-color); /* Teks Gelap */
-
-            border-bottom: 1px solid var(--border-color);
-
-            position: sticky; top: 0; z-index: 900;
-
-        }
-
-        .content-header .user-info { display: flex; align-items: center; gap: 1rem; }
-
-        #welcome-message { font-weight: 500; }
-
-        #logout-button { text-decoration: none; color: #fff; background-color: #dc3545; padding: 0.4rem 0.8rem; border-radius: 4px; font-size: 0.9rem; cursor: pointer; }
-
-        .main-content { flex-grow: 1; padding: 2rem; }
-
-        .content-page { display: none; }
-
-        .content-page.active { display: block; }
-
-        h1 { color: #2c3e50; }
-
-    </style>
-
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
 </head>
-
 <body>
 
-    <div class="dashboard-wrapper">
+  <div class="dashboard-wrapper">
 
-        <!-- Sidebar -->
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <img src="assets/logo.png" alt="Logo Sekolah">
+        <h4>e-Rapor Sekolah</h4>
+        <p id="sidebar-school-name">[Nama Sekolah]</p>
+      </div>
 
-        <aside class="sidebar">
+      <nav class="sidebar-menu">
+        <h3>Menu Utama</h3>
+        <ul>
+          <li><a href="#" class="nav-link active" data-page="page-home"><i class="bi bi-house-door-fill"></i>Dashboard</a></li>
+          <li><a href="#" class="nav-link" data-page="page-profil-sekolah"><i class="bi bi-bank2"></i>Profil Sekolah</a></li>
+          <li><a href="#" class="nav-link" data-page="page-data-siswa"><i class="bi bi-people-fill"></i>Data Siswa</a></li>
+          <li><a href="#" class="nav-link" data-page="page-input-nilai"><i class="bi bi-pencil-square"></i>Input Nilai</a></li>
+        </ul>
+      </nav>
 
-            <div class="sidebar-header">
+      <div class="sidebar-footer">
+        <p>Dikembangkan oleh: Dedi Agus Mustofa</p>
+      </div>
+    </aside>
 
-                <img src="assets/logo.png" alt="Logo">
+    <!-- Konten Utama -->
+    <div class="main-wrapper">
+      <!-- Header atas (Selamat datang dan Logout) -->
+      <header class="content-header">
+        <span id="welcome-message">Selamat datang...</span>
+        <button id="logout-button">Logout</button>
+      </header>
 
-                <h4>e-Rapor Cerdas</h4>
-
-                <p id="sidebar-school-name">[Nama Sekolah]</p>
-
-            </div>
-
-            <nav class="sidebar-menu">
-
-                <h3>Menu Utama</h3>
-
-                <ul>
-
-                    <li><a href="#" class="nav-link active" data-page="page-home"><i class="bi bi-house-door-fill"></i>Dashboard</a></li>
-
-                    <li><a href="#" class="nav-link" data-page="page-profil-sekolah"><i class="bi bi-bank2"></i>Profil Sekolah</a></li>
-
-                    <li><a href="#" class="nav-link" data-page="page-data-siswa"><i class="bi bi-people-fill"></i>Data Siswa</a></li>
-
-                    <li><a href="#" class="nav-link" data-page="page-input-nilai"><i class="bi bi-pencil-square"></i>Input Nilai</a></li>
-
-                </ul>
-
-            </nav>
-
-            <div class="sidebar-footer">
-
-                <p>Dikembangkan oleh: Dedi Agus Mustofa</p>
-
-            </div>
-
-        </aside>
-
-
-
-        <!-- Konten Utama -->
-
-        <div class="main-wrapper">
-
-            <header class="content-header">
-
-                <div class="user-info ms-auto">
-
-                    <span id="welcome-message" class="me-3">Memuat...</span>
-
-                    <button id="logout-button">Logout</button>
-
-                </div>
-
-            </header>
-
-            <main class="main-content">
-
-                <!-- Semua <div class="content-page" ...> akan ada di sini -->
-
-            </main>
-
+      <!-- Area isi halaman -->
+      <main class="main-content">
+        <!-- Halaman utama dashboard -->
+        <div id="page-home" class="content-page active">
+          <h1>Dashboard Utama</h1>
+          <p>Selamat datang di e-Rapor Cerdas!</p>
         </div>
 
+        <!-- Halaman profil sekolah -->
+        <div id="page-profil-sekolah" class="content-page">
+          <h1>Profil Sekolah</h1>
+          <form id="form-profil-sekolah">
+            <div><label>Nama Sekolah:</label><br><input type="text" id="profil-nama-sekolah"></div>
+            <div><label>NPSN:</label><br><input type="text" id="profil-npsn"></div>
+            <div><label>Alamat:</label><br><input type="text" id="profil-alamat"></div>
+            <div><label>Kepala Sekolah:</label><br><input type="text" id="profil-kepsek"></div>
+            <div><label>NIP Kepala Sekolah:</label><br><input type="text" id="profil-nip-kepsek"></div>
+            <button id="simpan-profil-btn" type="button">Simpan</button>
+            <div id="profil-loading-spinner" style="display:none;">Memuat...</div>
+          </form>
+        </div>
+
+        <!-- Halaman data siswa -->
+        <div id="page-data-siswa" class="content-page">
+          <h1>Data Siswa</h1>
+          <div class="data-table-container">
+            <table border="1" width="100%">
+              <thead>
+                <tr><th>NISN</th><th>Nama</th><th>Kelas</th><th>Tanggal Lahir</th><th>Aksi</th></tr>
+              </thead>
+              <tbody id="siswa-table-body"></tbody>
+            </table>
+          </div>
+          <button id="toggle-siswa-list" style="display:none;">Tampilkan Semua Siswa</button>
+        </div>
+
+        <!-- Halaman input nilai -->
+        <div id="page-input-nilai" class="content-page">
+          <h1>Input Nilai</h1>
+          <form id="form-input-nilai">
+            <label>Kelas:</label>
+            <select id="pilih-kelas"></select><br>
+            <label>Siswa:</label>
+            <select id="pilih-siswa"></select><br>
+            <label>Mapel:</label>
+            <select id="pilih-mapel"></select><br>
+            <label>Agama:</label>
+            <select id="pilih-agama"></select><br>
+            <label>Tahun Ajaran:</label>
+            <input type="text" id="pilih-tahun-ajaran"><br>
+            <label>Semester:</label>
+            <select id="pilih-semester">
+              <option value="">Pilih Semester...</option>
+              <option value="1">1</option>
+              <option value="2">2</option>
+            </select><br>
+            <label>Nilai Akhir:</label>
+            <input type="number" id="nilai-akhir-input"><br>
+            <label>Deskripsi:</label>
+            <textarea id="final-description-input"></textarea><br>
+            <button id="simpan-nilai-btn" type="button">Simpan Nilai</button>
+          </form>
+        </div>
+      </main>
     </div>
+  </div>
 
-    <script src="dashboard.js"></script>
+  <!-- Notifikasi Toast -->
+  <div id="notification-toast" class="notification-toast">
+    <p id="notification-toast-message">Pesan notifikasi di sini</p>
+    <button id="notification-toast-close"><i class="bi bi-x"></i></button>
+  </div>
 
+  <script src="dashboard.js"></script>
 </body>
-
 </html>
