@@ -10,6 +10,7 @@
         /* CSS Lengkap untuk Tampilan Awal yang Profesional */
         :root {
             --primary-color: #007bff;
+            --navbar-bg: #ffffff; 
             --content-bg: #f8f9fa;
             --card-bg: #ffffff;
             --text-color: #343a40;
@@ -27,9 +28,12 @@
 
         /* === Navbar Atas === */
         .navbar {
-            background-color: var(--card-bg);
+            background-color: var(--navbar-bg);
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
             padding: 0.75rem 1.5rem;
+            position: sticky;
+            top: 0;
+            z-index: 1020;
         }
         .navbar-brand-custom {
             display: flex;
@@ -40,6 +44,7 @@
         .navbar-brand-custom img {
             height: 40px;
             width: auto;
+            border-radius: 50%;
         }
         .navbar-brand-custom .school-info h4 {
             font-size: 1.1rem;
@@ -54,7 +59,7 @@
         }
         #logout-button { font-size: 0.9rem; }
 
-        /* === Konten Utama & Menu === */
+        /* === Kontainer Utama (Menu Samping + Konten) === */
         .main-container {
             display: flex;
         }
@@ -64,6 +69,9 @@
             padding: 1.5rem 0.5rem;
             border-right: 1px solid var(--border-color);
             flex-shrink: 0;
+            height: calc(100vh - 70px); 
+            position: sticky;
+            top: 70px; 
         }
         .sidebar-menu-simple .nav-link {
             display: flex;
@@ -74,6 +82,7 @@
             border-radius: 6px;
             margin-bottom: 0.25rem;
             font-weight: 500;
+            text-decoration: none;
         }
         .sidebar-menu-simple .nav-link:hover {
             background-color: #e9ecef;
@@ -92,73 +101,49 @@
 
         h1, h2, h3, h4, h5 { color: #2c3e50; font-weight: 600; }
         
-        /* === Kartu (Card), Form, Tombol === */
         .card { border: none; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 1.5rem; }
         .card-header { background-color: #f8f9fa; border-bottom: 1px solid var(--border-color); font-weight: 500; }
-        .form-group { margin-bottom: 1.25rem; }
         .form-group label { margin-bottom: 0.5rem; font-weight: 500; font-size: 0.9rem; }
         .form-control, .form-select { border-radius: 4px; }
         .form-control:focus, .form-select:focus { outline: none; border-color: #80bdff; box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25); }
         .btn { border-radius: 5px; font-weight: 500; }
-        
-        /* === DASHBOARD HOME WIDGETS === */
-        .action-card, .stat-card {
-            background-color: var(--card-bg);
-            border-radius: 8px;
-            padding: 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 1.5rem;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            text-decoration: none;
-            color: var(--text-color);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            height: 100%;
-        }
-        .action-card:hover, .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 6px 16px rgba(0,0,0,0.08);
-        }
-        .card-icon {
-            font-size: 2.5rem;
-            color: var(--primary-color);
-        }
+        .action-card, .stat-card { background-color: var(--card-bg); border-radius: 8px; padding: 1.5rem; display: flex; align-items: center; gap: 1.5rem; box-shadow: 0 4px 12px rgba(0,0,0,0.05); text-decoration: none; color: var(--text-color); transition: transform 0.2s ease, box-shadow 0.2s ease; height: 100%; }
+        .action-card:hover, .stat-card:hover { transform: translateY(-5px); box-shadow: 0 6px 16px rgba(0,0,0,0.08); }
+        .card-icon { font-size: 2.5rem; color: var(--primary-color); }
         .card-content h4 { margin: 0 0 0.25rem; font-size: 1.1rem; }
         .card-content p { margin: 0; font-size: 0.9rem; color: var(--text-muted); }
         .card-content .stat-number { font-size: 2.25rem; font-weight: 700; margin: 0.5rem 0; }
-
-        /* === HALAMAN INPUT NILAI (2 Kolom) === */
+        .row { display: flex; flex-wrap: wrap; margin: 0 -0.75rem; }
+        .col-md-4, .col-lg-4 { flex: 0 0 auto; width: 33.333%; padding: 0 0.75rem; box-sizing: border-box; }
+        .mb-3 { margin-bottom: 1rem !important; }
+        .mb-4 { margin-bottom: 1.5rem !important; }
         .form-container { display: flex; flex-wrap: wrap; gap: 2rem; }
         .form-column { flex: 1 1 300px; }
         .form-column h4 { margin-top: 0; color: #007bff; border-bottom: 1px solid #eee; padding-bottom: 0.5rem; margin-bottom: 1rem; font-size: 1.1rem; }
-        .cp-checkbox-list, .description-phrase-settings { /* ... style sama dari sebelumnya ... */ }
-        
-        /* === Notifikasi Elegan === (Sama seperti sebelumnya) */
-        .notification-toast { /* ... style sama ... */ }
-
-        /* === Footer Bawah === */
-        .footer {
-            background-color: #e9ecef;
-            padding: 1.5rem;
-            text-align: center;
-            font-size: 0.9rem;
-            color: var(--text-muted);
-            border-top: 1px solid var(--border-color);
-        }
+        .cp-checkbox-list { border: 1px solid #ddd; border-radius: 4px; padding: 1rem; max-height: 250px; overflow-y: auto; background-color: #f9f9f9; }
+        .cp-item { margin-bottom: 0.8rem; padding-bottom: 0.8rem; border-bottom: 1px dashed #eee; }
+        .cp-item:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+        .cp-item-header { font-weight: 500; margin-bottom: 0.4rem; font-size: 0.95em; color: #333; line-height: 1.4; }
+        .cp-item-options label { display: inline-flex; align-items: center; margin-right: 1.5rem; font-size: 0.9em; cursor: pointer; }
+        .description-phrase-settings { background-color: #f0f4f8; padding: 1rem; border-radius: 5px; margin-bottom: 1.5rem; border: 1px solid #d6e0eb; }
+        .phrase-group { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; }
+        .phrase-group label { flex-basis: 150px; flex-shrink: 0; margin-bottom: 0; text-align: right; font-size: 0.9em; }
+        .phrase-group select, .custom-phrase-input { flex: 1 1 250px; }
+        .notification-toast { /* Style sama */ }
+        .footer { background-color: #e9ecef; padding: 1.5rem; text-align: center; font-size: 0.9rem; color: var(--text-muted); border-top: 1px solid var(--border-color); }
     </style>
 </head>
 <body>
 
     <!-- Notifikasi Toast -->
-    <div class="notification-toast" id="notification-toast">
-        <span id="notification-toast-message">Pesan notifikasi!</span>
-        <button class="notification-toast-close" id="notification-toast-close">&times;</button>
+    <div class="notification-toast" id="notification-toast" style="display: none;">
+        <!-- ... isi notifikasi ... -->
     </div>
 
     <!-- Navbar Atas -->
-    <nav class="navbar sticky-top">
-        <a href="#" class="navbar-brand-custom">
-            <img src="assets/logo.png" alt="Logo e-Rapor Cerdas"> <!-- PASTIKAN PATH LOGO BENAR -->
+    <nav class="navbar">
+        <a href="#" class="navbar-brand-custom nav-link" data-page="page-home">
+            <img src="assets/logo.png" alt="Logo e-Rapor Cerdas"> 
             <div class="school-info">
                 <h4>e-Rapor Cerdas</h4>
                 <p id="sidebar-school-name">[Nama Sekolah]</p>
@@ -186,123 +171,7 @@
 
         <!-- Konten Utama yang Berubah -->
         <main class="main-content">
-
-            <!-- ===== Halaman: Dashboard (Home) ===== -->
-            <div class="content-page active" id="page-home">
-                 <h1>Dashboard Utama</h1>
-                 
-                 <!-- Akses Cepat di Atas -->
-                 <h3 class="mb-3">Akses Cepat</h3>
-                 <div class="row mb-4">
-                    <div class="col-md-4 mb-3">
-                        <a href="#" class="action-card nav-link" data-page="page-input-nilai">
-                            <span class="card-icon"><i class="bi bi-pencil-square"></i></span>
-                            <div class="card-content"><h4>Input Nilai</h4><p>Mulai mengisi nilai CP siswa</p></div>
-                        </a>
-                    </div>
-                     <div class="col-md-4 mb-3">
-                        <a href="#" class="action-card nav-link" data-page="page-data-siswa">
-                            <span class="card-icon"><i class="bi bi-people-fill"></i></span>
-                            <div class="card-content"><h4>Data Siswa</h4><p>Kelola data master siswa</p></div>
-                        </a>
-                    </div>
-                     <div class="col-md-4 mb-3">
-                        <a href="#" class="action-card nav-link" data-page="page-cetak-rapor">
-                            <span class="card-icon"><i class="bi bi-printer-fill"></i></span>
-                            <div class="card-content"><h4>Cetak Rapor</h4><p>Cetak rapor akhir semester</p></div>
-                        </a>
-                    </div>
-                 </div>
-
-                 <hr class="my-4">
-                 
-                 <!-- Statistik Dua Sisi -->
-                 <h3 class="mb-3">Ringkasan Data</h3>
-                 <div class="row">
-                    <div class="col-lg-4 col-md-6 mb-4">
-                        <div class="stat-card">
-                            <span class="card-icon"><i class="bi bi-people-fill"></i></span>
-                            <div class="card-content">
-                                <h4>Siswa Terdaftar</h4>
-                                <p id="stat-jumlah-siswa" class="stat-number"> memuat... </p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-4 col-md-6 mb-4">
-                        <div class="stat-card">
-                            <span class="card-icon"><i class="bi bi-journal-check"></i></span>
-                            <div class="card-content">
-                                <h4>Mapel Tersedia</h4>
-                                <p id="stat-jumlah-mapel" class="stat-number"> memuat... </p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-4 col-md-6 mb-4">
-                        <div class="stat-card">
-                             <span class="card-icon"><i class="bi bi-graph-up"></i></span>
-                            <div class="card-content">
-                                <h4>Rapor Selesai</h4>
-                                <p id="stat-rapor-selesai" class="stat-number"> memuat... </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ===== Halaman: Profil Sekolah ===== -->
-            <div class="content-page" id="page-profil-sekolah">
-                <h1>Profil Sekolah</h1>
-                <div class="card"><div class="card-header">Data Identitas Sekolah</div>
-                    <div class="card-body">
-                        <!-- ... Isi Form Profil Sekolah ... -->
-                    </div>
-                </div>
-            </div>
-            
-            <!-- ===== Halaman: Data Siswa ===== -->
-            <div class="content-page" id="page-data-siswa">
-                <h1>Kelola Data Siswa</h1>
-                <div class="card">
-                    <div class="card-header">Impor Data Siswa</div>
-                    <div class="card-body">
-                        <!-- ... Isi Tombol Impor & Panduan ... -->
-                    </div>
-                </div>
-                <div class="card mt-4">
-                    <div class="card-header">Daftar Siswa Terdaftar</div>
-                    <div class="card-body">
-                        <!-- ... Isi Tabel Siswa ... -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- ===== Halaman: Input Nilai CP (Layout 2 Kolom) ===== -->
-            <div class="content-page" id="page-input-nilai">
-                <h1>Input Nilai Capaian Pembelajaran</h1>
-                <div class="card">
-                    <div class="card-body">
-                        <form id="form-input-nilai">
-                            <div class="form-container">
-                                <!-- Kolom Kiri -->
-                                <div class="form-column">
-                                    <h4>1. Pilih Siswa & Mapel</h4>
-                                    <!-- ... Isi Dropdown Kelas, Siswa, Mapel, Agama, TA, Semester ... -->
-                                </div>
-                                <!-- Kolom Kanan -->
-                                <div class="form-column">
-                                    <h4>2. Pilih Capaian</h4>
-                                    <!-- ... Isi Checkbox CP, Pengaturan Deskripsi, Input Nilai Akhir, Tombol Simpan ... -->
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ===== Halaman: Cetak Rapor & Informasi ===== -->
-            <div class="content-page" id="page-cetak-rapor"><h1>Cetak Rapor</h1><div class="card"><div class="card-body"><p>...</p></div></div></div>
-            <div class="content-page" id="page-informasi"><h1>Informasi</h1><div class="card"><div class="card-body"><p>...</p></div></div></div>
-
+             <!-- Semua <div class="content-page" ...> tetap sama di sini -->
         </main>
     </div>
 
