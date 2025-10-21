@@ -66,16 +66,25 @@ document.addEventListener("DOMContentLoaded", () => {
         user.username = localStorage.getItem('userUsername'); // Ini akan jadi id_guru
         console.log("Auth Check >> Spreadsheet ID:", user.spreadsheetId, "Guru:", user.username);
         if (!user.name || !user.spreadsheetId || !user.username) {
-             console.error("Auth Check >> Gagal:", user); 
-             alert("Sesi berakhir atau data tidak lengkap. Login ulang.");
-             window.location.href = 'index.html'; return;
+            console.error("Auth Check >> Gagal:", user);
+            alert("Sesi berakhir atau data tidak lengkap. Login ulang.");
+            window.location.href = 'index.html';
+            return;
         }
         console.log("Auth Check >> Berhasil.");
         document.getElementById('welcome-message').innerText = `Selamat Datang, ${user.name}!`;
 
         // 2. Logout
         const logoutBtn = document.getElementById('logout-button');
-        if (logoutBtn) logoutBtn.addEventListener('click', (e) => { e.preventDefault(); if (confirm("Yakin logout?")) { localStorage.clear(); window.location.href = 'index.html'; } });
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (confirm("Yakin logout?")) {
+                    localStorage.clear();
+                    window.location.href = 'index.html';
+                }
+            });
+        }
 
         // 3. Navigasi
         const navLinks = document.querySelectorAll('.nav-link');
@@ -84,31 +93,46 @@ document.addEventListener("DOMContentLoaded", () => {
             navLinks.forEach(link => {
                 link.addEventListener('click', (e) => {
                     e.preventDefault();
-                    const targetPageId = link.dataset.page; 
-                    if (!targetPageId) return; 
+                    const targetPageId = link.dataset.page;
+                    if (!targetPageId) return;
+
                     navLinks.forEach(n => n.classList.remove('active'));
                     contentPages.forEach(p => p.classList.remove('active'));
                     link.classList.add('active');
-                    const page = document.getElementById(targetPageId); 
+
+                    const page = document.getElementById(targetPageId);
                     if (page) {
                         page.classList.add('active');
-                        if (targetPageId === 'page-data-siswa') { loadSiswaList(); }
-                    } else { console.error(`Halaman dengan ID '${targetPageId}' tidak ditemukan.`); }
+                        if (targetPageId === 'page-data-siswa') {
+                            loadSiswaList();
+                        }
+                    } else {
+                        console.error(`Halaman dengan ID '${targetPageId}' tidak ditemukan.`);
+                    }
                 });
             });
-             const defaultLink = document.querySelector('.nav-link[data-page="page-home"]');
-             const defaultPage = document.getElementById('page-home');
-             if (defaultLink && defaultPage) { defaultLink.click(); }
+
+            const defaultLink = document.querySelector('.nav-link[data-page="page-home"]');
+            const defaultPage = document.getElementById('page-home');
+            if (defaultLink && defaultPage) {
+                defaultLink.click();
+            }
         }
 
         // 4. Load Data Awal (Dropdown, Siswa, dll)
-        loadInitialData(); 
+        loadInitialData();
 
         // 5. Event Listener Halaman Data Siswa
         if (downloadTemplateBtn) downloadTemplateBtn.addEventListener('click', handleDownloadTemplate);
         if (importCsvBtn && csvFileInput) importCsvBtn.addEventListener('click', () => csvFileInput.click());
         if (csvFileInput) csvFileInput.addEventListener('change', handleImportCSV);
-        if (toggleSiswaListBtn && siswaTableContainer) { toggleSiswaListBtn.addEventListener('click', (e) => { e.preventDefault(); const isExpanded = siswaTableContainer.classList.toggle('is-expanded'); toggleSiswaListBtn.innerText = isExpanded ? 'Sembunyikan' : 'Tampilkan Semua Siswa'; }); }
+        if (toggleSiswaListBtn && siswaTableContainer) {
+            toggleSiswaListBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const isExpanded = siswaTableContainer.classList.toggle('is-expanded');
+                toggleSiswaListBtn.innerText = isExpanded ? 'Sembunyikan' : 'Tampilkan Semua Siswa';
+            });
+        }
 
         // 6. Event Dropdown & Input Form Nilai
         if (selectKelas) selectKelas.addEventListener('change', (e) => { handleKelasChange(e); validateAndToggleButton(); });
@@ -122,12 +146,21 @@ document.addEventListener("DOMContentLoaded", () => {
         // 7. Tombol Simpan Nilai
         if (simpanNilaiBtn) {
             simpanNilaiBtn.disabled = true;
-            simpanNilaiBtn.addEventListener('click', (e) => { e.preventDefault(); handleSimpanNilai(); });
+            simpanNilaiBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                handleSimpanNilai();
+            });
         }
 
         // 8. Kalimat Pembuka
-        if (selectPembukaTercapai && inputCustomTercapai) { selectPembukaTercapai.addEventListener('change', handlePembukaTercapaiChange); inputCustomTercapai.addEventListener('input', handleCustomTercapaiInput); }
-        if (selectPembukaBimbingan && inputCustomBimbingan) { selectPembukaBimbingan.addEventListener('change', handlePembukaBimbinganChange); inputCustomBimbingan.addEventListener('input', handleCustomBimbinganInput); }
+        if (selectPembukaTercapai && inputCustomTercapai) {
+            selectPembukaTercapai.addEventListener('change', handlePembukaTercapaiChange);
+            inputCustomTercapai.addEventListener('input', handleCustomTercapaiInput);
+        }
+        if (selectPembukaBimbingan && inputCustomBimbingan) {
+            selectPembukaBimbingan.addEventListener('change', handlePembukaBimbinganChange);
+            inputCustomBimbingan.addEventListener('input', handleCustomBimbinganInput);
+        }
 
         // 9. (BARU) Event Listener Halaman Profil Sekolah
         if (simpanProfilBtn) {
@@ -140,8 +173,16 @@ document.addEventListener("DOMContentLoaded", () => {
         // 10. (BARU) Muat data Profil Sekolah saat dashboard siap
         loadProfilSekolah();
 
+        // 11. ✅ Tambahan baru: muat data siswa perlu bimbingan di Dashboard Home
+        if (typeof loadSiswaPerluBimbingan === "function") {
+            loadSiswaPerluBimbingan();
+        }
+
+        console.log("[INIT] Dashboard siap digunakan!");
+
     } catch (err) {
-        console.error("Init error:", err); showNotification("Gagal memuat dashboard: " + err.message, "error");
+        console.error("Init error:", err);
+        showNotification("Gagal memuat dashboard: " + err.message, "error");
     }
 });
 
