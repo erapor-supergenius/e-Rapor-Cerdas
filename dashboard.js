@@ -731,7 +731,7 @@ function handleSimpanProfil() {
 // === Tambahan Baru: Memuat data siswa perlu bimbingan ===
 async function loadSiswaPerluBimbingan() {
   try {
-    const response = await fetch(`${URL_GAS}?action=getSiswaPerluBimbingan`);
+    const response = await fetch(`${GAS_URL}?action=getSiswaPerluBimbingan`);
     const data = await response.json();
 
     if (!data || data.error) {
