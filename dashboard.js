@@ -686,3 +686,29 @@ function handleSimpanProfil() {
         showNotification("Gagal menyimpan profil: " + err.message, "error");
     });
 }
+
+// Kode Tambahan Chatgbt
+// === Navigasi antar halaman ===
+document.querySelectorAll('.nav-link').forEach(link => {
+  link.addEventListener('click', (e) => {
+    e.preventDefault();
+
+    // Sembunyikan semua halaman
+    document.querySelectorAll('.content-page').forEach(p => p.style.display = 'none');
+
+    // Hilangkan class aktif di semua menu
+    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+
+    // Ambil target page dari atribut data-page
+    const targetPage = e.currentTarget.dataset.page;
+    const pageElement = document.getElementById(targetPage);
+
+    // Tampilkan halaman yang diklik
+    if (pageElement) {
+      pageElement.style.display = 'block';
+      e.currentTarget.classList.add('active');
+    } else {
+      console.warn('Halaman tidak ditemukan:', targetPage);
+    }
+  });
+});
