@@ -728,32 +728,57 @@ function handleSimpanProfil() {
     });
 }
 
-// === Inisialisasi Spreadsheet ID dan GAS_URL ===
-const SPREADSHEET_ID = "1eK1ULOFhmCs2hqMARQ2nYtGVJU0Fh0evbY1MnlA1QgI"; 
-// Ganti YOUR_SCRIPT_ID dengan Script ID Web App GAS-mu
-const GAS_SCRIPT_ID = "AKfycbw1Jc7JXssFYq_KMQ6Up34zBGm4XYyOEEORsCeJI7DwJfG-xj3mGY930FbU5a5c5ZCJew"; 
-const GAS_URL = `https://script.google.com/macros/s/${GAS_SCRIPT_ID}/exec?spreadsheetId=${SPREADSHEET_ID}`;
+// =========================
+// KONFIGURASI GAS
+// =========================
 
-// === Fungsi memuat siswa perlu bimbingan ===
+// Ganti dengan Script ID Web App GAS-mu
+const GAS_SCRIPT_ID = "AKfycbw1Jc7JXssFYq_KMQ6Up34zBGm4XYyOEEORsCeJI7DwJfG-xj3mGY930FbU5a5c5ZCJew";
+
+// URL untuk memanggil GAS
+const GAS_URL = `https://script.google.com/macros/s/${GAS_SCRIPT_ID}/exec`;
+
+// =========================
+// FUNGSI MEMUAT DATA SISWA PERLU BIMBINGAN
+// =========================
 async function loadSiswaPerluBimbingan() {
-  if (!SPREADSHEET_ID) {
-    console.error("Spreadsheet ID belum diatur. Fungsi dibatalkan.");
-    return;
-  }
-
   try {
-    const response = await fetch(`${GAS_URL}&action=getSiswaPerluBimbingan`);
-    if (!response.ok) {
-      console.error("Gagal fetch data:", response.status, response.statusText);
-      return;
-    }
-
+    const response = await fetch(`${GAS_URL}?action=getSiswaPerluBimbingan`);
     const data = await response.json();
 
     if (!data || data.error) {
-      console.warn("Error:", data?.error || "Tidak ada data siswa perlu bimbingan.");
+      console.warn("Error:", data.error || "Tidak ada data siswa perlu bimbingan.");
       return;
     }
+
+    // Menampilkan hasil di card dashboard
+    const infoCard = document.getElementById("info-bimbingan");
+    if (infoCard) {
+      infoCard.innerHTML = `
+        <div class="p-4 rounded-2xl shadow-md bg-white border border-gray-100 transition hover:shadow-lg">
+          <div class="flex items-center justify-between mb-2">
+            <h4 class="text-lg font-semibold text-gray-800">Siswa Perlu Bimbingan</h4>
+            <span class="text-sm text-blue-600 font-medium">Total: ${data.total}</span>
+          </div>
+          <ul class="list-disc list-inside text-sm text-gray-700 space-y-1">
+            ${data.siswa.map(s => `<li>${s.nama} - ${s.kelas}</li>`).join("")}
+          </ul>
+        </div>
+      `;
+    }
+
+  } catch (err) {
+    console.error("Gagal memuat data siswa perlu bimbingan:", err);
+  }
+}
+
+// =========================
+// CONTOH PEMANGGILAN FUNGSI
+// =========================
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("DOM siap, memuat data siswa perlu bimbingan...");
+  loadSiswaPerluBimbingan();
+});
 
     // Menampilkan hasil di card dashboard
     const infoCard = document.getElementById("info-bimbingan");
