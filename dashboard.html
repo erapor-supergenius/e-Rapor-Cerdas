@@ -1,171 +1,195 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Dashboard - e-Rapor Cerdas</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+
+  <!-- STYLE: mempertahankan tampilan asli + sedikit modernisasi -->
   <style>
-    :root {
+    :root{
       --sidebar-bg: #2c3e50;
       --sidebar-text: #ecf0f1;
       --sidebar-hover-bg: #34495e;
-      --sidebar-active-bg: #007bff;
-      --content-bg: #f8f9fa;
+      --sidebar-active-bg: #0d6efd;
+      --content-bg: #f6f8fa;
       --card-bg: #ffffff;
-      --text-color: #343a40;
-      --border-color: #dee2e6;
+      --text-color: #222831;
+      --muted: #6c757d;
+      --border: #e9ecef;
+      --success: #28a745;
+      --danger: #dc3545;
+      --info: #17a2b8;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: Inter, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background:var(--content-bg);
+      color:var(--text-color);
+      -webkit-font-smoothing:antialiased;
     }
 
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      margin: 0;
-      background-color: var(--content-bg);
-      color: var(--text-color);
+    /* Layout */
+    .dashboard-wrapper{display:flex;min-height:100vh;}
+    .sidebar{
+      width:260px;
+      background:var(--sidebar-bg);
+      color:var(--sidebar-text);
+      display:flex;
+      flex-direction:column;
+      box-shadow:2px 0 8px rgba(0,0,0,0.06);
+      flex-shrink:0;
     }
 
-    .dashboard-wrapper { display: flex; min-height: 100vh; }
+    /* Sidebar header (logo, title, nama sekolah) */
+    .sidebar-header{
+      text-align:center;
+      padding:20px 16px;
+      border-bottom:1px solid rgba(255,255,255,0.04);
+    }
+    .sidebar-header img{
+      width:84px;height:84px;border-radius:50%;background:#fff;padding:6px;object-fit:contain;
+      box-shadow:0 6px 18px rgba(0,0,0,0.15);
+    }
+    .sidebar-header h4{
+      margin:10px 0 4px;color:#fff;font-size:1.05rem;letter-spacing:0.2px;
+    }
+    .sidebar-header p{margin:0;color:#cdd6dd;font-size:0.88rem;font-weight:500}
 
-    /* --- SIDEBAR --- */
-    .sidebar {
-      width: 250px;
-      background-color: var(--sidebar-bg);
-      color: var(--sidebar-text);
-      flex-shrink: 0;
-      display: flex;
-      flex-direction: column;
-      box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+    .sidebar-menu{padding:14px 0;flex:1;overflow:auto;}
+    .sidebar-menu h3{color:#9fb0bf;font-size:0.72rem;margin:8px 16px;text-transform:uppercase;letter-spacing:1px}
+    .sidebar-menu ul{list-style:none;padding:0;margin:0}
+    .sidebar-menu li{margin:6px 0}
+    .sidebar-menu a{
+      display:flex;align-items:center;gap:10px;padding:10px 16px;color:var(--sidebar-text);text-decoration:none;border-radius:8px;margin:0 10px;font-size:0.95rem;
+    }
+    .sidebar-menu a:hover{background:var(--sidebar-hover-bg)}
+    .sidebar-menu a.active{background:var(--sidebar-active-bg);color:#fff;font-weight:600}
+
+    .sidebar-footer{padding:12px 12px;border-top:1px solid rgba(255,255,255,0.04);font-size:0.82rem;color:#9fb0bf;text-align:center}
+
+    .main-wrapper{flex:1;display:flex;flex-direction:column;min-height:100vh}
+
+    /* Top navbar (selamat datang + logout) */
+    .content-header{
+      display:flex;align-items:center;justify-content:space-between;padding:14px 22px;background:var(--card-bg);
+      border-bottom:1px solid var(--border);position:sticky;top:0;z-index:80;
+      box-shadow:0 4px 14px rgba(16,24,40,0.03);
+    }
+    #welcome-message{font-weight:700;font-size:1rem;color:var(--text-color)}
+    #logout-button{
+      background:var(--danger);color:#fff;padding:8px 12px;border-radius:8px;border:none;cursor:pointer;font-weight:600;
+      box-shadow:0 6px 16px rgba(220,53,69,0.12);
+    }
+    #logout-button:hover{filter:brightness(.95)}
+
+    /* Main content area */
+    .main-content{padding:22px 28px;flex:1;overflow:auto}
+
+    /* Dashboard home: cards dan layout */
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(12,1fr);
+      gap:18px;
     }
 
-    .sidebar-header {
-      padding: 1.5rem;
-      text-align: center;
-      border-bottom: 1px solid var(--sidebar-hover-bg);
+    /* Quick cards */
+    .card{
+      background:var(--card-bg);
+      border-radius:12px;padding:16px;
+      box-shadow:0 6px 18px rgba(16,24,40,0.03);
+      border:1px solid var(--border);
     }
-
-    .sidebar-header img {
-      max-width: 90px;
-      height: auto;
-      margin-bottom: 0.5rem;
-      border-radius: 50%;
-      background: #fff;
-      padding: 5px;
+    .quick-card{display:flex;align-items:center;gap:12px}
+    .quick-card .icon{
+      width:52px;height:52px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff;
+      box-shadow:0 6px 18px rgba(12,35,60,0.06);
     }
+    .qc-blue{background:linear-gradient(135deg,#2f80ed,#3b82f6)}
+    .qc-green{background:linear-gradient(135deg,#16a34a,#22c55e)}
+    .qc-gold{background:linear-gradient(135deg,#f59e0b,#f97316)}
+    .qc-purple{background:linear-gradient(135deg,#7c3aed,#8b5cf6)}
 
-    .sidebar-header h4 {
-      color: #fff;
-      font-size: 1.15rem;
-      margin: 0.25rem 0;
+    .qc-body{display:flex;flex-direction:column}
+    .qc-title{font-size:0.85rem;color:var(--muted);margin-bottom:4px}
+    .qc-value{font-size:1.4rem;font-weight:700}
+
+    /* Progress / statistik area */
+    .stat-card{display:flex;flex-direction:column;gap:8px}
+    .stat-bar{height:10px;background:#f1f3f5;border-radius:8px;overflow:hidden}
+    .stat-fill{height:100%;background:linear-gradient(90deg,#0d6efd,#3b82f6);border-radius:8px}
+
+    /* Area tindakan cepat (button besar) */
+    .action-list{display:flex;gap:12px;flex-wrap:wrap}
+    .action-btn{
+      display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:10px;background:linear-gradient(180deg,#fff,#fbfdff);
+      border:1px solid var(--border);box-shadow:0 8px 20px rgba(16,24,40,0.04);cursor:pointer;font-weight:600;
     }
+    .action-btn i{font-size:18px}
 
-    .sidebar-header p {
-      font-size: 0.9rem;
-      color: #bdc3c7;
-      margin: 0;
-      font-weight: 500;
+    /* Page sections */
+    .panel{background:var(--card-bg);padding:16px;border-radius:12px;border:1px solid var(--border);box-shadow:0 6px 18px rgba(16,24,40,0.03)}
+
+    /* Layout untuk form input nilai (dua kolom) */
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    label{display:block;margin-bottom:6px;font-weight:600;color:var(--muted)}
+    input[type="text"],input[type="number"],select,textarea{
+      width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);background:#fff;font-size:0.95rem;
     }
+    textarea{min-height:110px;resize:vertical}
 
-    .sidebar-menu {
-      padding: 1rem 0;
-      flex-grow: 1;
-      overflow-y: auto;
+    .row{display:flex;gap:12px;align-items:center}
+    .btn{display:inline-block;padding:9px 12px;border-radius:8px;border:none;background:#0d6efd;color:#fff;cursor:pointer;font-weight:700}
+    .btn.secondary{background:#6c757d}
+    .btn.ghost{background:transparent;border:1px solid var(--border);color:var(--text-color)}
+    .small{padding:6px 8px;font-size:0.9rem}
+
+    /* Table simple */
+    table{width:100%;border-collapse:collapse}
+    table th, table td{padding:10px;border-bottom:1px solid var(--border);text-align:left;font-size:0.95rem}
+    table thead th{background:transparent;color:var(--muted);font-weight:700}
+
+    /* CP selection list */
+    #cp-selection-list .cp-item{padding:10px;border-radius:8px;border:1px dashed #e6e9ee;margin-bottom:8px;background:#fafbfd}
+    .mulok-indicator{display:inline-block;padding:6px 8px;border-radius:8px;background:#fff;border:1px solid #ffd9d9;color:var(--danger);font-weight:700}
+
+    /* File input hidden but clickable label */
+    .file-input-label{display:inline-block;padding:8px 12px;border-radius:8px;border:1px dashed var(--border);cursor:pointer}
+
+    /* Notification toast */
+    .notification-toast{position:fixed;right:20px;bottom:20px;min-width:260px;max-width:420px;background:var(--card-bg);border-left:6px solid var(--info);padding:12px 14px;border-radius:10px;box-shadow:0 10px 30px rgba(16,24,40,0.08);display:none;z-index:9999;align-items:flex-start;gap:12px}
+    .notification-toast.success{border-left-color:var(--success)}
+    .notification-toast.error{border-left-color:var(--danger)}
+    .notification-toast.info{border-left-color:var(--info)}
+    .notification-toast p{margin:0;font-size:0.95rem;color:var(--text-color)}
+    .notification-toast button{border:0;background:transparent;cursor:pointer;color:#666;font-size:18px}
+
+    /* Responsive */
+    @media (max-width:1000px){
+      .form-grid{grid-template-columns:1fr}
+      .grid{grid-template-columns:repeat(6,1fr)}
     }
-
-    .sidebar-menu h3 {
-      padding: 0 1.5rem 0.5rem;
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      color: #95a5a6;
-      margin: 1rem 0 0.5rem;
+    @media (max-width:720px){
+      .sidebar{display:none}
+      .main-wrapper{padding-left:12px;padding-right:12px}
+      .content-header{padding:12px}
     }
-
-    .sidebar-menu ul { list-style: none; padding: 0; margin: 0; }
-
-    .sidebar-menu ul li a {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      padding: 0.8rem 1.5rem;
-      text-decoration: none;
-      color: var(--sidebar-text);
-      border-radius: 4px;
-      margin: 0.2rem 0.5rem;
-      transition: background-color 0.2s ease;
-      font-size: 0.95rem;
-    }
-
-    .sidebar-menu ul li a:hover { background-color: var(--sidebar-hover-bg); }
-    .sidebar-menu ul li a.active { background-color: var(--sidebar-active-bg); color: #fff; font-weight: 500; }
-
-    .sidebar-footer {
-      padding: 1rem;
-      text-align: center;
-      font-size: 0.8rem;
-      color: #95a5a6;
-      border-top: 1px solid var(--sidebar-hover-bg);
-    }
-
-    /* --- HEADER ATAS KONTEN --- */
-    .content-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 1rem 2rem;
-      background-color: var(--card-bg);
-      border-bottom: 1px solid var(--border-color);
-      position: sticky;
-      top: 0;
-      z-index: 900;
-    }
-
-    .content-header .user-info {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      width: 100%;
-    }
-
-    #welcome-message {
-      font-weight: 600;
-      color: var(--text-color);
-      font-size: 1rem;
-    }
-
-    #logout-button {
-      text-decoration: none;
-      color: #fff;
-      background-color: #dc3545;
-      padding: 0.4rem 0.8rem;
-      border-radius: 4px;
-      font-size: 0.9rem;
-      cursor: pointer;
-      border: none;
-    }
-
-    .main-content {
-      flex-grow: 1;
-      padding: 2rem;
-    }
-
-    .content-page { display: none; }
-    .content-page.active { display: block; }
-
-    h1 { color: #2c3e50; }
   </style>
 </head>
 <body>
 
   <div class="dashboard-wrapper">
-
-    <!-- Sidebar -->
-    <aside class="sidebar">
+    <!-- SIDEBAR -->
+    <aside class="sidebar" aria-label="Sidebar">
       <div class="sidebar-header">
         <img src="assets/logo.png" alt="Logo Sekolah">
         <h4>e-Rapor Sekolah</h4>
         <p id="sidebar-school-name">[Nama Sekolah]</p>
       </div>
 
-      <nav class="sidebar-menu">
+      <nav class="sidebar-menu" aria-label="Main menu">
         <h3>Menu Utama</h3>
         <ul>
           <li><a href="#" class="nav-link active" data-page="page-home"><i class="bi bi-house-door-fill"></i>Dashboard</a></li>
@@ -176,88 +200,301 @@
       </nav>
 
       <div class="sidebar-footer">
-        <p>Dikembangkan oleh: Dedi Agus Mustofa</p>
+        <small>Dikembangkan oleh: Dedi Agus Mustofa</small>
       </div>
     </aside>
 
-    <!-- Konten Utama -->
+    <!-- MAIN -->
     <div class="main-wrapper">
-      <!-- Header atas (Selamat datang dan Logout) -->
+      <!-- NAVBAR ATAS -->
       <header class="content-header">
-        <div class="user-info">
-          <span id="welcome-message">Selamat datang...</span>
+        <div id="welcome-message">Memuat...</div>
+        <div style="display:flex;gap:12px;align-items:center">
+          <!-- Tombol Print Rapor (tetap tersedia di header) -->
+          <button id="print-rapor-btn" class="btn ghost small" title="Cetak Rapor"><i class="bi bi-printer"></i> Print Rapor</button>
           <button id="logout-button">Logout</button>
         </div>
       </header>
 
-      <!-- Area isi halaman -->
+      <!-- KONTEN -->
       <main class="main-content">
-        <!-- Halaman utama dashboard -->
-        <div id="page-home" class="content-page active">
-          <!-- isi dashboard kamu tetap di sini, tidak diubah -->
-          <h1>Dashboard Utama</h1>
-          <p>Selamat datang di e-Rapor Cerdas!</p>
-        </div>
 
-        <!-- Halaman profil sekolah -->
-        <div id="page-profil-sekolah" class="content-page">
-          <h1>Profil Sekolah</h1>
-          <form id="form-profil-sekolah">
-            <div><label>Nama Sekolah:</label><br><input type="text" id="profil-nama-sekolah"></div>
-            <div><label>NPSN:</label><br><input type="text" id="profil-npsn"></div>
-            <div><label>Alamat:</label><br><input type="text" id="profil-alamat"></div>
-            <div><label>Kepala Sekolah:</label><br><input type="text" id="profil-kepsek"></div>
-            <div><label>NIP Kepala Sekolah:</label><br><input type="text" id="profil-nip-kepsek"></div>
-            <button id="simpan-profil-btn" type="button">Simpan</button>
-            <div id="profil-loading-spinner" style="display:none;">Memuat...</div>
-          </form>
-        </div>
+        <!-- === PAGE: HOME === -->
+        <section id="page-home" class="content-page active">
+          <div class="grid" style="grid-template-columns:repeat(12,1fr);align-items:start">
+            <!-- Quick cards (col 1-4, 5-8, 9-12 etc.) -->
+            <div style="grid-column: span 3;" class="card">
+              <div class="quick-card">
+                <div class="icon qc-blue"><i class="bi bi-people-fill" style="font-size:20px"></i></div>
+                <div class="qc-body">
+                  <div class="qc-title">Jumlah Siswa</div>
+                  <div class="qc-value" id="stat-jumlah-siswa">0</div>
+                </div>
+              </div>
+            </div>
 
-        <!-- Halaman data siswa -->
-        <div id="page-data-siswa" class="content-page">
-          <h1>Data Siswa</h1>
-          <div class="data-table-container">
-            <table border="1" width="100%">
-              <thead>
-                <tr><th>NISN</th><th>Nama</th><th>Kelas</th><th>Tanggal Lahir</th><th>Aksi</th></tr>
-              </thead>
-              <tbody id="siswa-table-body"></tbody>
-            </table>
+            <div style="grid-column: span 3;" class="card">
+              <div class="quick-card">
+                <div class="icon qc-purple"><i class="bi bi-journal-bookmark" style="font-size:20px"></i></div>
+                <div class="qc-body">
+                  <div class="qc-title">Jumlah Mapel</div>
+                  <div class="qc-value" id="stat-jumlah-mapel">0</div>
+                </div>
+              </div>
+            </div>
+
+            <div style="grid-column: span 3;" class="card">
+              <div class="quick-card">
+                <div class="icon qc-gold"><i class="bi bi-file-earmark-check" style="font-size:20px"></i></div>
+                <div class="qc-body">
+                  <div class="qc-title">Rapor Selesai</div>
+                  <div class="qc-value" id="stat-rapor-selesai">0%</div>
+                </div>
+              </div>
+            </div>
+
+            <div style="grid-column: span 3;" class="card">
+              <div class="quick-card">
+                <div class="icon qc-green"><i class="bi bi-person-badge" style="font-size:18px"></i></div>
+                <div class="qc-body">
+                  <div class="qc-title">Jumlah Guru</div>
+                  <div class="qc-value" id="stat-jumlah-guru">0</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Area aksi cepat (full width) -->
+            <div style="grid-column: 1 / -1" class="card" aria-label="Aksi Cepat">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+                <div>
+                  <h3 style="margin:0 0 6px;font-size:1.05rem">Akses Cepat</h3>
+                  <p style="margin:0;color:var(--muted)">Tombol cepat untuk pekerjaan umum</p>
+                </div>
+                <div class="action-list" role="toolbar" aria-label="Quick actions">
+                  <button class="action-btn" id="goto-input-nilai"><i class="bi bi-pencil-square"></i> Input Nilai</button>
+                  <button class="action-btn" id="goto-data-siswa"><i class="bi bi-people"></i> Data Siswa</button>
+                  <button class="action-btn" id="goto-profil"><i class="bi bi-bank"></i> Profil Sekolah</button>
+                  <button class="action-btn" id="download-report"><i class="bi bi-download"></i> Export</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Stat / grafik kecil (placeholder) -->
+            <div style="grid-column: span 6" class="card">
+              <h4 style="margin:0 0 8px">Statistik Rapor</h4>
+              <div class="stat-card">
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                  <small style="color:var(--muted)">Persentase Rapor Terselesaikan</small>
+                  <strong id="stat-rapor-number">0%</strong>
+                </div>
+                <div class="stat-bar" aria-hidden="true">
+                  <div id="stat-rapor-fill" class="stat-fill" style="width:0%"></div>
+                </div>
+              </div>
+            </div>
+
+            <div style="grid-column: span 6" class="card">
+              <h4 style="margin:0 0 8px">Ringkasan Sekolah</h4>
+              <p style="margin:0;color:var(--muted)">Informasi singkat dan link penting.</p>
+            </div>
           </div>
-          <button id="toggle-siswa-list" style="display:none;">Tampilkan Semua Siswa</button>
-        </div>
+        </section>
 
-        <!-- Halaman input nilai -->
-        <div id="page-input-nilai" class="content-page">
-          <h1>Input Nilai</h1>
-          <form id="form-input-nilai">
-            <label>Kelas:</label>
-            <select id="pilih-kelas"></select><br>
-            <label>Siswa:</label>
-            <select id="pilih-siswa"></select><br>
-            <label>Mapel:</label>
-            <select id="pilih-mapel"></select><br>
-            <label>Agama:</label>
-            <select id="pilih-agama"></select><br>
-            <label>Tahun Ajaran:</label>
-            <input type="text" id="pilih-tahun-ajaran"><br>
-            <label>Semester:</label>
-            <select id="pilih-semester">
-              <option value="">Pilih Semester...</option>
-              <option value="1">1</option>
-              <option value="2">2</option>
-            </select><br>
-            <label>Nilai Akhir:</label>
-            <input type="number" id="nilai-akhir-input"><br>
-            <label>Deskripsi:</label>
-            <textarea id="final-description-input"></textarea><br>
-            <button id="simpan-nilai-btn" type="button">Simpan Nilai</button>
-          </form>
-        </div>
+        <!-- === PAGE: PROFIL SEKOLAH === -->
+        <section id="page-profil-sekolah" class="content-page" style="display:none">
+          <div class="grid" style="grid-template-columns:repeat(12,1fr);gap:18px">
+            <div style="grid-column: span 6" class="panel">
+              <h3>Profil Sekolah</h3>
+              <form id="form-profil-sekolah">
+                <div style="margin-bottom:12px">
+                  <label>Nama Sekolah</label>
+                  <input type="text" id="profil-nama-sekolah" placeholder="Nama Sekolah">
+                </div>
+                <div style="margin-bottom:12px">
+                  <label>NPSN</label>
+                  <input type="text" id="profil-npsn" placeholder="NPSN">
+                </div>
+                <div style="margin-bottom:12px">
+                  <label>Alamat</label>
+                  <input type="text" id="profil-alamat" placeholder="Alamat Sekolah">
+                </div>
+                <div style="margin-bottom:12px">
+                  <label>Kepala Sekolah</label>
+                  <input type="text" id="profil-kepsek" placeholder="Nama Kepala Sekolah">
+                </div>
+                <div style="margin-bottom:12px">
+                  <label>NIP Kepala Sekolah</label>
+                  <input type="text" id="profil-nip-kepsek" placeholder="NIP Kepala Sekolah">
+                </div>
+
+                <div style="display:flex;gap:10px;align-items:center">
+                  <button id="simpan-profil-btn" type="button" class="btn">Simpan</button>
+                  <div id="profil-loading-spinner" style="display:none;color:var(--muted)">Memuat...</div>
+                </div>
+              </form>
+            </div>
+
+            <div style="grid-column: span 6" class="panel">
+              <h3>Info Lain</h3>
+              <p style="color:var(--muted)">Pengaturan tambahan dan informasi terkait profil sekolah.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- === PAGE: DATA SISWA === -->
+        <section id="page-data-siswa" class="content-page" style="display:none">
+          <div class="grid" style="grid-template-columns:repeat(12,1fr);gap:18px">
+            <div style="grid-column:span 7" class="panel">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+                <h3 style="margin:0">Data Siswa</h3>
+                <div style="display:flex;gap:8px;align-items:center">
+                  <button id="download-template-btn" class="btn ghost small"><i class="bi bi-file-earmark-arrow-down"></i> Download Template</button>
+                  <button id="import-csv-btn" class="btn ghost small"><i class="bi bi-upload"></i> Upload CSV</button>
+                  <!-- Hidden file input -->
+                  <input type="file" id="csv-file-input" accept=".csv" style="display:none">
+                </div>
+              </div>
+
+              <div class="data-table-container" id="siswa-table-container" style="overflow:auto">
+                <table aria-label="Daftar siswa">
+                  <thead>
+                    <tr><th>NISN</th><th>Nama</th><th>Kelas</th><th>Tanggal Lahir</th><th>Aksi</th></tr>
+                  </thead>
+                  <tbody id="siswa-table-body">
+                    <tr><td colspan="5" style="text-align:center;color:var(--muted)">Memuat...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div style="margin-top:10px">
+                <button id="toggle-siswa-list" class="btn ghost small" style="display:none">Tampilkan Semua Siswa</button>
+              </div>
+            </div>
+
+            <div style="grid-column:span 5" class="panel">
+              <h4>Panduan Import CSV</h4>
+              <p style="color:var(--muted);margin-bottom:10px">Gunakan template CSV yang disediakan. Pastikan kolom sesuai header.</p>
+              <ol style="margin:0 0 12px 18px;color:var(--muted)">
+                <li>Download template</li>
+                <li>Isi data siswa sesuai kolom</li>
+                <li>Upload file (csv) melalui tombol Upload CSV</li>
+              </ol>
+              <div style="display:flex;gap:8px">
+                <button id="example-csv" class="btn ghost small"><i class="bi bi-file-text"></i> Contoh CSV</button>
+                <button id="validate-csv" class="btn secondary small">Validasi</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- === PAGE: INPUT NILAI === -->
+        <section id="page-input-nilai" class="content-page" style="display:none">
+          <div class="grid" style="grid-template-columns:repeat(12,1fr);gap:18px">
+
+            <!-- Form kiri (input dropdowns & nilai) -->
+            <div style="grid-column:span 6" class="panel">
+              <h3>Input Nilai</h3>
+              <form id="form-input-nilai">
+                <div style="margin-bottom:10px">
+                  <label>Kelas</label>
+                  <select id="pilih-kelas"></select>
+                </div>
+                <div style="margin-bottom:10px">
+                  <label>Siswa</label>
+                  <select id="pilih-siswa"></select>
+                </div>
+                <div style="margin-bottom:10px">
+                  <label>Mata Pelajaran</label>
+                  <select id="pilih-mapel"></select>
+                </div>
+                <div style="margin-bottom:10px">
+                  <label>Agama</label>
+                  <select id="pilih-agama"></select>
+                </div>
+                <div style="display:flex;gap:10px;margin-bottom:10px">
+                  <div style="flex:1">
+                    <label>Tahun Ajaran</label>
+                    <input type="text" id="pilih-tahun-ajaran" placeholder="2024/2025">
+                  </div>
+                  <div style="width:140px">
+                    <label>Semester</label>
+                    <select id="pilih-semester">
+                      <option value="">Pilih...</option>
+                      <option value="1">1</option>
+                      <option value="2">2</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div style="margin-bottom:10px">
+                  <label>Nilai Akhir</label>
+                  <input type="number" id="nilai-akhir-input" min="0" max="100">
+                </div>
+
+                <div style="margin-bottom:10px">
+                  <label>Deskripsi Akhir</label>
+                  <textarea id="final-description-input" placeholder="Deskripsi akan dibuat otomatis..."></textarea>
+                </div>
+
+                <div style="display:flex;gap:10px;align-items:center">
+                  <button id="simpan-nilai-btn" class="btn" type="button" disabled>Simpan Nilai</button>
+                  <button id="edit-deskripsi-btn" class="btn ghost small" type="button" style="display:none">Edit Deskripsi</button>
+                  <div id="mulok-indicator" class="mulok-indicator" style="display:none">Mulok aktif</div>
+                </div>
+              </form>
+            </div>
+
+            <!-- Form kanan (CP list, pembuka, tombol cetak) -->
+            <div style="grid-column:span 6" class="panel">
+              <h3>Kompetensi & Deskripsi</h3>
+
+              <div style="margin-bottom:10px">
+                <label>Kalimat Pembuka (Tercapai)</label>
+                <select id="kalimat-pembuka-tercapai"></select>
+                <input type="text" id="custom-pembuka-tercapai" style="display:none;margin-top:8px" placeholder="Tulis kalimat pembuka...">
+              </div>
+
+              <div style="margin-bottom:10px">
+                <label>Kalimat Pembuka (Perlu Bimbingan)</label>
+                <select id="kalimat-pembuka-bimbingan"></select>
+                <input type="text" id="custom-pembuka-bimbingan" style="display:none;margin-top:8px" placeholder="Tulis kalimat bimbingan...">
+              </div>
+
+              <div style="margin-bottom:12px">
+                <label>Daftar CP / TP</label>
+                <div id="cp-selection-list" style="max-height:280px;overflow:auto"></div>
+              </div>
+
+              <div style="display:flex;gap:10px;align-items:center">
+                <button id="btn-generate-desc" class="btn ghost small">Buat Deskripsi</button>
+                <button id="btn-reset-cp" class="btn ghost small">Reset</button>
+                <button id="btn-print-rapor-compact" class="btn ghost small"><i class="bi bi-printer"></i> Cetak</button>
+              </div>
+
+            </div>
+
+            <!-- Area bawah: bantuan & status -->
+            <div style="grid-column: 1 / -1" class="panel">
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <div style="color:var(--muted)">Petunjuk: Pilih kelas → pilih siswa → pilih CP → simpan nilai. Untuk Mulok isikan deskripsi manual.</div>
+                <div style="color:var(--muted)">Status koneksi: <strong id="conn-status">OK</strong></div>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
       </main>
     </div>
   </div>
 
+  <!-- NOTIFIKASI TOAST -->
+  <div id="notification-toast" class="notification-toast" role="status" aria-live="polite">
+    <p id="notification-toast-message">Pesan notifikasi</p>
+    <button id="notification-toast-close" aria-label="Tutup notifikasi"><i class="bi bi-x"></i></button>
+  </div>
+
+  <!-- PASTIKAN: script tetap terhubung ke dashboard.js (tidak diubah) -->
   <script src="dashboard.js"></script>
 </body>
 </html>
