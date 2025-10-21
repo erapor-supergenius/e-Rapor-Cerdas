@@ -135,10 +135,11 @@
         #toggle-siswa-list { position: absolute; bottom: 1rem; left: 1.5rem; background: none; border: 1px solid #007bff; color: #007bff; padding: 0.5rem 1rem; border-radius: 5px; cursor: pointer; font-weight: 500; transition: background-color 0.2s; }
         #toggle-siswa-list:hover { background: #eef5ff; }
 
-        /* === HALAMAN INPUT NILAI CP (V3) === */
-        .form-row { display: flex; flex-wrap: wrap; gap: 1.5rem; margin-bottom: 1rem; }
-        .form-row .form-group { flex: 1 1 200px; margin-bottom: 0; }
-        .cp-checkbox-list { border: 1px solid #ddd; border-radius: 4px; padding: 1rem; max-height: 250px; overflow-y: auto; background-color: #f9f9f9; margin-bottom: 1.5rem; }
+        /* === HALAMAN INPUT NILAI CP (V3 - Layout 2 Kolom) === */
+        .form-container { display: flex; flex-wrap: wrap; gap: 2rem; }
+        .form-column { flex: 1 1 300px; /* Fleksibel */ }
+        .form-column h4 { margin-top: 0; color: #007bff; border-bottom: 1px solid #eee; padding-bottom: 0.5rem; margin-bottom: 1rem; }
+        .cp-checkbox-list { border: 1px solid #ddd; border-radius: 4px; padding: 1rem; max-height: 250px; overflow-y: auto; background-color: #f9f9f9; }
         .cp-item { margin-bottom: 0.8rem; padding-bottom: 0.8rem; border-bottom: 1px dashed #eee; }
         .cp-item:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
         .cp-item-header { font-weight: 500; margin-bottom: 0.4rem; font-size: 0.95em; color: #333; line-height: 1.4; }
@@ -272,44 +273,52 @@
                     </div>
                 </div>
 
-                <!-- ===== Halaman: Input Nilai CP ===== -->
+                <!-- ===== Halaman: Input Nilai CP (Layout 2 Kolom Sederhana) ===== -->
                 <div class="content-page" id="page-input-nilai">
                     <h1>Input Nilai Capaian Pembelajaran (CP)</h1>
-                    <form id="form-input-nilai">
-                        <div class="form-row">
-                            <div class="form-group"><label for="pilih-kelas">Pilih Kelas:</label><select id="pilih-kelas" name="pilih-kelas" class="form-select" disabled><option value="">Memuat...</option></select></div>
-                            <div class="form-group"><label for="pilih-siswa">Pilih Siswa:</label><select id="pilih-siswa" name="pilih-siswa" class="form-select" disabled><option value="">Pilih kelas...</option></select></div>
+                    <div class="card">
+                        <div class="card-body">
+                            <form id="form-input-nilai">
+                                <div class="form-container">
+                                    <!-- Kolom Kiri -->
+                                    <div class="form-column">
+                                        <h4>1. Pilih Siswa & Mapel</h4>
+                                        <div class="form-group"><label for="pilih-kelas">Pilih Kelas:</label><select id="pilih-kelas" name="pilih-kelas" class="form-select" disabled><option value="">Memuat...</option></select></div>
+                                        <div class="form-group"><label for="pilih-siswa">Pilih Siswa:</label><select id="pilih-siswa" name="pilih-siswa" class="form-select" disabled><option value="">Pilih kelas...</option></select></div>
+                                        <div class="form-group"><label for="pilih-mapel">Pilih Mata Pelajaran:</label><select id="pilih-mapel" name="pilih-mapel" class="form-select" disabled><option value="">Memuat...</option></select></div>
+                                        <div class="form-group"><label for="pilih-agama">Pilih Agama:</label><select id="pilih-agama" name="pilih-agama" class="form-select" disabled><option value="">Pilih mapel...</option></select></div>
+                                        <div class="form-group"><label for="pilih-tahun-ajaran">Tahun Ajaran:</label><input type="text" id="pilih-tahun-ajaran" class="form-control" placeholder="Contoh: 2024/2025"></div>
+                                        <div class="form-group"><label for="pilih-semester">Semester:</label><select id="pilih-semester" class="form-select"><option value="">Pilih...</option><option value="Ganjil">Ganjil</option><option value="Genap">Genap</option></select></div>
+                                    </div>
+                                    <!-- Kolom Kanan -->
+                                    <div class="form-column">
+                                        <h4>2. Pilih Capaian</h4>
+                                        <div class="form-group">
+                                            <label>Pilih Capaian Pembelajaran (CP) yang Dinilai:</label>
+                                            <span id="mulok-indicator" style="display: none; font-style: italic; color: #6c757d; margin-left: 10px;">(Input Manual untuk Muatan Lokal)</span>
+                                            <div id="cp-selection-list" class="cp-checkbox-list"><p style="color: #6c757d;"><i>Pilih kelas, mapel, dan agama terlebih dahulu...</i></p></div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Pengaturan Kalimat Deskripsi:</label>
+                                            <div class="description-phrase-settings">
+                                                <div class="phrase-group"><label for="kalimat-pembuka-tercapai">Awalan Tercapai:</label><select id="kalimat-pembuka-tercapai" class="form-select"><option value="">Memuat...</option><option value="custom">-- Tulis Manual --</option></select><input type="text" id="custom-pembuka-tercapai" class="custom-phrase-input form-control" placeholder="Tulis awalan kalimat..." style="display: none;"></div>
+                                                <div class="phrase-group"><label for="kalimat-pembuka-bimbingan">Awalan Bimbingan:</label><select id="kalimat-pembuka-bimbingan" class="form-select"><option value="">Memuat...</option><option value="custom">-- Tulis Manual --</option></select><input type="text" id="custom-pembuka-bimbingan" class="custom-phrase-input form-control" placeholder="Tulis awalan kalimat..." style="display: none;"></div>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="final-description-input">Deskripsi Rapor:</label>
+                                            <textarea id="final-description-input" class="form-control" rows="5" placeholder="Deskripsi akan dibuat otomatis..." readonly></textarea>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="nilai-akhir-input">Nilai Akhir (Angka):</label>
+                                            <input type="number" id="nilai-akhir-input" class="form-control" min="0" max="100" placeholder="0-100">
+                                        </div>
+                                        <button id="simpan-nilai-btn" class="btn btn-primary" disabled>Simpan Nilai & Deskripsi</button>
+                                    </div>
+                                </div>
+                            </form>
                         </div>
-                        <div class="form-row">
-                            <div class="form-group"><label for="pilih-mapel">Pilih Mata Pelajaran:</label><select id="pilih-mapel" name="pilih-mapel" class="form-select" disabled><option value="">Memuat...</option></select></div>
-                            <div class="form-group"><label for="pilih-agama">Pilih Agama:</label><select id="pilih-agama" name="pilih-agama" class="form-select" disabled><option value="">Pilih mapel...</option></select></div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group"><label for="pilih-tahun-ajaran">Tahun Ajaran:</label><input type="text" id="pilih-tahun-ajaran" class="form-control" placeholder="Contoh: 2024/2025"></div>
-                            <div class="form-group"><label for="pilih-semester">Semester:</label><select id="pilih-semester" class="form-select"><option value="">Pilih...</option><option value="Ganjil">Ganjil</option><option value="Genap">Genap</option></select></div>
-                        </div>
-                        <div class="form-group">
-                            <label>Pilih Capaian Pembelajaran (CP) yang Dinilai:</label>
-                            <span id="mulok-indicator" style="display: none; font-style: italic; color: #6c757d; margin-left: 10px;">(Input Manual untuk Muatan Lokal)</span>
-                            <div id="cp-selection-list" class="cp-checkbox-list"><p style="color: #6c757d;"><i>Pilih kelas, mapel, dan agama terlebih dahulu...</i></p></div>
-                        </div>
-                        <div class="form-group">
-                            <label>Pengaturan Kalimat Deskripsi:</label>
-                            <div class="description-phrase-settings">
-                                <div class="phrase-group"><label for="kalimat-pembuka-tercapai">Awalan Tercapai:</label><select id="kalimat-pembuka-tercapai" class="form-select"><option value="">Memuat...</option><option value="custom">-- Tulis Manual --</option></select><input type="text" id="custom-pembuka-tercapai" class="custom-phrase-input form-control" placeholder="Tulis awalan kalimat..." style="display: none;"></div>
-                                <div class="phrase-group"><label for="kalimat-pembuka-bimbingan">Awalan Bimbingan:</label><select id="kalimat-pembuka-bimbingan" class="form-select"><option value="">Memuat...</option><option value="custom">-- Tulis Manual --</option></select><input type="text" id="custom-pembuka-bimbingan" class="custom-phrase-input form-control" placeholder="Tulis awalan kalimat..." style="display: none;"></div>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="final-description-input">Deskripsi Rapor (Otomatis & Bisa Diedit):</label>
-                            <textarea id="final-description-input" class="form-control" rows="5" placeholder="Deskripsi akan dibuat otomatis..." readonly></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label for="nilai-akhir-input">Nilai Akhir (Angka):</label>
-                            <input type="number" id="nilai-akhir-input" class="form-control" min="0" max="100" placeholder="0-100">
-                        </div>
-                        <button id="simpan-nilai-btn" class="btn btn-primary" disabled>Simpan Nilai & Deskripsi</button>
-                    </form>
+                    </div>
                 </div>
 
                 <!-- ===== Halaman: Cetak Rapor ===== -->
