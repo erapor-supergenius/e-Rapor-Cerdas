@@ -764,21 +764,17 @@ async function loadSiswaPerluBimbingan() {
 }
 
 // =========================
-// PEMANGGILAN FUNGSI SAAT DOM SIAP
+// FUNGSI MEMUAT DATA SISWA PERLU BIMBINGAN
 // =========================
-document.addEventListener("DOMContentLoaded", () => {
-  console.log("DOM siap, memuat data siswa perlu bimbingan...");
-  loadSiswaPerluBimbingan();
-});
+async function loadSiswaPerluBimbingan() {
+  try {
+    const response = await fetch(`${GAS_URL}?action=getSiswaPerluBimbingan`);
+    const data = await response.json();
 
-// =========================
-// PEMANGGILAN FUNGSI SAAT DOM SIAP
-// =========================
-document.addEventListener("DOMContentLoaded", () => {
-  console.log("DOM siap, memuat data siswa perlu bimbingan...");
-  loadSiswaPerluBimbingan();
-});
-
+    if (!data || data.error) {
+      console.warn("Error:", data.error || "Tidak ada data siswa perlu bimbingan.");
+      return;
+    }
 
     // Menampilkan hasil di card dashboard
     const infoCard = document.getElementById("info-bimbingan");
@@ -801,10 +797,12 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 }
 
-// === Contoh pemanggilan fungsi ===
+// =========================
+// PEMANGGILAN SAAT DOM SIAP
+// =========================
 document.addEventListener("DOMContentLoaded", () => {
-  console.log("[INIT] Dashboard siap digunakan!");
-  loadSiswaPerluBimbingan(); // Dipanggil setelah DOM siap dan Spreadsheet ID pasti ada
+  console.log("DOM siap, memuat data siswa perlu bimbingan...");
+  loadSiswaPerluBimbingan();
 });
 
 // === Navigasi antar halaman ===
