@@ -266,14 +266,17 @@ function generateFinalDescription() {
 }
 
 /**
- * Reset deskripsi akhir, nilai, DAN validasi tombol
+ * Reset deskripsi akhir, nilai, DAN validasi tombol (VERSI BARU)
  */
  function resetFinalDescriptionAndGrade() {
     if(finalDescriptionInput) { finalDescriptionInput.value = ''; finalDescriptionInput.readOnly = true; finalDescriptionInput.placeholder = "Deskripsi dibuat otomatis..."; }
-    if(nilaiAkhirInput) { nilaiAkhirInput.value = ''; nilaiAkhirInput.disabled = true; } // Pastikan disabled
+    if(nilaiAkhirInput) { 
+        nilaiAkhirInput.value = ''; // HANYA bersihkan nilainya
+        // JANGAN disable inputnya di sini
+    } 
     currentSelectedCpStatuses = {};
     if (editDeskripsiBtn) editDeskripsiBtn.disabled = true;
-    if (simpanNilaiBtn) simpanNilaiBtn.disabled = true; // Nonaktifkan tombol simpan
+    if (simpanNilaiBtn) simpanNilaiBtn.disabled = true; // Tombol simpan tetap nonaktif saat reset
  }
 
 /**
