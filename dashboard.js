@@ -15,6 +15,39 @@ let currentPembukaTercapai = "", currentPembukaBimbingan = "";
 const notificationToast = document.getElementById('notification-toast');
 const notificationMessage = document.getElementById('notification-toast-message');
 const notificationClose = document.getElementById('notification-toast-close');
+// --- Elemen Form & Notifikasi ---
+/* ... (variabel Anda yang sudah ada) ... */
+const selectAgama = document.getElementById('select-agama');
+
+/* === (BARU) Elemen Form Profil Sekolah === */
+const formProfilSekolah = document.getElementById('form-profil-sekolah');
+const btnSimpanProfil = document.getElementById('simpan-profil-btn');
+const inputLogoFile = document.getElementById('input-logo-file');
+const logoPreview = document.getElementById('logo-preview');
+const profilLoadingSpinner = document.getElementById('profil-loading-spinner');
+
+// Variabel untuk semua input di form profil (untuk mempermudah)
+const profilInputs = {
+  token_sekolah: document.getElementById('profil-token-sekolah'),
+  nama_sekolah: document.getElementById('profil-nama-sekolah'),
+  nss: document.getElementById('profil-nss'),
+  npsn: document.getElementById('profil-npsn'),
+  status_sekolah: document.getElementById('profil-status-sekolah'),
+  alamat_sekolah: document.getElementById('profil-alamat-sekolah'),
+  kelurahan_desa: document.getElementById('profil-kelurahan-desa'),
+  kecamatan: document.getElementById('profil-kecamatan'),
+  kabupaten_kota: document.getElementById('profil-kabupaten-kota'),
+  provinsi: document.getElementById('profil-provinsi'),
+  website: document.getElementById('profil-website'),
+  email: document.getElementById('profil-email'),
+  telepon: document.getElementById('profil-telepon'),
+  kepala_sekolah: document.getElementById('profil-kepala-sekolah'),
+  nip_kepsek: document.getElementById('profil-nip-kepsek'),
+  url_logo: document.getElementById('profil-url-logo'), // Input hidden
+  kabupaten_kota_rapor: document.getElementById('profil-kabupaten-kota-rapor'),
+  tanggal_rapor: document.getElementById('profil-tanggal-rapor')
+};
+/* === (SELESAI) Elemen Form Profil Sekolah === */
 const formInputNilai = document.getElementById('form-input-nilai');
 const selectKelas = document.getElementById('pilih-kelas');
 const selectSiswa = document.getElementById('pilih-siswa');
