@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - e-Rapor Cerdas</title>
-    <!-- Bootstrap CSS (Opsional, tapi membantu layout) -->
+    <!-- Bootstrap Icons (untuk ikon) -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <style>
         /* CSS Lengkap untuk Tampilan Elegan & Profesional */
@@ -83,9 +83,13 @@
         #logout-button { text-decoration: none; color: #fff; background-color: #dc3545; padding: 0.4rem 0.8rem; border: none; border-radius: 4px; font-size: 0.9rem; cursor: pointer; transition: background-color 0.2s ease; }
         #logout-button:hover { background-color: #c82333; }
         .main-content { flex-grow: 1; padding: 2rem; }
+        
+        /* === LOGIKA PEMISAH HALAMAN === */
         .content-page { display: none; }
         .content-page.active { display: block; animation: fadeIn 0.4s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        /* === AKHIR LOGIKA PEMISAH === */
+
         .main-content h1 { margin-top: 0; margin-bottom: 1.5rem; color: #2c3e50; }
 
         /* === Style Umum (Card, Form, Tombol) === */
@@ -112,6 +116,41 @@
         .notification-toast-close { font-size: 1.6rem; color: #aaa; cursor: pointer; line-height: 1; margin-left: auto; background: none; border: none; }
         .notification-toast-close:hover { color: #555; }
         @keyframes slideIn { from { opacity: 0; transform: translateX(100%); } to { opacity: 1; transform: translateX(0); } }
+
+        /* === HALAMAN DATA SISWA (Tabel Lipat & Tombol) === */
+        .info-box { background-color: #eef5ff; border-left: 4px solid #007bff; border-radius: 4px; padding: 1rem 1.5rem; margin-bottom: 1.5rem; font-size: 0.95rem; }
+        .info-box h4 { margin: 0 0 0.75rem 0; color: #0056b3; }
+        .info-box p { margin: 0.5rem 0 0 0; }
+        .import-actions { display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem; }
+        .data-table-container { background-color: #fff; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); padding: 1.5rem; position: relative; padding-bottom: 4rem; }
+        .data-table-container h3 { margin-top: 0; margin-bottom: 1rem; }
+        .data-table-wrapper { overflow-x: auto; }
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table th, .data-table td { padding: 0.85rem 1rem; border-bottom: 1px solid #ddd; text-align: left; }
+        .data-table th { background-color: #f8f9fa; font-size: 0.85rem; text-transform: uppercase; color: #555; }
+        .data-table td { font-size: 0.95rem; }
+        .data-table tbody tr:hover { background-color: #f1f1f1; }
+        .data-table .edit-btn { color: #007bff; text-decoration: none; font-weight: 500; }
+        .data-table tbody tr:nth-child(n+4) { display: none; }
+        .data-table-container.is-expanded .data-table tbody tr:nth-child(n+4) { display: table-row; }
+        #toggle-siswa-list { position: absolute; bottom: 1rem; left: 1.5rem; background: none; border: 1px solid #007bff; color: #007bff; padding: 0.5rem 1rem; border-radius: 5px; cursor: pointer; font-weight: 500; transition: background-color 0.2s; }
+        #toggle-siswa-list:hover { background: #eef5ff; }
+
+        /* === HALAMAN INPUT NILAI CP (V3) === */
+        .form-row { display: flex; flex-wrap: wrap; gap: 1.5rem; margin-bottom: 1rem; }
+        .form-row .form-group { flex: 1 1 200px; margin-bottom: 0; }
+        .cp-checkbox-list { border: 1px solid #ddd; border-radius: 4px; padding: 1rem; max-height: 250px; overflow-y: auto; background-color: #f9f9f9; margin-bottom: 1.5rem; }
+        .cp-item { margin-bottom: 0.8rem; padding-bottom: 0.8rem; border-bottom: 1px dashed #eee; }
+        .cp-item:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+        .cp-item-header { font-weight: 500; margin-bottom: 0.4rem; font-size: 0.95em; color: #333; line-height: 1.4; }
+        .cp-item-options label { display: inline-flex; align-items: center; margin-right: 1.5rem; font-size: 0.9em; cursor: pointer; user-select: none; }
+        .cp-item-options input[type="checkbox"] { margin-right: 0.4rem; cursor: pointer; transform: scale(1.1); }
+        .description-phrase-settings { background-color: #f0f4f8; padding: 1rem; border-radius: 5px; margin-bottom: 1.5rem; border: 1px solid #d6e0eb; }
+        .phrase-group { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; }
+        .phrase-group label { flex-basis: 150px; flex-shrink: 0; margin-bottom: 0; text-align: right; font-size: 0.9em; color: #555; }
+        .phrase-group select, .custom-phrase-input { flex: 1 1 250px; }
+        #final-description-input { min-height: 120px; font-size: 0.95rem; }
+        #nilai-akhir-input { max-width: 150px; }
     </style>
 </head>
 <body>
@@ -157,9 +196,9 @@
 
                 <!-- ===== Halaman: Dashboard (Home) ===== -->
                 <div class="content-page active" id="page-home">
-                    <h1>Dashboard Utama</h1>
-                    <p class="lead text-muted">Selamat datang di e-Rapor Cerdas. Ringkasan data sekolah Anda ada di bawah ini.</p>
-                    <div class="row">
+                     <h1>Dashboard Utama</h1>
+                     <p class="lead text-muted">Selamat datang di e-Rapor Cerdas. Ringkasan data sekolah Anda ada di bawah ini.</p>
+                     <div class="row">
                         <div class="col-lg-4 col-md-6 mb-4">
                             <div class="card h-100"><div class="card-body">
                                 <h5 class="card-title">Siswa Terdaftar</h5>
@@ -183,17 +222,95 @@
 
                 <!-- ===== Halaman: Profil Sekolah ===== -->
                 <div class="content-page" id="page-profil-sekolah">
-                    <!-- ... (kode form profil sekolah dari jawaban sebelumnya) ... -->
+                    <h1>Profil Sekolah</h1>
+                    <div class="card"><div class="card-header">Data Identitas Sekolah</div>
+                        <div class="card-body">
+                            <p>Data ini akan digunakan untuk kop rapor. Harap isi dengan benar.</p>
+                            <form id="form-profil-sekolah">
+                                <div class="mb-3"><label for="profil-nama-sekolah" class="form-label">Nama Sekolah:</label><input type="text" id="profil-nama-sekolah" class="form-control" placeholder="Contoh: SMPN 1 Cerdas"></div>
+                                <div class="mb-3"><label for="profil-npsn" class="form-label">NPSN:</label><input type="text" id="profil-npsn" class="form-control" placeholder="Masukkan NPSN"></div>
+                                <div class="mb-3"><label for="profil-alamat" class="form-label">Alamat Sekolah:</label><textarea id="profil-alamat" class="form-control" rows="3" placeholder="Contoh: Jl. Pendidikan No. 1"></textarea></div>
+                                <div class="mb-3"><label for="profil-kepsek" class="form-label">Nama Kepala Sekolah:</label><input type="text" id="profil-kepsek" class="form-control" placeholder="Nama lengkap beserta gelar"></div>
+                                <div class="mb-3"><label for="profil-nip-kepsek" class="form-label">NIP Kepala Sekolah:</label><input type="text" id="profil-nip-kepsek" class="form-control" placeholder="Masukkan NIP (isi - jika tidak ada)"></div>
+                                <button id="simpan-profil-btn" class="btn btn-primary"><i class="bi bi-save-fill me-2"></i>Simpan Profil Sekolah</button>
+                                <div id="profil-loading-spinner" class="spinner-border text-primary ms-3" role="status" style="display: none;"><span class="visually-hidden">Memuat...</span></div>
+                            </form>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- ===== Halaman: Input Nilai CP ===== -->
                 <div class="content-page" id="page-input-nilai">
-                    <!-- ... (kode form input nilai dari jawaban sebelumnya) ... -->
+                    <h1>Input Nilai Capaian Pembelajaran (CP)</h1>
+                    <form id="form-input-nilai">
+                        <div class="form-row">
+                            <div class="form-group"><label for="pilih-kelas">Pilih Kelas:</label><select id="pilih-kelas" name="pilih-kelas" class="form-select" disabled><option value="">Memuat...</option></select></div>
+                            <div class="form-group"><label for="pilih-siswa">Pilih Siswa:</label><select id="pilih-siswa" name="pilih-siswa" class="form-select" disabled><option value="">Pilih kelas...</option></select></div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group"><label for="pilih-mapel">Pilih Mata Pelajaran:</label><select id="pilih-mapel" name="pilih-mapel" class="form-select" disabled><option value="">Memuat...</option></select></div>
+                            <div class="form-group"><label for="pilih-agama">Pilih Agama:</label><select id="pilih-agama" name="pilih-agama" class="form-select" disabled><option value="">Pilih mapel...</option></select></div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group"><label for="pilih-tahun-ajaran">Tahun Ajaran:</label><input type="text" id="pilih-tahun-ajaran" class="form-control" placeholder="Contoh: 2024/2025"></div>
+                            <div class="form-group"><label for="pilih-semester">Semester:</label><select id="pilih-semester" class="form-select"><option value="">Pilih...</option><option value="Ganjil">Ganjil</option><option value="Genap">Genap</option></select></div>
+                        </div>
+                        <div class="form-group">
+                            <label>Pilih Capaian Pembelajaran (CP) yang Dinilai:</label>
+                            <span id="mulok-indicator" style="display: none; font-style: italic; color: #6c757d; margin-left: 10px;">(Input Manual untuk Muatan Lokal)</span>
+                            <div id="cp-selection-list" class="cp-checkbox-list"><p style="color: #6c757d;"><i>Pilih kelas, mapel, dan agama terlebih dahulu...</i></p></div>
+                        </div>
+                        <div class="form-group">
+                            <label>Pengaturan Kalimat Deskripsi:</label>
+                            <div class="description-phrase-settings">
+                                <div class="phrase-group"><label for="kalimat-pembuka-tercapai">Awalan Tercapai:</label><select id="kalimat-pembuka-tercapai" class="form-select"><option value="">Memuat...</option><option value="custom">-- Tulis Manual --</option></select><input type="text" id="custom-pembuka-tercapai" class="custom-phrase-input form-control" placeholder="Tulis awalan kalimat..." style="display: none;"></div>
+                                <div class="phrase-group"><label for="kalimat-pembuka-bimbingan">Awalan Bimbingan:</label><select id="kalimat-pembuka-bimbingan" class="form-select"><option value="">Memuat...</option><option value="custom">-- Tulis Manual --</option></select><input type="text" id="custom-pembuka-bimbingan" class="custom-phrase-input form-control" placeholder="Tulis awalan kalimat..." style="display: none;"></div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="final-description-input">Deskripsi Rapor (Otomatis & Bisa Diedit):</label>
+                            <textarea id="final-description-input" class="form-control" rows="5" placeholder="Deskripsi akan dibuat otomatis..." readonly></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="nilai-akhir-input">Nilai Akhir (Angka):</label>
+                            <input type="number" id="nilai-akhir-input" class="form-control" min="0" max="100" placeholder="0-100">
+                        </div>
+                        <button id="simpan-nilai-btn" class="btn btn-primary" disabled>Simpan Nilai & Deskripsi</button>
+                    </form>
                 </div>
-                
+
                 <!-- ===== Halaman: Data Siswa ===== -->
                 <div class="content-page" id="page-data-siswa">
-                    <!-- ... (kode halaman data siswa dari jawaban sebelumnya) ... -->
+                    <h1>Kelola Data Siswa</h1>
+                    <div class="card shadow-sm">
+                        <div class="card-header">Impor Data Siswa</div>
+                        <div class="card-body">
+                            <div class="info-box mb-3">
+                                <h4>Panduan Import</h4>
+                                <ol><li>Klik <strong>Unduh Template</strong>.</li><li>Buka & isi data siswa, lalu <strong>Simpan sebagai .csv</strong>.</li><li>Klik <strong>Impor CSV</strong>, pilih file .csv Anda.</li></ol>
+                                <p><strong>Penting:</strong> Format tanggal: <strong>YYYY-MM-DD</strong>.</p>
+                            </div>
+                            <div class="import-actions">
+                                <button id="download-template-btn" class="btn btn-success"><i class="bi bi-download me-2"></i>Unduh Template CSV</button>
+                                <button id="import-csv-btn" class="btn btn-primary"><i class="bi bi-upload me-2"></i>Impor CSV</button>
+                                <input type="file" id="csv-file-input" accept=".csv" style="display: none;">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card shadow-sm mt-4">
+                        <div class="card-header">Daftar Siswa Terdaftar</div>
+                        <div class="card-body">
+                            <div class="data-table-container">
+                                <div class="data-table-wrapper">
+                                    <table class="data-table">
+                                        <thead><tr><th>NISN</th><th>Nama Siswa</th><th>Kelas</th><th>Tgl Lahir</th><th>Aksi</th></tr></thead>
+                                        <tbody id="siswa-table-body"><tr><td colspan="5" class="text-center">Memuat data...</td></tr></tbody>
+                                    </table>
+                                </div>
+                                <button id="toggle-siswa-list" class="btn btn-sm btn-outline-primary" style="display:none; position: absolute; bottom: 1rem; left: 1.5rem;">Tampilkan Semua Siswa</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
                 <!-- ===== Halaman: Cetak Rapor ===== -->
@@ -204,14 +321,24 @@
 
                 <!-- ===== Halaman: Informasi ===== -->
                 <div class="content-page" id="page-informasi">
-                    <h1>Informasi Pengembang</h1>
+                    <h1>Informasi</h1>
                     <div class="card"><div class="card-body">
-                        <p>Halaman informasi tentang pengembang akan tersedia di sini.</p>
+                        <h4>Tentang e-Rapor Cerdas</h4>
+                        <p>Aplikasi ini dirancang untuk mempermudah guru dalam mengelola dan menyusun deskripsi rapor sesuai dengan Capaian Pembelajaran (CP) pada Kurikulum Merdeka. Sistem ini bekerja dengan cerdas berdasarkan aturan dan data yang Anda masukkan, bukan menggunakan AI Generatif, sehingga deskripsi yang dihasilkan tetap terkontrol dan relevan.</p>
+                        <hr>
+                        <h4>Ucapan Terima Kasih</h4>
+                        <p>Terima kasih telah menggunakan e-Rapor Cerdas. Kami berharap aplikasi ini dapat meringankan beban administrasi Anda dan membantu dalam memberikan umpan balik yang lebih berkualitas kepada siswa dan orang tua.</p>
                     </div></div>
                 </div>
 
             </main>
         </div>
+    </div>
+
+    <!-- NOTIFIKASI TOAST (di luar wrapper) -->
+    <div class="notification-toast" id="notification-toast">
+        <span id="notification-toast-message">Pesan notifikasi!</span>
+        <button class="notification-toast-close" id="notification-toast-close">&times;</button>
     </div>
 
     <script src="dashboard.js"></script>
