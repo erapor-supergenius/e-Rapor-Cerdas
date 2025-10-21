@@ -729,20 +729,11 @@ function handleSimpanProfil() {
 }
 
 // =========================
-// KONFIGURASI GAS
-// =========================
-
-// Ganti dengan Script ID Web App GAS-mu
-const GAS_SCRIPT_ID = "AKfycbw1Jc7JXssFYq_KMQ6Up34zBGm4XYyOEEORsCeJI7DwJfG-xj3mGY930FbU5a5c5ZCJew";
-
-// URL untuk memanggil GAS
-const GAS_URL = `https://script.google.com/macros/s/${GAS_SCRIPT_ID}/exec`;
-
-// =========================
 // FUNGSI MEMUAT DATA SISWA PERLU BIMBINGAN
 // =========================
 async function loadSiswaPerluBimbingan() {
   try {
+    // Tidak ada deklarasi GAS_URL lagi, pakai yang sudah ada
     const response = await fetch(`${GAS_URL}?action=getSiswaPerluBimbingan`);
     const data = await response.json();
 
@@ -773,12 +764,21 @@ async function loadSiswaPerluBimbingan() {
 }
 
 // =========================
-// CONTOH PEMANGGILAN FUNGSI
+// PEMANGGILAN FUNGSI SAAT DOM SIAP
 // =========================
 document.addEventListener("DOMContentLoaded", () => {
   console.log("DOM siap, memuat data siswa perlu bimbingan...");
   loadSiswaPerluBimbingan();
 });
+
+// =========================
+// PEMANGGILAN FUNGSI SAAT DOM SIAP
+// =========================
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("DOM siap, memuat data siswa perlu bimbingan...");
+  loadSiswaPerluBimbingan();
+});
+
 
     // Menampilkan hasil di card dashboard
     const infoCard = document.getElementById("info-bimbingan");
