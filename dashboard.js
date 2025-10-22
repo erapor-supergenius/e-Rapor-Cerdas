@@ -15,11 +15,13 @@ let currentPembukaTercapai = "", currentPembukaBimbingan = "";
 const notificationToast = document.getElementById('notification-toast');
 const notificationMessage = document.getElementById('notification-toast-message');
 const notificationClose = document.getElementById('notification-toast-close');
-// --- Elemen Form & Notifikasi ---
-/* ... (variabel Anda yang sudah ada) ... */
+const formInputNilai = document.getElementById('form-input-nilai');
+const selectKelas = document.getElementById('pilih-kelas');
+const selectSiswa = document.getElementById('pilih-siswa');
+const selectMapel = document.getElementById('pilih-mapel');
 const selectAgama = document.getElementById('select-agama');
 
-/* === (BARU) Elemen Form Profil Sekolah === */
+/* === (BARU) Elemen Form Profil Sekolah (Hasil Langkah 1) === */
 const formProfilSekolah = document.getElementById('form-profil-sekolah');
 const btnSimpanProfil = document.getElementById('simpan-profil-btn');
 const inputLogoFile = document.getElementById('input-logo-file');
@@ -48,33 +50,7 @@ const profilInputs = {
   tanggal_rapor: document.getElementById('profil-tanggal-rapor')
 };
 /* === (SELESAI) Elemen Form Profil Sekolah === */
-const formInputNilai = document.getElementById('form-input-nilai');
-const selectKelas = document.getElementById('pilih-kelas');
-const selectSiswa = document.getElementById('pilih-siswa');
-const selectMapel = document.getElementById('pilih-mapel');
-const selectAgama = document.getElementById('pilih-agama');
-const selectTahunAjaran = document.getElementById('pilih-tahun-ajaran');
-const selectSemester = document.getElementById('pilih-semester');
-const cpSelectionList = document.getElementById('cp-selection-list');
-const mulokIndicator = document.getElementById('mulok-indicator');
-const selectPembukaTercapai = document.getElementById('kalimat-pembuka-tercapai');
-const inputCustomTercapai = document.getElementById('custom-pembuka-tercapai');
-const selectPembukaBimbingan = document.getElementById('kalimat-pembuka-bimbingan');
-const inputCustomBimbingan = document.getElementById('custom-pembuka-bimbingan');
-const finalDescriptionInput = document.getElementById('final-description-input');
-const nilaiAkhirInput = document.getElementById('nilai-akhir-input');
-const simpanNilaiBtn = document.getElementById('simpan-nilai-btn');
-const editDeskripsiBtn = document.getElementById('edit-deskripsi-btn');
 
-// --- Elemen Fase 2: Profil Sekolah (BARU) ---
-const formProfilSekolah = document.getElementById('form-profil-sekolah');
-const inputNamaSekolah = document.getElementById('profil-nama-sekolah');
-const inputNPSN = document.getElementById('profil-npsn');
-const inputAlamat = document.getElementById('profil-alamat');
-const inputKepsek = document.getElementById('profil-kepsek');
-const inputNIPKepsek = document.getElementById('profil-nip-kepsek');
-const simpanProfilBtn = document.getElementById('simpan-profil-btn');
-const profilLoadingSpinner = document.getElementById('profil-loading-spinner');
 
 // --- Elemen Data Siswa ---
 const downloadTemplateBtn = document.getElementById('download-template-btn');
@@ -89,20 +65,47 @@ function showNotification(message, type = 'info') { if (!notificationToast || !n
 function hideNotification() { if (!notificationToast) return; notificationToast.style.display = 'none'; if (notificationToast.timer) clearTimeout(notificationToast.timer); notificationToast.timer = null; }
 if (notificationClose) notificationClose.addEventListener('click', hideNotification);
 
-/* === (BARU) FUNGSI UNTUK PROFIL SEKOLAH === */
+// --- Fungsi Helper (Fetch Data) ---
+function fetchData(action, payload) {
+  return new Promise((resolve, reject) => {
+    google.script.run
+      .withSuccessHandler(response => {
+        if (response.success) {
+          resolve(response);
+        } else {
+          console.error(`Error in action [${action}]:`, response.message);
+          reject(new Error(response.message));
+        }
+      })
+      .withFailureHandler(error => {
+        console.error(`Gagal memanggil GAS [${action}]:`, error.message);
+        reject(error);
+      })
+      .postData({ action, payload, user });
+  });
+}
+
+// --- Fungsi Helper (Global Loader) ---
+function setGlobalLoading(isVisible) {
+  const loader = document.getElementById('global-loader');
+  if (loader) {
+    loader.style.display = isVisible ? 'flex' : 'none';
+  }
+}
+/* === (BARU) FUNGSI UNTUK PROFIL SEKOLAH (Hasil Langkah 2 + Perbaikan) === */
 /**
  * 1. Mengisi data form profil sekolah dari data yang sudah dimuat
  */
 function populateProfilForm(profil) {
   if (!profil) return;
-  
+
   // Loop semua keys di profilInputs dan isi nilainya
   for (const key in profilInputs) {
     if (profilInputs[key] && profil[key] !== undefined) {
       profilInputs[key].value = profil[key];
     }
   }
-  
+
   // Set preview logo dari URL yang ada
   if (profil.url_logo) {
     logoPreview.src = profil.url_logo;
@@ -110,46 +113,42 @@ function populateProfilForm(profil) {
 }
 
 /**
- * 2. Menangani upload file logo
- * Ini akan membaca file, mengubahnya ke Base64, dan mengirimnya ke GAS
+ * 2. Menangani upload file logo (VERSI PERBAIKAN: Menggunakan showNotification)
  */
 function handleLogoUpload(event) {
   const file = event.target.files[0];
   if (!file) return;
 
-  // Validasi tipe file
   if (!['image/jpeg', 'image/png'].includes(file.type)) {
-    showToast('Format file tidak didukung. Gunakan .jpg atau .png', 'error');
+    // MEMAKAI: showNotification
+    showNotification('Format file tidak didukung. Gunakan .jpg atau .png', 'error');
     return;
   }
 
   const reader = new FileReader();
   reader.readAsDataURL(file);
   reader.onloadend = () => {
-    // Tampilkan loading & nonaktifkan tombol
-    showToast('Mengupload logo...', 'info');
+    // MEMAKAI: showNotification
+    showNotification('Mengupload logo...', 'info');
     btnSimpanProfil.disabled = true;
     profilLoadingSpinner.style.display = 'inline-block';
 
-    const base64String = reader.result.split(',')[1]; // Ambil data Base64-nya saja
+    const base64String = reader.result.split(',')[1];
     const fileData = {
       base64: base64String,
       mimeType: file.type,
       fileName: file.name
     };
 
-    // Kirim ke backend (GAS)
     fetchData('uploadLogo', fileData)
       .then(response => {
         if (response.success) {
           const newUrl = response.data.url;
-          showToast('Logo berhasil diupload!', 'success');
+          // MEMAKAI: showNotification
+          showNotification('Logo berhasil diupload!', 'success');
           
-          // Perbarui preview dan input hidden
           logoPreview.src = newUrl;
-          profilInputs.url_logo.value = newUrl; // SIMPAN URL BARU
-          
-          // Perbarui juga logo di sidebar
+          profilInputs.url_logo.value = newUrl;
           document.getElementById('sidebar-logo-img').src = newUrl;
         } else {
           throw new Error(response.message);
@@ -157,22 +156,21 @@ function handleLogoUpload(event) {
       })
       .catch(error => {
         console.error('Error uploading logo:', error);
-        showToast(`Gagal upload logo: ${error.message}`, 'error');
+        // MEMAKAI: showNotification
+        showNotification(`Gagal upload logo: ${error.message}`, 'error');
       })
       .finally(() => {
-        // Sembunyikan loading & aktifkan tombol
         btnSimpanProfil.disabled = false;
         profilLoadingSpinner.style.display = 'none';
-        event.target.value = null; // Reset input file
+        event.target.value = null;
       });
   };
 }
 
 /**
- * 3. Mengumpulkan data dari form dan menyimpannya ke Sheet
+ * 3. Mengumpulkan data dari form dan menyimpannya ke Sheet (VERSI PERBAIKAN: Menggunakan showNotification)
  */
 function simpanDataProfil() {
-  // Kumpulkan semua data dari form
   let dataToSave = {};
   for (const key in profilInputs) {
     if (profilInputs[key]) {
@@ -180,18 +178,17 @@ function simpanDataProfil() {
     }
   }
 
-  // Tampilkan loading
   btnSimpanProfil.disabled = true;
   profilLoadingSpinner.style.display = 'inline-block';
-  showToast('Menyimpan data profil...', 'info');
+  // MEMAKAI: showNotification
+  showNotification('Menyimpan data profil...', 'info');
 
-  // Kirim ke backend (GAS)
   fetchData('simpanProfilSekolah', dataToSave)
     .then(response => {
       if (response.success) {
-        showToast('Profil sekolah berhasil diperbarui!', 'success');
+        // MEMAKAI: showNotification
+        showNotification('Profil sekolah berhasil diperbarui!', 'success');
         
-        // Perbarui header sidebar secara real-time
         document.getElementById('sidebar-nama-sekolah').textContent = dataToSave.nama_sekolah;
         document.getElementById('sidebar-subtext').textContent = `NPSN: ${dataToSave.npsn}`;
         
@@ -201,783 +198,495 @@ function simpanDataProfil() {
     })
     .catch(error => {
       console.error('Error saving profil:', error);
-      showToast(`Gagal menyimpan: ${error.message}`, 'error');
+      // MEMAKAI: showNotification
+      showNotification(`Gagal menyimpan: ${error.message}`, 'error');
     })
     .finally(() => {
-      // Sembunyikan loading
       btnSimpanProfil.disabled = false;
       profilLoadingSpinner.style.display = 'none';
     });
 }
 /* === (SELESAI) FUNGSI PROFIL SEKOLAH === */
-
 // --- Saat DOM Siap ---
 document.addEventListener("DOMContentLoaded", () => {
-    console.log("DOM siap.");
-    try {
-        // 1. Otentikasi
-        user.name = localStorage.getItem('userName');
-        user.spreadsheetId = localStorage.getItem('spreadsheetId');
-        user.username = localStorage.getItem('userUsername'); // Ini akan jadi id_guru
-        console.log("Auth Check >> Spreadsheet ID:", user.spreadsheetId, "Guru:", user.username);
-        if (!user.name || !user.spreadsheetId || !user.username) {
-            console.error("Auth Check >> Gagal:", user);
-            alert("Sesi berakhir atau data tidak lengkap. Login ulang.");
-            window.location.href = 'index.html';
-            return;
+  console.log("DOM siap.");
+
+  // --- Notifikasi Toast (Kode Asli Anda) ---
+  // (Fungsi show/hide sudah di atas, listener ada di atas)
+
+  // --- Panggil Data Awal ---
+  setGlobalLoading(true);
+
+  // 1. Cek Autentikasi & Ambil Data Awal
+  google.script.run
+    .withSuccessHandler(response => {
+      console.log("Auth Check >> Berhasil.", response);
+      setGlobalLoading(false);
+
+      if (!response.success) {
+        // Gagal (token tidak valid atau alasan lain)
+        showNotification(response.message || 'Gagal memuat data. Sesi mungkin berakhir.', 'error');
+        // Arahkan ke login jika perlu
+        if (response.action === 'redirect') {
+          setTimeout(() => { window.location.href = response.url; }, 2000);
         }
-        console.log("Auth Check >> Berhasil.");
-        document.getElementById('welcome-message').innerText = `Selamat Datang, ${user.name}!`;
-
-        // 2. Logout
-        const logoutBtn = document.getElementById('logout-button');
-        if (logoutBtn) {
-            logoutBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                if (confirm("Apakah Anda yakin ingin logout sekarang?")) {
-                    localStorage.clear();
-                    window.location.href = 'index.html';
-                }
-            });
-        }
-
-        // 3. Navigasi
-        const navLinks = document.querySelectorAll('.nav-link');
-        const contentPages = document.querySelectorAll('.content-page');
-        if (navLinks.length && contentPages.length) {
-            navLinks.forEach(link => {
-                link.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    const targetPageId = link.dataset.page;
-                    if (!targetPageId) return;
-
-                    navLinks.forEach(n => n.classList.remove('active'));
-                    contentPages.forEach(p => p.classList.remove('active'));
-                    link.classList.add('active');
-
-                    const page = document.getElementById(targetPageId);
-                    if (page) {
-                        page.classList.add('active');
-                        if (targetPageId === 'page-data-siswa') {
-                            loadSiswaList();
-                        }
-                    } else {
-                        console.error(`Halaman dengan ID '${targetPageId}' tidak ditemukan.`);
-                    }
-                });
-            });
-
-            const defaultLink = document.querySelector('.nav-link[data-page="page-home"]');
-            const defaultPage = document.getElementById('page-home');
-            if (defaultLink && defaultPage) {
-                defaultLink.click();
-            }
-        }
-
-        // 4. Load Data Awal (Dropdown, Siswa, dll)
-        loadInitialData();
-
-        // 5. Event Listener Halaman Data Siswa
-        if (downloadTemplateBtn) downloadTemplateBtn.addEventListener('click', handleDownloadTemplate);
-        if (importCsvBtn && csvFileInput) importCsvBtn.addEventListener('click', () => csvFileInput.click());
-        if (csvFileInput) csvFileInput.addEventListener('change', handleImportCSV);
-        if (toggleSiswaListBtn && siswaTableContainer) {
-            toggleSiswaListBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                const isExpanded = siswaTableContainer.classList.toggle('is-expanded');
-                toggleSiswaListBtn.innerText = isExpanded ? 'Sembunyikan' : 'Tampilkan Semua Siswa';
-            });
-        }
-
-        // 6. Event Dropdown & Input Form Nilai
-        if (selectKelas) selectKelas.addEventListener('change', (e) => { handleKelasChange(e); validateAndToggleButton(); });
-        if (selectMapel) selectMapel.addEventListener('change', (e) => { handleMapelChange(e); validateAndToggleButton(); });
-        if (selectAgama) selectAgama.addEventListener('change', (e) => { handleAgamaChange(e); validateAndToggleButton(); });
-        if (selectSiswa) selectSiswa.addEventListener('change', validateAndToggleButton);
-        if (nilaiAkhirInput) nilaiAkhirInput.addEventListener('input', validateAndToggleButton);
-        if (selectTahunAjaran) selectTahunAjaran.addEventListener('input', validateAndToggleButton);
-        if (selectSemester) selectSemester.addEventListener('change', validateAndToggleButton);
-
-        // 7. Tombol Simpan Nilai
-        if (simpanNilaiBtn) {
-            simpanNilaiBtn.disabled = true;
-            simpanNilaiBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                handleSimpanNilai();
-            });
-        }
-
-        // 8. Kalimat Pembuka
-        if (selectPembukaTercapai && inputCustomTercapai) {
-            selectPembukaTercapai.addEventListener('change', handlePembukaTercapaiChange);
-            inputCustomTercapai.addEventListener('input', handleCustomTercapaiInput);
-        }
-        if (selectPembukaBimbingan && inputCustomBimbingan) {
-            selectPembukaBimbingan.addEventListener('change', handlePembukaBimbinganChange);
-            inputCustomBimbingan.addEventListener('input', handleCustomBimbinganInput);
-        }
-
-        // 9. (BARU) Event Listener Halaman Profil Sekolah
-        if (simpanProfilBtn) {
-            simpanProfilBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                handleSimpanProfil();
-            });
-        }
-
-        // 10. (BARU) Muat data Profil Sekolah saat dashboard siap
-        loadProfilSekolah();
-
-        // 11. ✅ Tambahan baru: muat data siswa perlu bimbingan di Dashboard Home
-        if (typeof loadSiswaPerluBimbingan === "function") {
-            loadSiswaPerluBimbingan();
-        }
-
-        console.log("[INIT] Dashboard siap digunakan!");
-
-    } catch (err) {
-        console.error("Init error:", err);
-        showNotification("Gagal memuat dashboard: " + err.message, "error");
-    }
-});
-
-// --- Handler Perubahan Dropdown Filter ---
-function handleKelasChange(e) { const selectedKelasId = e.target.value; const selectedKelas = allKelasData.find(k => k.id_kelas === selectedKelasId); currentFase = selectedKelas ? selectedKelas.fase : null; loadSiswaDropdown(selectedKelasId); loadCpCheckboxList(selectMapel ? selectMapel.value : null, currentFase, selectAgama ? selectAgama.value : null); resetFinalDescriptionAndGrade(); resetMulok(); }
-function handleMapelChange(e) { const selectedMapelId = e.target.value; loadAgamaDropdown(allAgamaData); if (selectAgama) selectAgama.disabled = !selectedMapelId; loadCpCheckboxList(selectedMapelId, currentFase, selectAgama ? selectAgama.value : null); resetFinalDescriptionAndGrade(); resetMulok(); }
-function handleAgamaChange(e) { loadCpCheckboxList(selectMapel ? selectMapel.value : null, currentFase, e.target.value); resetFinalDescriptionAndGrade(); resetMulok(); }
-
-// --- Handler Perubahan Dropdown/Input Kalimat Pembuka ---
-function handlePembukaTercapaiChange() { if (!selectPembukaTercapai || !inputCustomTercapai) return; const selVal = selectPembukaTercapai.value; if (selVal === 'custom') { inputCustomTercapai.style.display = 'block'; inputCustomTercapai.value = ''; inputCustomTercapai.focus(); currentPembukaTercapai = " "; } else { inputCustomTercapai.style.display = 'none'; currentPembukaTercapai = selVal ? ` ${selVal.trim()} ` : " "; generateFinalDescription(); } }
-function handleCustomTercapaiInput() { if (!inputCustomTercapai) return; currentPembukaTercapai = inputCustomTercapai.value.trim() ? ` ${inputCustomTercapai.value.trim()} ` : " "; generateFinalDescription(); }
-function handlePembukaBimbinganChange() { if (!selectPembukaBimbingan || !inputCustomBimbingan) return; const selVal = selectPembukaBimbingan.value; if (selVal === 'custom') { inputCustomBimbingan.style.display = 'block'; inputCustomBimbingan.value = ''; inputCustomBimbingan.focus(); currentPembukaBimbingan = " "; } else { inputCustomBimbingan.style.display = 'none'; currentPembukaBimbingan = selVal ? ` ${selVal.trim()} ` : " "; generateFinalDescription(); } }
-function handleCustomBimbinganInput() { if (!inputCustomBimbingan) return; currentPembukaBimbingan = inputCustomBimbingan.value.trim() ? ` ${inputCustomBimbingan.value.trim()} ` : " "; generateFinalDescription(); }
-
-/**
- * Memuat data awal + STATISTIK (V4.1 - Nama sekolah dipindah ke loadProfilSekolah)
- */
-function loadInitialData() {
-    showNotification("Memuat data awal sekolah...", "info");
-    const payload = { action: "getInitialData", spreadsheetId: user.spreadsheetId };
-    if (!user.spreadsheetId) { console.error("Gagal load: spreadsheetId kosong!"); showNotification("Gagal: ID Sekolah kosong.", "error"); return; }
-
-    fetch(GAS_URL, { method: "POST", body: JSON.stringify(payload), headers: { "Content-Type": "text/plain;charset=utf-8" }})
-    .then(response => { if (!response.ok) throw new Error(`Server status ${response.status}`); return response.json(); })
-    .then(data => {
-        hideNotification();
-        if (data.success) {
-            console.log("Data awal (Kelas, Mapel, Siswa, dll) OK.");
-            
-            // (PERBAIKAN: Logika nama sekolah dipindah ke loadProfilSekolah())
-
-            // --- ISI DATA DROPDOWN ---
-            allKelasData = data.kelas || []; loadKelasDropdown(allKelasData);
-            loadMapelDropdown(data.mapel);
-            allAgamaData = data.agama || []; loadAgamaDropdown(allAgamaData);
-            allSiswaData = data.siswa || [];
-            allCpTpData = data.cptp || [];
-            
-            // --- ISI FRASA ---
-            allFrasaTercapai = data.frasaTercapai || []; allFrasaBimbingan = data.frasaBimbingan || [];
-            loadPembukaOptions(selectPembukaTercapai, allFrasaTercapai);
-            loadPembukaOptions(selectPembukaBimbingan, allFrasaBimbingan);
-            currentPembukaTercapai = selectPembukaTercapai && selectPembukaTercapai.options.length > 1 ? selectPembukaTercapai.options[0].value : " menunj...";
-            currentPembukaBimbingan = selectPembukaBimbingan && selectPembukaBimbingan.options.length > 1 ? selectPembukaBimbingan.options[0].value : " perlu bim...";
-            
-            // --- UPDATE STATISTIK (JIKA DATA ADA) ---
-            const statSiswa = document.getElementById('stat-jumlah-siswa');
-            const statMapel = document.getElementById('stat-jumlah-mapel');
-            const statRapor = document.getElementById('stat-rapor-selesai');
-
-            if (statSiswa) statSiswa.innerText = allSiswaData.length;
-            if (statMapel) statMapel.innerText = data.mapel ? data.mapel.length : 0;
-            if (statRapor) statRapor.innerText = "0%"; // Nanti bisa di-update
-
-            // --- Cek halaman aktif ---
-            const activePage = document.querySelector('.content-page.active'); 
-            if (activePage && activePage.id === 'page-data-siswa') { loadSiswaList(); }
-            if (selectKelas && allKelasData.length > 0) selectKelas.disabled = false; 
-            if (selectMapel && data.mapel && data.mapel.length > 0) selectMapel.disabled = false;
-
-        } else {
-            console.error("Gagal server:", data.message); 
-            showNotification("Gagal memuat data awal: " + (data.message || "Error"), "error");
-        }
-    })
-    .catch(error => {
-        hideNotification(); console.error("Fetch error:", error); 
-        showNotification(`Jaringan error: ${error.message}.`, "error");
-        if (formInputNilai) { /* ... */ }
-    });
-}
-
-/**
- * Memuat opsi dropdown kalimat pembuka
- */
-function loadPembukaOptions(selectElement, optionsArray) { if (!selectElement) return; const customOption = selectElement.querySelector('option[value="custom"]'); selectElement.innerHTML = ''; if (optionsArray && optionsArray.length > 0) { optionsArray.forEach((frasa, index) => { const trimmedFrasa = frasa.trim(); const option = new Option(trimmedFrasa, ` ${trimmedFrasa} `); selectElement.add(option); if (index === 0) option.selected = true; }); } else { selectElement.add(new Option("-- Tidak ada pilihan --", "")); } if (customOption) selectElement.add(customOption); else selectElement.add(new Option("-- Tulis Manual --", "custom")); }
-
-// --- Fungsi-fungsi Pengisian Dropdown Awal ---
-function loadKelasDropdown(kelasArray) { if (!selectKelas) return; selectKelas.innerHTML = ''; selectKelas.add(new Option("Pilih Kelas...", "")); if (kelasArray && kelasArray.length > 0) { kelasArray.forEach(kelas => { const displayText = `${kelas.nama_kelas} (Fase ${kelas.fase || '?'})`; selectKelas.add(new Option(displayText, kelas.id_kelas)); }); selectKelas.disabled = false; } else { selectKelas.add(new Option("Belum ada data kelas", "")); selectKelas.disabled = true; } }
-function loadSiswaDropdown(selectedKelasId) { if (!selectSiswa) return; selectSiswa.innerHTML = ''; selectSiswa.disabled = true; if (!selectedKelasId) { selectSiswa.add(new Option("Pilih kelas dahulu...", "")); return; } const siswaDiKelas = allSiswaData.filter(siswa => siswa.id_kelas === selectedKelasId); if (siswaDiKelas.length > 0) { selectSiswa.add(new Option(`Pilih Siswa (${siswaDiKelas.length} siswa)...`, "")); siswaDiKelas.forEach(siswa => { selectSiswa.add(new Option(siswa.nama_siswa, siswa.id_siswa)); }); selectSiswa.disabled = false; } else { selectSiswa.add(new Option("Tidak ada siswa di kelas ini", "")); } }
-function loadMapelDropdown(mapelArray) { if (!selectMapel) return; selectMapel.innerHTML = ''; selectMapel.add(new Option("Pilih Mata Pelajaran...", "")); if (mapelArray && mapelArray.length > 0) { mapelArray.forEach(mapel => { selectMapel.add(new Option(mapel.nama_mapel, mapel.id_mapel)); }); selectMapel.disabled = false; } else { selectMapel.add(new Option("Belum ada data mapel", "")); selectMapel.disabled = true; } }
-function loadAgamaDropdown(agamaArray) { if (!selectAgama) return; selectAgama.innerHTML = ''; selectAgama.add(new Option("Pilih Agama...", "")); let hasAgama = false; if (agamaArray && agamaArray.length > 0) { selectAgama.add(new Option("Semua (Umum)", "Semua")); hasAgama = true; agamaArray.forEach(agama => { if (agama && agama.toLowerCase() !== 'semua') { selectAgama.add(new Option(agama, agama)); hasAgama = true; } }); } if (!hasAgama) { selectAgama.add(new Option("Tidak ada data agama", "")); selectAgama.disabled = true; } else { selectAgama.disabled = !selectMapel || !selectMapel.value; } }
-
-/**
- * Membuat daftar Checkbox CP + Deteksi Mulok
- */
-function loadCpCheckboxList(selectedMapelId, selectedFase, selectedAgama) {
-    if (!cpSelectionList || !allCpTpData) { console.warn("#cp-selection-list or CP data missing."); return; }
-    cpSelectionList.innerHTML = ''; currentSelectedCpStatuses = {}; resetFinalDescriptionAndGrade(); resetMulok();
-    if (!selectedMapelId || !selectedFase || !selectedAgama) { cpSelectionList.innerHTML = `<p style="color: #6c757d;"><i>Pilih kelas, mapel, & agama...</i></p>`; return; }
-    const cpTpFiltered = allCpTpData.filter(cp => cp.id_mapel === selectedMapelId && cp.fase === selectedFase && (cp.agama === selectedAgama || cp.agama === "Semua" || !cp.agama));
-    console.log(`[LOG CP] Filtered CP count: ${cpTpFiltered.length}`);
-
-    if (cpTpFiltered.length === 0) { // --- MULOK ---
-        isMulokActive = true; cpSelectionList.innerHTML = `<p style="color: #6c757d;"><i>Tidak ada CP. Input manual Mulok aktif.</i></p>`;
-        if (mulokIndicator) mulokIndicator.style.display = 'inline';
-        if(finalDescriptionInput) { finalDescriptionInput.readOnly = false; finalDescriptionInput.placeholder = "Input deskripsi Mulok..."; }
-        currentSelectedCpStatuses['MULOK'] = { isMulok: true };
-        if (editDeskripsiBtn) editDeskripsiBtn.style.display = 'none';
-    } else { // --- ADA CP ---
-        isMulokActive = false; if (mulokIndicator) mulokIndicator.style.display = 'none';
-        if(finalDescriptionInput) { finalDescriptionInput.readOnly = true; finalDescriptionInput.placeholder = "Deskripsi dibuat otomatis..."; }
-        if (editDeskripsiBtn) { editDeskripsiBtn.style.display = 'block'; editDeskripsiBtn.disabled = true; }
-        cpTpFiltered.forEach(cp => {
-            const cpId = cp.id_cp_tp; if (!cpId) return;
-            const itemDiv = document.createElement('div'); itemDiv.classList.add('cp-item');
-            const tercapaiId = `cp_${cpId}_tercapai`; const bimbinganId = `cp_${cpId}_bimbingan`;
-            itemDiv.innerHTML = `<div class="cp-item-header">${cp.deskripsi || '[No TP Desc]'}</div> <div class="cp-item-options"> <label for="${tercapaiId}"><input type="checkbox" id="${tercapaiId}" name="cp_status_${cpId}" value="Tercapai" data-cp-id="${cpId}" data-status="Tercapai"> Tercapai</label> <label for="${bimbinganId}"><input type="checkbox" id="${bimbinganId}" name="cp_status_${cpId}" value="Perlu Bimbingan" data-cp-id="${cpId}" data-status="Perlu Bimbingan"> P. Bimbingan</label> </div>`;
-            cpSelectionList.appendChild(itemDiv);
-            const checkboxes = itemDiv.querySelectorAll(`input[name="cp_status_${cpId}"]`);
-            checkboxes.forEach(cb => { cb.addEventListener('change', (e) => handleCpCheckboxChange(e.target, cpId, checkboxes)); });
-        });
-    }
-
-    if (nilaiAkhirInput) {
-        nilaiAkhirInput.disabled = false;
-        console.log(`[LOG AKTIVASI] Memastikan input nilai aktif. Status disabled: ${nilaiAkhirInput.disabled}`);
-    }
-
-    validateAndToggleButton(); 
-}
-
-/**
- * Menangani perubahan pada checkbox CP
- */
-function handleCpCheckboxChange(changedCheckbox, cpId, allCheckboxesForThisCp) {
-    const status = changedCheckbox.dataset.status; const isChecked = changedCheckbox.checked;
-    if (isChecked) { allCheckboxesForThisCp.forEach(cb => { if (cb !== changedCheckbox) cb.checked = false; }); currentSelectedCpStatuses[cpId] = status; }
-    else { delete currentSelectedCpStatuses[cpId]; }
-    generateFinalDescription(); 
-}
-
-/**
- * Membuat Deskripsi Naratif Akhir (SELALU "Ananda [Nama Siswa]")
- */
-function generateFinalDescription() {
-    if (!finalDescriptionInput || !allCpTpData) return;
-    let descT = [], descB = [], isAny = false;
-    if (isMulokActive) { finalDescriptionInput.readOnly = false; finalDescriptionInput.placeholder = "Input deskripsi Mulok..."; isAny = true; }
-    else { for (const cpId in currentSelectedCpStatuses) { if (cpId === 'MULOK') continue; isAny = true; const st = currentSelectedCpStatuses[cpId]; const cp = allCpTpData.find(c => c.id_cp_tp === cpId); if (cp) { let dp = cp.deskripsi ? cp.deskripsi.toLowerCase().replace(/[.,;!?]$/, '') : ''; if (!dp && st === "Tercapai") dp = cp.deskripsi_tercapai ? cp.deskripsi_tercapai.toLowerCase().replace(/[.,;!?]$/, '') : ''; if (!dp && st === "Perlu Bimbingan") dp = cp.deskripsi_perlu_bimbingan ? cp.deskripsi_perlu_bimbingan.toLowerCase().replace(/[.,;!?]$/, '') : ''; if (dp) { if (st === "Tercapai") descT.push(dp); else if (st === "Perlu Bimbingan") descB.push(dp); } } } }
-    if (!isMulokActive) {
-        let finalD = ""; const si = selectSiswa ? selectSiswa.selectedIndex : -1; const nama = si > 0 && selectSiswa.options.length > si ? selectSiswa.options[si].text : ""; const pembT = currentPembukaTercapai || " menunj..."; const pembB = currentPembukaBimbingan || " perlu bim..."; const prefix = nama ? `Ananda ${nama}` : "Ananda";
-        if (descT.length > 0) finalD += prefix + pembT + descT.join(', ');
-        if (descB.length > 0) finalD += (finalD !== "" ? ", namun" : prefix + " ") + pembB + descB.join(', ');
-        if (finalD !== "") finalD += "."; finalDescriptionInput.value = finalD.trim();
-    }
-    if (!isAny && !isMulokActive) { finalDescriptionInput.placeholder = "Pilih status..."; finalDescriptionInput.readOnly = true; if (editDeskripsiBtn) editDeskripsiBtn.disabled = true; }
-    else { finalDescriptionInput.placeholder = isMulokActive ? "Input Mulok..." : "Deskripsi..."; finalDescriptionInput.readOnly = false; if (editDeskripsiBtn) editDeskripsiBtn.disabled = isMulokActive; }
-    validateAndToggleButton(); 
-}
-
-/**
- * Reset deskripsi akhir, nilai, DAN validasi tombol (VERSI BARU)
- */
- function resetFinalDescriptionAndGrade() {
-    if(finalDescriptionInput) { finalDescriptionInput.value = ''; finalDescriptionInput.readOnly = true; finalDescriptionInput.placeholder = "Deskripsi dibuat otomatis..."; }
-    if(nilaiAkhirInput) { 
-        nilaiAkhirInput.value = ''; 
-    } 
-    // Kita tidak reset TA & Semester, agar user bisa lanjut ke siswa berikutnya
-    
-    currentSelectedCpStatuses = {};
-    if (editDeskripsiBtn) editDeskripsiBtn.disabled = true;
-    if (simpanNilaiBtn) simpanNilaiBtn.disabled = true; // Nonaktifkan tombol simpan
- }
-
-/**
- * Reset status Mulok
- */
-function resetMulok() { isMulokActive = false; if (mulokIndicator) mulokIndicator.style.display = 'none'; if (!isMulokActive && finalDescriptionInput) { finalDescriptionInput.readOnly = true; finalDescriptionInput.placeholder = "Deskripsi dibuat otomatis..."; } if (editDeskripsiBtn) editDeskripsiBtn.style.display = 'block'; }
-
-/**
- * Validasi input form dan aktifkan/nonaktifkan tombol simpan (VERSI BARU V4.0)
- */
-function validateAndToggleButton() {
-    if (!simpanNilaiBtn) { console.warn("[LOG VALIDATE] Tombol Simpan (#simpan-nilai-btn) tidak ditemukan!"); return; }
-    if (!nilaiAkhirInput) { console.warn("[LOG VALIDATE] Input Nilai (#nilai-akhir-input) tidak ditemukan!"); return; }
-
-    const id_kelas = selectKelas ? selectKelas.value : '';
-    const id_siswa = selectSiswa ? selectSiswa.value : '';
-    const id_mapel = selectMapel ? selectMapel.value : '';
-    const id_agama = selectAgama ? selectAgama.value : '';
-    const tahun_ajaran = selectTahunAjaran ? selectTahunAjaran.value.trim() : '';
-    const semester = selectSemester ? selectSemester.value : '';
-    const nilai_akhir_str = nilaiAkhirInput.value;
-    const deskripsi_rapor = finalDescriptionInput ? finalDescriptionInput.value : '';
-
-    let isValid = true;
-    let reasonsInvalid = [];
-
-    console.groupCollapsed("[LOG VALIDATE] Memulai Validasi");
-    console.log(`Dropdowns: K='${id_kelas}', S='${id_siswa}', M='${id_mapel}', A='${id_agama}'`);
-    console.log(`Baru: TA='${tahun_ajaran}', Sm='${semester}'`); 
-    console.log(`Input Nilai (string): '${nilai_akhir_str}'`);
-
-    if (!id_kelas) { isValid = false; reasonsInvalid.push("Kelas belum dipilih"); }
-    if (!id_siswa) { isValid = false; reasonsInvalid.push("Siswa belum dipilih"); }
-    if (!id_mapel) { isValid = false; reasonsInvalid.push("Mapel belum dipilih"); }
-    if (!id_agama) { isValid = false; reasonsInvalid.push("Agama belum dipilih"); }
-    if (!tahun_ajaran) { isValid = false; reasonsInvalid.push("Tahun Ajaran wajib diisi"); }
-    if (!semester) { isValid = false; reasonsInvalid.push("Semester wajib dipilih"); }
-
-    const nilaiNum = parseFloat(nilai_akhir_str);
-    if (nilai_akhir_str.trim() === '' || isNaN(nilaiNum) || nilaiNum < 0 || nilaiNum > 100) {
-        isValid = false;
-        reasonsInvalid.push(`Nilai akhir '${nilai_akhir_str}' tidak valid`);
-    }
-
-    if (isMulokActive && !deskripsi_rapor.trim()) {
-        isValid = false;
-        reasonsInvalid.push("Deskripsi Mulok wajib diisi");
-    }
-
-    console.log(`Hasil: ${isValid ? 'VALID' : 'TIDAK VALID'}`);
-    if (!isValid) { console.warn("Alasan:", reasonsInvalid.join('; ')); }
-    console.groupEnd();
-
-    simpanNilaiBtn.disabled = !isValid;
-}
-
-// --- FUNGSI-FUNGSI HALAMAN DATA SISWA (LENGKAP) ---
-function handleDownloadTemplate() { 
-    showNotification("Membuat template...", "info"); 
-    const payload = { 
-        action: "handleSiswaActions", 
-        subAction: "getSiswaTemplate", 
-        spreadsheetId: user.spreadsheetId 
-    }; 
-    fetch(GAS_URL, { method: "POST", body: JSON.stringify(payload), headers: { "Content-Type": "text/plain;charset=utf-8" } })
-    .then(r => r.ok ? r.json() : Promise.reject(`HTTP ${r.status}`))
-    .then(d => { 
-        if (d.success) { 
-            hideNotification(); 
-            const b = new Blob([d.template],{type:'text/csv;charset=utf-8;'}); 
-            const l = document.createElement("a"); 
-            const u = URL.createObjectURL(b); 
-            l.setAttribute("href", u); 
-            l.setAttribute("download", "template_siswa.csv"); 
-            l.style.visibility='hidden'; 
-            document.body.appendChild(l); 
-            l.click(); 
-            document.body.removeChild(l); 
-            URL.revokeObjectURL(u); 
-        } else { 
-            showNotification("Gagal: " + (d.message||"Error"), "error"); 
-        } 
-    })
-    .catch(e => { 
-        hideNotification(); 
-        console.error("DL template err:", e); 
-        showNotification("Jaringan error.", "error"); 
-    }); 
-}
-
-function handleImportCSV(event) { 
-    const file = event.target.files[0]; 
-    if (!file) return; 
-    showNotification("Membaca CSV...", "info"); 
-    const reader = new FileReader(); 
-    reader.onload = (e) => { 
-        try { 
-            const text = e.target.result; 
-            const data = parseCSV(text); 
-            if (!data || data.length === 0) { 
-                showNotification("CSV kosong/format salah.", "warning"); 
-                return; 
-            } 
-            uploadSiswaData(data); 
-        } catch (err) { 
-            console.error("CSV Parse err:", err); 
-            showNotification("Gagal baca CSV: " + err.message, "error"); 
-        } 
-    }; 
-    reader.onerror = () => { 
-        console.error("FileReader err:", reader.error); 
-        showNotification("Gagal baca file.", "error"); 
-    }; 
-    reader.readAsText(file); 
-    event.target.value = null; 
-}
-
-function parseCSV(text) { 
-    const lines = text.split(/[\r\n]+/).filter(l => l.trim() !== ''); 
-    if (lines.length < 2) return []; 
-    const parseLine = (line) => { 
-        const v = []; 
-        let c = ''; 
-        let q = false; 
-        for (let i = 0; i < line.length; i++) { 
-            const char = line[i]; 
-            if (char === '"') { 
-                if (q && line[i + 1] === '"') { c += '"'; i++; } 
-                else { q = !q; } 
-            } else if (char === ',' && !q) { 
-                v.push(c.trim()); c = ''; 
-            } else { 
-                c += char; 
-            } 
-        } 
-        v.push(c.trim()); 
-        return v; 
-    }; 
-    const headers = parseLine(lines[0]).map(h => h.toLowerCase()); 
-    const data = []; 
-    const expected = ["nisn", "nis", "nama_siswa", "tempat_lahir", "tanggal_lahir", "jenis_kelamin", "agama", "kelas", "fase", "tahun_ajaran_masuk", "nama_ayah", "pekerjaan_ayah", "nama_ibu", "pekerjaan_ibu", "alamat_siswa", "asal_sekolah", "nama_wali", "alamat_orang_tua"]; 
-    let headerMap = {}; 
-    let missing = []; 
-    expected.forEach(eh => { 
-        const i = headers.indexOf(eh); 
-        if (i === -1) missing.push(eh); 
-        else headerMap[eh] = i; 
-    }); 
-    if (missing.length > 0) console.warn("CSV headers missing:", missing); 
-    for (let i = 1; i < lines.length; i++) { 
-        const values = parseLine(lines[i]); 
-        if (values.length >= headers.length) { 
-            let obj = {}; 
-            expected.forEach(eh => { 
-                const index = headerMap[eh]; 
-                obj[eh] = (index !== undefined && index < values.length) ? values[index] : null; 
-            }); 
-            if (obj.nama_siswa || obj.nisn || obj.nis) data.push(obj); 
-        } else console.warn(`Skip line ${i+1}`); 
-    } 
-    return data; 
-}
-
-function uploadSiswaData(siswaDataArray) { 
-    showNotification(`Mengimpor ${siswaDataArray.length} siswa...`, "info"); 
-    const payload = { 
-        action: "handleSiswaActions", 
-        subAction: "importSiswa", 
-        spreadsheetId: user.spreadsheetId, 
-        data: siswaDataArray 
-    }; 
-    fetch(GAS_URL, { method: "POST", body: JSON.stringify(payload), headers: { "Content-Type": "text/plain;charset=utf-8" } })
-    .then(r => r.ok ? r.json() : Promise.reject(`HTTP ${r.status}`))
-    .then(d => { 
-        if (d.success) { 
-            showNotification(d.message, "success"); 
-            loadInitialData(); 
-        } else { 
-            showNotification("Gagal impor: " + (d.message || "Error"), "error"); 
-        } 
-    })
-    .catch(e => { 
-        console.error("Import error:", e); 
-        showNotification("Jaringan error.", "error"); 
-    }); 
-}
-
-function loadSiswaList() { 
-    if (!siswaTableBody) { console.warn("#siswa-table-body missing."); return; } 
-    if (toggleSiswaListBtn) toggleSiswaListBtn.style.display = 'none'; 
-    if (siswaTableContainer) siswaTableContainer.classList.remove('is-expanded'); 
-    if (toggleSiswaListBtn) toggleSiswaListBtn.innerText = 'Tampilkan Semua Siswa'; 
-    if (allSiswaData && allSiswaData.length > 0) { 
-        siswaTableBody.innerHTML = ''; 
-        allSiswaData.forEach(siswa => { 
-            const tr = document.createElement('tr'); 
-            let tglLahir = 'N/A'; 
-            if (siswa.tanggal_lahir) { 
-                try { 
-                    const d = new Date(siswa.tanggal_lahir); 
-                    if (!isNaN(d.getTime())) tglLahir = d.toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' }); 
-                    else tglLahir = siswa.tanggal_lahir; 
-                } catch(e){ tglLahir = siswa.tanggal_lahir; } 
-            } 
-            tr.innerHTML = `<td>${siswa.nisn||'N/A'}</td><td>${siswa.nama_siswa||'N/A'}</td><td>${siswa.kelas||'N/A'}</td><td>${tglLahir}</td><td><a href="#" class="edit-btn" data-siswa-id="${siswa.id_siswa||''}">Edit</a></td>`; 
-            siswaTableBody.appendChild(tr); 
-        }); 
-        if (allSiswaData.length > 3 && toggleSiswaListBtn) { 
-            toggleSiswaListBtn.style.display = 'block'; 
-        } 
-    } else { 
-        siswaTableBody.innerHTML = `<tr><td colspan="5" style="text-align: center;">Belum ada data siswa.</td></tr>`; 
-    } 
-}
-
-/**
- * Simpan Nilai & Deskripsi Akhir (VERSI BARU DENGAN PAYLOAD CERDAS)
- */
-function handleSimpanNilai() {
-    const id_siswa = selectSiswa ? selectSiswa.value : null;
-    const id_mapel = selectMapel ? selectMapel.value : null;
-    const tahun_ajaran = selectTahunAjaran ? selectTahunAjaran.value.trim() : null;
-    const semester = selectSemester ? selectSemester.value : null;
-    const nilai_akhir_str = nilaiAkhirInput ? nilaiAkhirInput.value : null;
-    const deskripsi_rapor = finalDescriptionInput ? finalDescriptionInput.value.trim() : '';
-
-    if (!id_siswa || !id_mapel || !tahun_ajaran || !semester || nilai_akhir_str === null) {
-        showNotification("Semua field (Siswa, Mapel, TA, Semester, Nilai) wajib!", "warning");
         return;
-    }
-    const nilaiNum = parseFloat(nilai_akhir_str);
-    if (isNaN(nilaiNum) || nilaiNum < 0 || nilaiNum > 100) {
-        showNotification("Nilai Akhir harus angka 0-100.", "warning");
-        return;
-    }
-    if (isMulokActive && !deskripsi_rapor) {
-        showNotification("Deskripsi Mulok wajib diisi.", "warning");
-        return;
-    }
-    const hasSelectedCp = Object.keys(currentSelectedCpStatuses).filter(k => k !== 'MULOK').length > 0;
-    if (!isMulokActive && !deskripsi_rapor && hasSelectedCp) { if (!confirm("Deskripsi rapor kosong. Yakin simpan?")) return; }
-    if (!isMulokActive && !hasSelectedCp) { if (!confirm("Tidak ada CP dipilih. Simpan nilai akhir saja?")) return; }
+      }
 
-    showNotification("Menyimpan...", "info"); 
-    if(simpanNilaiBtn) simpanNilaiBtn.disabled = true;
+      // SUKSES: Data diterima, inisialisasi dashboard
+      try {
+        const data = response.data;
 
-    const payload = { 
-        action: "saveNilaiCp", 
-        spreadsheetId: user.spreadsheetId,
-        id_siswa: id_siswa,
-        id_mapel: id_mapel,
-        id_guru: user.username, 
-        tahun_ajaran: tahun_ajaran,
-        semester: semester,
-        nilai_akhir: nilaiNum,
-        deskripsi_capaian: deskripsi_rapor, 
-        deskripsi_bimbingan: "" 
-    };
-    
-    console.log("Mengirim Payload Baru:", payload); 
-
-    fetch(GAS_URL, { method: "POST", body: JSON.stringify(payload), headers: { "Content-Type": "text/plain;charset=utf-8" } })
-    .then(response => {
-        if (!response.ok) { return response.text().then(text => { let errMsg = `Server error (${response.status})`; try { const errData = JSON.parse(text); if (errData && errData.message) errMsg += `: ${errData.message}`; } catch(e){} throw new Error(errMsg); }); }
-        return response.json();
-    })
-    .then(data => {
-        if (data.success) {
-            showNotification(data.message || "Berhasil disimpan.", "success");
-            resetFinalDescriptionAndGrade(); 
-            if (cpSelectionList) cpSelectionList.innerHTML = '<p style="color: #6c757d;"><i>Pilih kelas, mapel, dan agama...</i></p>';
-            if (isMulokActive) resetMulok(); 
-            if(selectSiswa) selectSiswa.selectedIndex = 0; 
-        } else {
-             showNotification("Gagal menyimpan: " + (data.message || "Error server."), "error"); 
-             console.error("Server save error:", data.message);
+        // --- Setel header sidebar ---
+        const profil = data.profil;
+        if (profil) {
+            document.getElementById('sidebar-logo-img').src = profil.url_logo || 'assets/logo.png';
+            document.getElementById('sidebar-nama-sekolah').textContent = profil.nama_sekolah || "Nama Sekolah";
+            document.getElementById('sidebar-subtext').textContent = profil.npsn ? `NPSN: ${profil.npsn}` : "Subtext Sekolah";
+            
+            /* === (BARU) Panggil Fungsi Isi Form Profil (Hasil Langkah 3, Bagian 2) === */
+            populateProfilForm(profil); 
         }
+        
+        // --- Setel data pengguna ---
+        user = data.user || {};
+        document.getElementById('welcome-message').textContent = `Selamat Datang, ${user.nama_lengkap || 'Pengguna'}`;
+
+        // --- Inisialisasi data global ---
+        allKelasData = data.kelas || [];
+        allSiswaData = data.siswa || [];
+        allCpTpData = data.cp_tp || [];
+        allAgamaData = data.agama || [];
+        allFrasaTercapai = data.frasa_tercapai || [];
+        allFrasaBimbingan = data.frasa_bimbingan || [];
+        
+        // --- Setup Dropdown ---
+        setupSelectKelas(allKelasData);
+        setupSelectAgama(allAgamaData);
+        setupSelectSiswa([]); // Kosongkan dulu
+
+      } catch (e) {
+        console.error("Error memproses data awal:", e);
+        showNotification(`Error: ${e.message}`, 'error');
+      }
+
     })
-    .catch(error => { console.error("Save fetch/parse error:", error); showNotification(`Gagal menyimpan: ${error.message}.`, "error"); })
-    .finally(() => {
-        validateAndToggleButton(); 
-    });
-}
-
-
-/* === FUNGSI BARU UNTUK FASE 2: PROFIL SEKOLAH === */
-
-/**
- * [PROFIL] Memuat data profil dari server dan mengisinya ke form
- */
-function loadProfilSekolah() {
-    console.log("[PROFIL] Meminta data profil...");
-    // Tampilkan spinner jika ada
-    if (profilLoadingSpinner) profilLoadingSpinner.style.display = 'block';
-
-    const payload = {
-        action: "getProfil",
-        spreadsheetId: user.spreadsheetId
-    };
-
-    fetch(GAS_URL, { method: "POST", body: JSON.stringify(payload), headers: { "Content-Type": "text/plain;charset=utf-8" }})
-    .then(response => response.json())
-    .then(data => {
-        if (profilLoadingSpinner) profilLoadingSpinner.style.display = 'none';
-        if (data.success && data.data) {
-            console.log("[PROFIL] Data profil diterima:", data.data);
-            // Isi form
-            if (inputNamaSekolah) inputNamaSekolah.value = data.data.nama_sekolah || "";
-            if (inputNPSN) inputNPSN.value = data.data.npsn || "";
-            if (inputAlamat) inputAlamat.value = data.data.alamat_sekolah || "";
-            if (inputKepsek) inputKepsek.value = data.data.kepala_sekolah || "";
-            if (inputNIPKepsek) inputNIPKepsek.value = data.data.nip_kepsek || "";
-
-            // Update sidebar (INI PENTING)
-            const sidebarSchoolName = document.getElementById('sidebar-school-name');
-            if (sidebarSchoolName) {
-                sidebarSchoolName.innerText = data.data.nama_sekolah || "[Nama Sekolah]";
-            }
-        } else {
-            console.warn("[PROFIL] Gagal memuat profil:", data.message);
-            // Tidak perlu notifikasi error, mungkin data memang kosong
-        }
+    .withFailureHandler(error => {
+      console.error("Auth Check >> Gagal:", error);
+      setGlobalLoading(false);
+      showNotification(`Koneksi Gagal: ${error.message}. Coba muat ulang.`, 'error');
+      // Tampilkan tombol coba lagi
     })
-    .catch(err => {
-        if (profilLoadingSpinner) profilLoadingSpinner.style.display = 'none';
-        console.error("[PROFIL] Fetch error:", err);
-        showNotification("Gagal memuat data profil: " + err.message, "error");
+    .getInitialData(); // Panggil fungsi GAS Anda
+
+  
+  // 2. Logout
+  const logoutBtn = document.getElementById('logout-button');
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', () => {
+      logoutBtn.disabled = true;
+      logoutBtn.textContent = 'Memuat...';
+      showNotification('Anda sedang keluar...', 'info');
+      
+      google.script.run
+        .withSuccessHandler(response => {
+          if (response.success) {
+            window.location.href = response.url; // Redirect ke halaman login
+          } else {
+            showNotification(response.message || 'Gagal logout', 'error');
+            logoutBtn.disabled = false;
+            logoutBtn.textContent = 'Logout';
+          }
+        })
+        .withFailureHandler(error => {
+          showNotification(`Error: ${error.message}`, 'error');
+          logoutBtn.disabled = false;
+          logoutBtn.textContent = 'Logout';
+        })
+        .logoutUser();
     });
-}
-
-/**
- * [PROFIL] Mengirim data form profil ke server untuk disimpan
- */
-function handleSimpanProfil() {
-    console.log("[PROFIL] Menyimpan profil...");
-    showNotification("Menyimpan profil...", "info");
-    if (simpanProfilBtn) simpanProfilBtn.disabled = true;
-    if (profilLoadingSpinner) profilLoadingSpinner.style.display = 'block';
-
-    // Ambil data dari form
-    const dataProfil = {
-        nama_sekolah: inputNamaSekolah ? inputNamaSekolah.value.trim() : "",
-        npsn: inputNPSN ? inputNPSN.value.trim() : "",
-        alamat_sekolah: inputAlamat ? inputAlamat.value.trim() : "",
-        kepala_sekolah: inputKepsek ? inputKepsek.value.trim() : "",
-        nip_kepsek: inputNIPKepsek ? inputNIPKepsek.value.trim() : ""
-    };
-
-    const payload = {
-        action: "updateProfil",
-        spreadsheetId: user.spreadsheetId,
-        data: dataProfil
-    };
-
-    fetch(GAS_URL, { method: "POST", body: JSON.stringify(payload), headers: { "Content-Type": "text/plain;charset=utf-8" }})
-    .then(response => response.json())
-    .then(data => {
-        if (simpanProfilBtn) simpanProfilBtn.disabled = false;
-        if (profilLoadingSpinner) profilLoadingSpinner.style.display = 'none';
-
-        if (data.success) {
-            showNotification(data.message, "success");
-            console.log("[PROFIL] Berhasil disimpan. Nama sekolah baru:", data.newNamaSekolah);
-            // Update sidebar dengan nama baru
-            const sidebarSchoolName = document.getElementById('sidebar-school-name');
-            if (sidebarSchoolName) {
-                sidebarSchoolName.innerText = data.newNamaSekolah || "[Nama Sekolah]";
-            }
-        } else {
-            showNotification("Gagal menyimpan profil: " + data.message, "error");
-            console.error("[PROFIL] Gagal menyimpan:", data.message);
-        }
-    })
-    .catch(err => {
-        if (simpanProfilBtn) simpanProfilBtn.disabled = false;
-        if (profilLoadingSpinner) profilLoadingSpinner.style.display = 'none';
-        console.error("[PROFIL] Fetch error:", err);
-        showNotification("Gagal menyimpan profil: " + err.message, "error");
-    });
-}
-
-// =========================
-// FUNGSI MEMUAT DATA SISWA PERLU BIMBINGAN (FIX)
-// =========================
-function loadSiswaPerluBimbingan() {
-  console.log("DOM siap, memuat data siswa perlu bimbingan...");
-
-  // Cek apakah user sudah memiliki ID Spreadsheet
-  if (!user || !user.spreadsheetId) {
-    console.error("Spreadsheet ID tidak ditemukan pada user.");
-    return;
   }
 
-  // Payload yang dikirim ke Apps Script
-  const payload = {
-    action: "getSiswaPerluBimbingan",
-    spreadsheetId: user.spreadsheetId
-  };
+  // --- Logika Halaman Input Nilai ---
 
-  // Kirim data ke server via POST
-  fetch(GAS_URL, {
-    method: "POST",
-    body: JSON.stringify(payload),
-    headers: { "Content-Type": "text/plain;charset=utf-8" }
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (data && data.siswa) {
-      console.log(`[BIMBINGAN] Total siswa perlu bimbingan: ${data.total}`);
-      const listEl = document.getElementById("list-siswa-bimbingan");
-
-      if (listEl) {
-        listEl.innerHTML = "";
-        if (data.siswa.length === 0) {
-          listEl.innerHTML = "<li>Tidak ada siswa yang perlu bimbingan.</li>";
-        } else {
-          data.siswa.forEach(s => {
-            const li = document.createElement("li");
-            li.textContent = `${s.nama} (${s.kelas})`;
-            listEl.appendChild(li);
-          });
-        }
+  // 3. Event listener untuk dropdown
+  if (selectKelas) {
+    selectKelas.addEventListener('change', (e) => {
+      const idKelas = e.target.value;
+      const kelas = allKelasData.find(k => k.id_kelas === idKelas);
+      
+      if (kelas) {
+        currentFase = kelas.fase;
+        // Filter siswa berdasarkan id_kelas
+        const siswaDiKelas = allSiswaData.filter(s => s.id_kelas === idKelas);
+        setupSelectSiswa(siswaDiKelas);
+        
+        // Filter mapel berdasarkan fase
+        const mapelDiFase = allCpTpData.filter(cp => cp.fase === currentFase);
+        // Ambil mapel unik
+        const mapelUnik = [...new Map(mapelDiFase.map(item => [item['mapel'], item])).values()];
+        setupSelectMapel(mapelUnik);
+        
+      } else {
+        currentFase = null;
+        setupSelectSiswa([]);
+        setupSelectMapel([]);
       }
-    } else {
-      console.error("Data siswa perlu bimbingan tidak valid:", data);
+      resetFormInputNilai();
+    });
+  }
+
+  if (selectMapel) {
+    selectMapel.addEventListener('change', (e) => {
+      const mapelDipilih = e.target.value;
+      const idSiswa = selectSiswa.value;
+      isMulokActive = mapelDipilih.toLowerCase().includes('muatan lokal');
+
+      if (idSiswa && mapelDipilih && currentFase) {
+        // Muat data nilai jika ada
+        muatDataNilaiSiswa(idSiswa, mapelDipilih);
+      } else {
+        // Reset jika salah satu tidak terpilih
+        resetFormInputNilai();
+      }
+    });
+  }
+  
+  if (selectSiswa) {
+    selectSiswa.addEventListener('change', (e) => {
+      const idSiswa = e.target.value;
+      const mapelDipilih = selectMapel.value;
+
+      if (idSiswa && mapelDipilih && currentFase) {
+        // Muat data nilai jika ada
+        muatDataNilaiSiswa(idSiswa, mapelDipilih);
+      } else {
+        // Reset jika salah satu tidak terpilih
+        resetFormInputNilai();
+      }
+    });
+  }
+  
+  if (selectAgama) {
+    selectAgama.addEventListener('change', (e) => {
+      const agama = e.target.value;
+      const idSiswa = selectSiswa.value;
+      // Jika agama diganti, otomatis muat ulang data nilai (jika PAI/Budi Pekerti)
+      if (selectMapel.value.toLowerCase().includes('pendidikan agama') && idSiswa) {
+          muatDataNilaiSiswa(idSiswa, selectMapel.value);
+      }
+    });
+  }
+
+  // 4. Submit Form Nilai
+  if (formInputNilai) {
+    formInputNilai.addEventListener('submit', (e) => {
+      e.preventDefault();
+      simpanDataNilai();
+    });
+  }
+
+  // --- Fungsi Inti Halaman Input Nilai ---
+
+  function resetFormInputNilai() {
+    document.getElementById('cp-selection-list').innerHTML = '';
+    document.getElementById('input-nilai-akhir').value = '';
+    document.getElementById('input-deskripsi-tercapai').value = '';
+    document.getElementById('input-deskripsi-bimbingan').value = '';
+    document.getElementById('mulok-fields').style.display = 'none';
+    document.getElementById('agama-fields').style.display = 'none';
+    document.getElementById('cp-fields').style.display = 'none';
+    currentSelectedCpStatuses = {};
+  }
+
+  function simpanDataNilai() {
+    const payload = {
+      id_siswa: selectSiswa.value,
+      mapel: selectMapel.value,
+      fase: currentFase,
+      nilai_akhir: document.getElementById('input-nilai-akhir').value,
+      cp_tercapai: [],
+      cp_bimbingan: [],
+      deskripsi_tercapai: document.getElementById('input-deskripsi-tercapai').value,
+      deskripsi_bimbingan: document.getElementById('input-deskripsi-bimbingan').value,
+      is_mulok: isMulokActive
+    };
+
+    // Validasi
+    if (!payload.id_siswa || !payload.mapel || !payload.fase) {
+      showNotification('Kelas, Siswa, dan Mapel harus dipilih.', 'error');
+      return;
     }
-  })
-  .catch(err => {
-    console.error("Gagal memuat data siswa perlu bimbingan:", err);
-  });
-}
+    
+    // Kumpulkan status CP
+    document.querySelectorAll('#cp-selection-list input[type="radio"]:checked').forEach(radio => {
+      const idTp = radio.dataset.id;
+      const status = radio.value; // 'tercapai' or 'bimbingan'
+      if (status === 'tercapai') {
+        payload.cp_tercapai.push(idTp);
+      } else if (status === 'bimbingan') {
+        payload.cp_bimbingan.push(idTp);
+      }
+    });
 
+    setGlobalLoading(true);
+    showNotification('Menyimpan data nilai...', 'info');
 
-// =========================
-// PEMANGGILAN SAAT DOM SIAP
-// =========================
-document.addEventListener("DOMContentLoaded", () => {
-  console.log("DOM siap, memuat data siswa perlu bimbingan...");
-  loadSiswaPerluBimbingan();
-});
+    fetchData('simpanNilaiSiswa', payload)
+      .then(response => {
+        showNotification(response.message || 'Nilai berhasil disimpan!', 'success');
+      })
+      .catch(error => {
+        showNotification(`Gagal menyimpan: ${error.message}`, 'error');
+      })
+      .finally(() => {
+        setGlobalLoading(false);
+      });
+  }
 
-// =========================
-// NAVIGASI ANTAR HALAMAN
-// =========================
-document.querySelectorAll('.nav-link').forEach(link => {
-  link.addEventListener('click', (e) => {
-    e.preventDefault();
-
-    // Sembunyikan semua halaman
-    document.querySelectorAll('.content-page').forEach(p => p.style.display = 'none');
-
-    // Hapus status aktif di menu
-    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-
-    // Tampilkan halaman yang sesuai
-    const targetPage = e.currentTarget.dataset.page;
-    const pageElement = document.getElementById(targetPage);
-
-    if (pageElement) {
-      pageElement.style.display = 'block';
-      e.currentTarget.classList.add('active');
-    } else {
-      console.warn('Halaman tidak ditemukan:', targetPage);
+  function muatDataNilaiSiswa(idSiswa, mapel) {
+    resetFormInputNilai();
+    const agama = selectAgama.value;
+    
+    // Tampilkan/sembunyikan input agama
+    const isPai = mapel.toLowerCase().includes('pendidikan agama');
+    document.getElementById('agama-fields').style.display = isPai ? 'block' : 'none';
+    
+    // Jika PAI tapi agama belum dipilih, jangan lanjutkan
+    if (isPai && !agama) {
+      showNotification('Silakan pilih Agama siswa terlebih dahulu.', 'info');
+      document.getElementById('cp-fields').style.display = 'none';
+      return;
     }
-  });
-});
+    
+    // Tampilkan/sembunyikan input mulok
+    document.getElementById('mulok-fields').style.display = isMulokActive ? 'block' : 'none';
+    document.getElementById('cp-fields').style.display = isMulokActive ? 'none' : 'block';
 
-// === Akses Cepat dari Dashboard Home ===
-document.addEventListener('DOMContentLoaded', () => {
-  const quickActions = [
-    { buttonId: 'goto-input-nilai', targetPage: 'page-input-nilai' },
-    { buttonId: 'goto-data-siswa', targetPage: 'page-data-siswa' },
-    { buttonId: 'goto-profil', targetPage: 'page-profil-sekolah' },
-  ];
+    setGlobalLoading(true);
 
-  quickActions.forEach(({ buttonId, targetPage }) => {
+    fetchData('getNilaiSiswa', { idSiswa, mapel, agama })
+      .then(response => {
+        const data = response.data;
+        
+        // 1. Isi Nilai & Deskripsi (jika ada)
+        document.getElementById('input-nilai-akhir').value = data.nilai.nilai_akhir || '';
+        document.getElementById('input-deskripsi-tercapai').value = data.nilai.deskripsi_tercapai || '';
+        document.getElementById('input-deskripsi-bimbingan').value = data.nilai.deskripsi_bimbingan || '';
+
+        // 2. Render Pilihan CP/TP
+        renderCpSelection(data.cp_tp_list, data.nilai.cp_tercapai, data.nilai.cp_bimbingan);
+        
+        // 3. (BARU) Set frasa pembuka
+        currentPembukaTercapai = data.frasa.pembuka_tercapai || "";
+        currentPembukaBimbingan = data.frasa.pembuka_bimbingan || "";
+
+      })
+      .catch(error => {
+        showNotification(`Gagal memuat data nilai: ${error.message}`, 'error');
+      })
+      .finally(() => {
+        setGlobalLoading(false);
+      });
+  }
+
+  function renderCpSelection(cpList, tercapaiList, bimbinganList) {
+    const container = document.getElementById('cp-selection-list');
+    container.innerHTML = ''; // Kosongkan
+    currentSelectedCpStatuses = {};
+    
+    if (!cpList || cpList.length === 0) {
+      container.innerHTML = '<p style="color:var(--muted)">Tidak ada CP/TP ditemukan untuk mapel/fase ini.</p>';
+      return;
+    }
+    
+    // Buat map status untuk pencarian cepat
+    tercapaiList.forEach(id => currentSelectedCpStatuses[id] = 'tercapai');
+    bimbinganList.forEach(id => currentSelectedCpStatuses[id] = 'bimbingan');
+
+    cpList.forEach((item, index) => {
+      const idTp = item.id_tp;
+      const status = currentSelectedCpStatuses[idTp] || 'belum'; // 'tercapai', 'bimbingan', 'belum'
+      
+      const isTercapai = status === 'tercapai';
+      const isBimbingan = status === 'bimbingan';
+      const isBelum = status === 'belum';
+
+      const element = document.createElement('div');
+      element.className = 'cp-item';
+      element.innerHTML = `
+        <div style="font-weight: 500;">${item.deskripsi_tp}</div>
+        <div class="cp-radio-group">
+          <input type="radio" id="cp-${idTp}-1" name="cp-${idTp}" value="tercapai" data-id="${idTp}" ${isTercapai ? 'checked' : ''}>
+          <label for="cp-${idTp}-1">Tercapai</label>
+          <input type="radio" id="cp-${idTp}-2" name="cp-${idTp}" value="bimbingan" data-id="${idTp}" ${isBimbingan ? 'checked' : ''}>
+          <label for="cp-${idTp}-2">Perlu Bimbingan</label>
+          <input type="radio" id="cp-${idTp}-0" name="cp-${idTp}" value="belum" data-id="${idTp}" ${isBelum ? 'checked' : ''}>
+          <label for="cp-${idTp}-0">Belum Dinilai</label>
+        </div>
+      `;
+      container.appendChild(element);
+    });
+  }
+
+
+  // --- Fungsi Setup Dropdown (Lanjutan) ---
+  function setupSelectKelas(data) {
+    if (!selectKelas) return;
+    selectKelas.innerHTML = '<option value="">-- Pilih Kelas --</option>';
+    data.forEach(item => {
+      const option = document.createElement('option');
+      option.value = item.id_kelas;
+      option.textContent = item.nama_kelas;
+      selectKelas.appendChild(option);
+    });
+  }
+
+  function setupSelectAgama(data) {
+    if (!selectAgama) return;
+    selectAgama.innerHTML = '<option value="">-- Pilih Agama Siswa --</option>';
+    data.forEach(item => {
+      const option = document.createElement('option');
+      option.value = item;
+      option.textContent = item;
+      selectAgama.appendChild(option);
+    });
+  }
+
+  function setupSelectSiswa(data) {
+    if (!selectSiswa) return;
+    selectSiswa.innerHTML = '<option value="">-- Pilih Siswa --</option>';
+    data.sort((a, b) => a.nama.localeCompare(b.nama)); // Urutkan nama
+    data.forEach(item => {
+      const option = document.createElement('option');
+      option.value = item.id_siswa;
+      option.textContent = item.nama;
+      selectSiswa.appendChild(option);
+    });
+  }
+
+  function setupSelectMapel(data) {
+    if (!selectMapel) return;
+    selectMapel.innerHTML = '<option value="">-- Pilih Mapel --</option>';
+    data.sort((a, b) => a.mapel.localeCompare(b.mapel)); // Urutkan mapel
+    data.forEach(item => {
+      const option = document.createElement('option');
+      option.value = item.mapel;
+      option.textContent = item.mapel;
+      selectMapel.appendChild(option);
+    });
+  }
+  
+  // --- Logika Halaman Data Siswa ---
+  if (downloadTemplateBtn) {
+    downloadTemplateBtn.addEventListener('click', () => {
+      // Logika download template
+      showNotification('Fungsi download template belum siap.', 'info');
+    });
+  }
+
+  if (importCsvBtn) {
+    importCsvBtn.addEventListener('click', () => {
+      csvFileInput.click(); // Memicu input file
+    });
+  }
+
+  if (csvFileInput) {
+    csvFileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        handleCsvUpload(file);
+      }
+    });
+  }
+
+  if (toggleSiswaListBtn) {
+    toggleSiswaListBtn.addEventListener('click', () => {
+      const isHidden = siswaTableContainer.style.display === 'none';
+      siswaTableContainer.style.display = isHidden ? 'block' : 'none';
+      toggleSiswaListBtn.textContent = isHidden ? 'Sembunyikan Daftar Siswa' : 'Tampilkan Daftar Siswa';
+      if (isHidden && siswaTableBody.innerHTML === '') {
+        // Jika baru ditampilkan dan tabel kosong, muat datanya
+        muatDataSemuaSiswa();
+      }
+    });
+  }
+
+  function handleCsvUpload(file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const text = e.target.result;
+      setGlobalLoading(true);
+      showNotification('Mengimpor data siswa...', 'info');
+
+      fetchData('imporSiswaCSV', { csvText: text })
+        .then(response => {
+          showNotification(response.message || 'Impor selesai.', 'success');
+          // Muat ulang data siswa global dan muat ulang tabel jika ditampilkan
+          google.script.run.getInitialData(); // Panggil ulang data awal
+          if (siswaTableContainer.style.display === 'block') {
+            muatDataSemuaSiswa();
+          }
+        })
+        .catch(error => {
+          showNotification(`Gagal impor: ${error.message}`, 'error');
+        })
+        .finally(() => {
+          setGlobalLoading(false);
+          csvFileInput.value = ''; // Reset input file
+        });
+    };
+    reader.readAsText(file);
+  }
+
+  function muatDataSemuaSiswa() {
+    siswaTableBody.innerHTML = '<tr><td colspan="5">Memuat data...</td></tr>';
+    
+    // Ambil data siswa terbaru (karena 'allSiswaData' mungkin kadaluarsa)
+    fetchData('getSemuaSiswa')
+      .then(response => {
+        allSiswaData = response.data; // Update data global
+        renderTabelSiswa(allSiswaData);
+      })
+      .catch(error => {
+        siswaTableBody.innerHTML = `<tr><td colspan="5">Gagal memuat: ${error.message}</td></tr>`;
+        showNotification(error.message, 'error');
+      });
+  }
+
+  function renderTabelSiswa(data) {
+    siswaTableBody.innerHTML = '';
+    if (!data || data.length === 0) {
+      siswaTableBody.innerHTML = '<tr><td colspan="5">Tidak ada data siswa.</td></tr>';
+      return;
+    }
+    
+    data.sort((a, b) => a.nama.localeCompare(b.nama)); // Urutkan
+    
+    data.forEach(siswa => {
+      const row = document.createElement('tr');
+      
+      // Cari nama kelas
+      const kelas = allKelasData.find(k => k.id_kelas === siswa.id_kelas);
+      const namaKelas = kelas ? kelas.nama_kelas : '(Belum ada kelas)';
+      
+      row.innerHTML = `
+        <td>${siswa.nama}</td>
+        <td>${siswa.nisn || '-'}</td>
+        <td>${siswa.nis || '-'}</td>
+        <td>${namaKelas}</td>
+        <td>
+          <button class="btn ghost small btn-edit-siswa" data-id="${siswa.id_siswa}">Edit</button>
+          <button class="btn ghost small btn-delete-siswa" data-id="${siswa.id_siswa}" style="--danger: #dc3545; color:var(--danger); border-color:var(--danger);">Hapus</button>
+        </td>
+      `;
+      siswaTableBody.appendChild(row);
+    });
+  }
+
+  // --- Setup Navigasi (dari file asli Anda) ---
+  ['nav-home', 'nav-profil-sekolah', 'nav-data-siswa'].forEach(buttonId => {
+    const targetPage = buttonId.replace('nav-', 'page-');
     const btn = document.getElementById(buttonId);
     if (btn) {
       btn.addEventListener('click', (e) => {
@@ -995,43 +704,44 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
   });
-});
 
-/* === (BARU) Event Listener untuk Halaman Profil === */
-btnSimpanProfil.addEventListener('click', (e) => {
-  e.preventDefault(); // Mencegah form submit
-  simpanDataProfil();
-});
-
-inputLogoFile.addEventListener('change', handleLogoUpload);
-/* === (SELESAI) Event Listener Profil === */
-
-
-// === Navigasi Halaman Utama ===
-/* ... (kode navigasi Anda yang sudah ada) ... */
-
-// Kode Tambahan Chatgbt
-// === Navigasi antar halaman ===
-document.querySelectorAll('.nav-link').forEach(link => {
-  link.addEventListener('click', (e) => {
-    e.preventDefault();
-
-    // Sembunyikan semua halaman
-    document.querySelectorAll('.content-page').forEach(p => p.style.display = 'none');
-
-    // Hilangkan class aktif di semua menu
-    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-
-    // Ambil target page dari atribut data-page
-    const targetPage = e.currentTarget.dataset.page;
-    const pageElement = document.getElementById(targetPage);
-
-    // Tampilkan halaman yang diklik
-    if (pageElement) {
-      pageElement.style.display = 'block';
-      e.currentTarget.classList.add('active');
-    } else {
-      console.warn('Halaman tidak ditemukan:', targetPage);
-    }
+  /* === (BARU) Event Listener untuk Halaman Profil (Hasil Langkah 3, Bagian 1) === */
+  btnSimpanProfil.addEventListener('click', (e) => {
+    e.preventDefault(); // Mencegah form submit
+    simpanDataProfil();
   });
-});
+  
+  inputLogoFile.addEventListener('change', handleLogoUpload);
+  /* === (SELESAI) Event Listener Profil === */
+
+
+  // Kode Tambahan Chatgbt
+  // === Navigasi antar halaman ===
+  document.querySelectorAll('.nav-link').forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+
+      // Sembunyikan semua halaman
+      document.querySelectorAll('.content-page').forEach(p => p.style.display = 'none');
+
+      // Hilangkan class aktif di semua menu
+      document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+
+      // Ambil target page dari atribut data-page
+      const targetPage = e.currentTarget.dataset.page;
+      const pageElement = document.getElementById(targetPage);
+
+      // Tampilkan halaman yang diklik
+      if (pageElement) {
+        pageElement.style.display = 'block';
+        e.currentTarget.classList.add('active'); // Tambahkan class aktif ke menu yang diklik
+      }
+      
+      // Jika yang diklik adalah 'Data Siswa', muat datanya
+      if (targetPage === 'page-data-siswa' && siswaTableContainer.style.display === 'block') {
+        muatDataSemuaSiswa();
+      }
+    });
+  });
+
+}); // --- AKHIR DARI DOMContentLoaded ---
