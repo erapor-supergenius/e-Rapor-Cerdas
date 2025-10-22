@@ -997,6 +997,19 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
+/* === (BARU) Event Listener untuk Halaman Profil === */
+btnSimpanProfil.addEventListener('click', (e) => {
+  e.preventDefault(); // Mencegah form submit
+  simpanDataProfil();
+});
+
+inputLogoFile.addEventListener('change', handleLogoUpload);
+/* === (SELESAI) Event Listener Profil === */
+
+
+// === Navigasi Halaman Utama ===
+/* ... (kode navigasi Anda yang sudah ada) ... */
+
 // Kode Tambahan Chatgbt
 // === Navigasi antar halaman ===
 document.querySelectorAll('.nav-link').forEach(link => {
