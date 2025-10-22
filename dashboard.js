@@ -1,4 +1,4 @@
-/* === e-Rapor Cerdas - Dashboard Script (Final V4.1 - Fase 2: Profil Sekolah) === */
+/* === e-Rapor Cerdas - Dashboard Script (V4.2 - PERBAIKAN FATAL ERROR) === */
 
 // !!! PENTING !!! PASTIKAN INI ADALAH URL DARI "DATABASE ADMIN v2" ANDA !!!
 const GAS_URL = "https://script.google.com/macros/s/AKfycbw1Jc7JXssFYq_KMQ6Up34zBGm4XYyOEEORsCeJI7DwJfG-xj3mGY930FbU5a5c5ZCJew/exec"; // <-- URL ANDA (Sudah benar)
@@ -11,59 +11,28 @@ let currentFase = null, isMulokActive = false;
 let currentSelectedCpStatuses = {};
 let currentPembukaTercapai = "", currentPembukaBimbingan = "";
 
-// --- Elemen Form & Notifikasi ---
-const notificationToast = document.getElementById('notification-toast');
-const notificationMessage = document.getElementById('notification-toast-message');
-const notificationClose = document.getElementById('notification-toast-close');
-const formInputNilai = document.getElementById('form-input-nilai');
-const selectKelas = document.getElementById('pilih-kelas');
-const selectSiswa = document.getElementById('pilih-siswa');
-const selectMapel = document.getElementById('pilih-mapel');
-const selectAgama = document.getElementById('select-agama');
-
-/* === (BARU) Elemen Form Profil Sekolah (Hasil Langkah 1) === */
-const formProfilSekolah = document.getElementById('form-profil-sekolah');
-const btnSimpanProfil = document.getElementById('simpan-profil-btn');
-const inputLogoFile = document.getElementById('input-logo-file');
-const logoPreview = document.getElementById('logo-preview');
-const profilLoadingSpinner = document.getElementById('profil-loading-spinner');
-
-// Variabel untuk semua input di form profil (untuk mempermudah)
-const profilInputs = {
-  token_sekolah: document.getElementById('profil-token-sekolah'),
-  nama_sekolah: document.getElementById('profil-nama-sekolah'),
-  nss: document.getElementById('profil-nss'),
-  npsn: document.getElementById('profil-npsn'),
-  status_sekolah: document.getElementById('profil-status-sekolah'),
-  alamat_sekolah: document.getElementById('profil-alamat-sekolah'),
-  kelurahan_desa: document.getElementById('profil-kelurahan-desa'),
-  kecamatan: document.getElementById('profil-kecamatan'),
-  kabupaten_kota: document.getElementById('profil-kabupaten-kota'),
-  provinsi: document.getElementById('profil-provinsi'),
-  website: document.getElementById('profil-website'),
-  email: document.getElementById('profil-email'),
-  telepon: document.getElementById('profil-telepon'),
-  kepala_sekolah: document.getElementById('profil-kepala-sekolah'),
-  nip_kepsek: document.getElementById('profil-nip-kepsek'),
-  url_logo: document.getElementById('profil-url-logo'), // Input hidden
-  kabupaten_kota_rapor: document.getElementById('profil-kabupaten-kota-rapor'),
-  tanggal_rapor: document.getElementById('profil-tanggal-rapor')
-};
-/* === (SELESAI) Elemen Form Profil Sekolah === */
-
-
-// --- Elemen Data Siswa ---
-const downloadTemplateBtn = document.getElementById('download-template-btn');
-const importCsvBtn = document.getElementById('import-csv-btn');
-const csvFileInput = document.getElementById('csv-file-input');
-const siswaTableBody = document.getElementById('siswa-table-body');
-const toggleSiswaListBtn = document.getElementById('toggle-siswa-list');
-const siswaTableContainer = document.querySelector('.data-table-container');
+// --- Fungsi Helper (DI LUAR DOMContentLoaded) ---
 
 // --- Notifikasi ---
-function showNotification(message, type = 'info') { if (!notificationToast || !notificationMessage) return; notificationMessage.innerText = message; notificationToast.className = 'notification-toast'; notificationToast.classList.add(type); notificationToast.style.display = 'flex'; if (notificationToast.timer) clearTimeout(notificationToast.timer); notificationToast.timer = setTimeout(() => { hideNotification(); }, 5000); }
-function hideNotification() { if (!notificationToast) return; notificationToast.style.display = 'none'; if (notificationToast.timer) clearTimeout(notificationToast.timer); notificationToast.timer = null; }
-if (notificationClose) notificationClose.addEventListener('click', hideNotification);
+// (Definisi fungsi notifikasi di luar agar bisa dipanggil dari mana saja)
+function showNotification(message, type = 'info') { 
+  const notificationToast = document.getElementById('notification-toast');
+  const notificationMessage = document.getElementById('notification-toast-message');
+  if (!notificationToast || !notificationMessage) return; 
+  notificationMessage.innerText = message; 
+  notificationToast.className = 'notification-toast'; 
+  notificationToast.classList.add(type); 
+  notificationToast.style.display = 'flex'; 
+  if (notificationToast.timer) clearTimeout(notificationToast.timer); 
+  notificationToast.timer = setTimeout(() => { hideNotification(); }, 5000); 
+}
+function hideNotification() { 
+  const notificationToast = document.getElementById('notification-toast');
+  if (!notificationToast) return; 
+  notificationToast.style.display = 'none'; 
+  if (notificationToast.timer) clearTimeout(notificationToast.timer); 
+  notificationToast.timer = null; 
+}
 
 // --- Fungsi Helper (Fetch Data) ---
 function fetchData(action, payload) {
@@ -92,12 +61,14 @@ function setGlobalLoading(isVisible) {
     loader.style.display = isVisible ? 'flex' : 'none';
   }
 }
-/* === (BARU) FUNGSI UNTUK PROFIL SEKOLAH (Hasil Langkah 2 + Perbaikan) === */
+
+/* === FUNGSI UNTUK PROFIL SEKOLAH (DI LUAR DOMContentLoaded) === */
 /**
  * 1. Mengisi data form profil sekolah dari data yang sudah dimuat
+ * PENTING: 'profilInputs' harus di-pass sebagai argumen karena baru didefinisi di dalam DOMContentLoaded
  */
-function populateProfilForm(profil) {
-  if (!profil) return;
+function populateProfilForm(profil, profilInputs) {
+  if (!profil || !profilInputs) return;
 
   // Loop semua keys di profilInputs dan isi nilainya
   for (const key in profilInputs) {
@@ -107,20 +78,21 @@ function populateProfilForm(profil) {
   }
 
   // Set preview logo dari URL yang ada
-  if (profil.url_logo) {
+  const logoPreview = document.getElementById('logo-preview'); // Ambil langsung
+  if (profil.url_logo && logoPreview) {
     logoPreview.src = profil.url_logo;
   }
 }
 
 /**
- * 2. Menangani upload file logo (VERSI PERBAIKAN: Menggunakan showNotification)
+ * 2. Menangani upload file logo
+ * PENTING: 'profilInputs' dan elemen UI di-pass sebagai argumen
  */
-function handleLogoUpload(event) {
+function handleLogoUpload(event, profilInputs, btnSimpanProfil, profilLoadingSpinner) {
   const file = event.target.files[0];
   if (!file) return;
 
   if (!['image/jpeg', 'image/png'].includes(file.type)) {
-    // MEMAKAI: showNotification
     showNotification('Format file tidak didukung. Gunakan .jpg atau .png', 'error');
     return;
   }
@@ -128,10 +100,9 @@ function handleLogoUpload(event) {
   const reader = new FileReader();
   reader.readAsDataURL(file);
   reader.onloadend = () => {
-    // MEMAKAI: showNotification
     showNotification('Mengupload logo...', 'info');
-    btnSimpanProfil.disabled = true;
-    profilLoadingSpinner.style.display = 'inline-block';
+    if(btnSimpanProfil) btnSimpanProfil.disabled = true;
+    if(profilLoadingSpinner) profilLoadingSpinner.style.display = 'inline-block';
 
     const base64String = reader.result.split(',')[1];
     const fileData = {
@@ -144,33 +115,35 @@ function handleLogoUpload(event) {
       .then(response => {
         if (response.success) {
           const newUrl = response.data.url;
-          // MEMAKAI: showNotification
           showNotification('Logo berhasil diupload!', 'success');
           
-          logoPreview.src = newUrl;
-          profilInputs.url_logo.value = newUrl;
-          document.getElementById('sidebar-logo-img').src = newUrl;
+          const logoPreview = document.getElementById('logo-preview');
+          if(logoPreview) logoPreview.src = newUrl;
+          if(profilInputs.url_logo) profilInputs.url_logo.value = newUrl; // SIMPAN URL BARU
+          
+          const sidebarLogo = document.getElementById('sidebar-logo-img');
+          if(sidebarLogo) sidebarLogo.src = newUrl;
         } else {
           throw new Error(response.message);
         }
       })
       .catch(error => {
         console.error('Error uploading logo:', error);
-        // MEMAKAI: showNotification
         showNotification(`Gagal upload logo: ${error.message}`, 'error');
       })
       .finally(() => {
-        btnSimpanProfil.disabled = false;
-        profilLoadingSpinner.style.display = 'none';
+        if(btnSimpanProfil) btnSimpanProfil.disabled = false;
+        if(profilLoadingSpinner) profilLoadingSpinner.style.display = 'none';
         event.target.value = null;
       });
   };
 }
 
 /**
- * 3. Mengumpulkan data dari form dan menyimpannya ke Sheet (VERSI PERBAIKAN: Menggunakan showNotification)
+ * 3. Mengumpulkan data dari form dan menyimpannya ke Sheet
+ * PENTING: 'profilInputs' dan elemen UI di-pass sebagai argumen
  */
-function simpanDataProfil() {
+function simpanDataProfil(profilInputs, btnSimpanProfil, profilLoadingSpinner) {
   let dataToSave = {};
   for (const key in profilInputs) {
     if (profilInputs[key]) {
@@ -178,19 +151,20 @@ function simpanDataProfil() {
     }
   }
 
-  btnSimpanProfil.disabled = true;
-  profilLoadingSpinner.style.display = 'inline-block';
-  // MEMAKAI: showNotification
+  if(btnSimpanProfil) btnSimpanProfil.disabled = true;
+  if(profilLoadingSpinner) profilLoadingSpinner.style.display = 'inline-block';
   showNotification('Menyimpan data profil...', 'info');
 
   fetchData('simpanProfilSekolah', dataToSave)
     .then(response => {
       if (response.success) {
-        // MEMAKAI: showNotification
         showNotification('Profil sekolah berhasil diperbarui!', 'success');
         
-        document.getElementById('sidebar-nama-sekolah').textContent = dataToSave.nama_sekolah;
-        document.getElementById('sidebar-subtext').textContent = `NPSN: ${dataToSave.npsn}`;
+        const sidebarNama = document.getElementById('sidebar-nama-sekolah');
+        if(sidebarNama) sidebarNama.textContent = dataToSave.nama_sekolah;
+        
+        const sidebarSubtext = document.getElementById('sidebar-subtext');
+        if(sidebarSubtext) sidebarSubtext.textContent = `NPSN: ${dataToSave.npsn}`;
         
       } else {
         throw new Error(response.message);
@@ -198,21 +172,68 @@ function simpanDataProfil() {
     })
     .catch(error => {
       console.error('Error saving profil:', error);
-      // MEMAKAI: showNotification
       showNotification(`Gagal menyimpan: ${error.message}`, 'error');
     })
     .finally(() => {
-      btnSimpanProfil.disabled = false;
-      profilLoadingSpinner.style.display = 'none';
+      if(btnSimpanProfil) btnSimpanProfil.disabled = false;
+      if(profilLoadingSpinner) profilLoadingSpinner.style.display = 'none';
     });
 }
 /* === (SELESAI) FUNGSI PROFIL SEKOLAH === */
+
 // --- Saat DOM Siap ---
 document.addEventListener("DOMContentLoaded", () => {
   console.log("DOM siap.");
 
-  // --- Notifikasi Toast (Kode Asli Anda) ---
-  // (Fungsi show/hide sudah di atas, listener ada di atas)
+  // --- (PINDAH KE SINI) Definisi Variabel Elemen ---
+  const notificationToast = document.getElementById('notification-toast');
+  const notificationMessage = document.getElementById('notification-toast-message');
+  const notificationClose = document.getElementById('notification-toast-close');
+  const formInputNilai = document.getElementById('form-input-nilai');
+  const selectKelas = document.getElementById('pilih-kelas');
+  const selectSiswa = document.getElementById('pilih-siswa');
+  const selectMapel = document.getElementById('pilih-mapel');
+  const selectAgama = document.getElementById('select-agama');
+
+  /* === (PINDAH KE SINI) Elemen Form Profil Sekolah === */
+  const formProfilSekolah = document.getElementById('form-profil-sekolah');
+  const btnSimpanProfil = document.getElementById('simpan-profil-btn');
+  const inputLogoFile = document.getElementById('input-logo-file');
+  const logoPreview = document.getElementById('logo-preview');
+  const profilLoadingSpinner = document.getElementById('profil-loading-spinner');
+
+  const profilInputs = {
+    token_sekolah: document.getElementById('profil-token-sekolah'),
+    nama_sekolah: document.getElementById('profil-nama-sekolah'),
+    nss: document.getElementById('profil-nss'),
+    npsn: document.getElementById('profil-npsn'),
+    status_sekolah: document.getElementById('profil-status-sekolah'),
+    alamat_sekolah: document.getElementById('profil-alamat-sekolah'),
+    kelurahan_desa: document.getElementById('profil-kelurahan-desa'),
+    kecamatan: document.getElementById('profil-kecamatan'),
+    kabupaten_kota: document.getElementById('profil-kabupaten-kota'),
+    provinsi: document.getElementById('profil-provinsi'),
+    website: document.getElementById('profil-website'),
+    email: document.getElementById('profil-email'),
+    telepon: document.getElementById('profil-telepon'),
+    kepala_sekolah: document.getElementById('profil-kepala-sekolah'),
+    nip_kepsek: document.getElementById('profil-nip-kepsek'),
+    url_logo: document.getElementById('profil-url-logo'), // Input hidden
+    kabupaten_kota_rapor: document.getElementById('profil-kabupaten-kota-rapor'),
+    tanggal_rapor: document.getElementById('profil-tanggal-rapor')
+  };
+  /* === (SELESAI) Elemen Form Profil Sekolah === */
+  
+  // --- (PINDAH KE SINI) Elemen Data Siswa ---
+  const downloadTemplateBtn = document.getElementById('download-template-btn');
+  const importCsvBtn = document.getElementById('import-csv-btn');
+  const csvFileInput = document.getElementById('csv-file-input');
+  const siswaTableBody = document.getElementById('siswa-table-body');
+  const toggleSiswaListBtn = document.getElementById('toggle-siswa-list');
+  const siswaTableContainer = document.querySelector('.data-table-container');
+
+  // --- (PINDAH KE SINI) Listener Notifikasi ---
+  if (notificationClose) notificationClose.addEventListener('click', hideNotification);
 
   // --- Panggil Data Awal ---
   setGlobalLoading(true);
@@ -224,9 +245,7 @@ document.addEventListener("DOMContentLoaded", () => {
       setGlobalLoading(false);
 
       if (!response.success) {
-        // Gagal (token tidak valid atau alasan lain)
         showNotification(response.message || 'Gagal memuat data. Sesi mungkin berakhir.', 'error');
-        // Arahkan ke login jika perlu
         if (response.action === 'redirect') {
           setTimeout(() => { window.location.href = response.url; }, 2000);
         }
@@ -244,8 +263,8 @@ document.addEventListener("DOMContentLoaded", () => {
             document.getElementById('sidebar-nama-sekolah').textContent = profil.nama_sekolah || "Nama Sekolah";
             document.getElementById('sidebar-subtext').textContent = profil.npsn ? `NPSN: ${profil.npsn}` : "Subtext Sekolah";
             
-            /* === (BARU) Panggil Fungsi Isi Form Profil (Hasil Langkah 3, Bagian 2) === */
-            populateProfilForm(profil); 
+            /* === (PERBAIKAN) Panggil Fungsi Isi Form Profil (passing profilInputs) === */
+            populateProfilForm(profil, profilInputs); 
         }
         
         // --- Setel data pengguna ---
@@ -275,7 +294,6 @@ document.addEventListener("DOMContentLoaded", () => {
       console.error("Auth Check >> Gagal:", error);
       setGlobalLoading(false);
       showNotification(`Koneksi Gagal: ${error.message}. Coba muat ulang.`, 'error');
-      // Tampilkan tombol coba lagi
     })
     .getInitialData(); // Panggil fungsi GAS Anda
 
@@ -386,7 +404,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // --- Fungsi Inti Halaman Input Nilai ---
+  // --- Fungsi Inti Halaman Input Nilai (DI DALAM DOMContentLoaded) ---
 
   function resetFormInputNilai() {
     document.getElementById('cp-selection-list').innerHTML = '';
@@ -530,7 +548,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
 
-  // --- Fungsi Setup Dropdown (Lanjutan) ---
+  // --- Fungsi Setup Dropdown (Lanjutan, DI DALAM DOMContentLoaded) ---
   function setupSelectKelas(data) {
     if (!selectKelas) return;
     selectKelas.innerHTML = '<option value="">-- Pilih Kelas --</option>';
@@ -577,7 +595,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
   
-  // --- Logika Halaman Data Siswa ---
+  // --- Logika Halaman Data Siswa (DI DALAM DOMContentLoaded) ---
   if (downloadTemplateBtn) {
     downloadTemplateBtn.addEventListener('click', () => {
       // Logika download template
@@ -612,6 +630,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // --- Fungsi Halaman Data Siswa (DI DALAM DOMContentLoaded) ---
   function handleCsvUpload(file) {
     const reader = new FileReader();
     reader.onload = function(e) {
@@ -685,37 +704,27 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // --- Setup Navigasi (dari file asli Anda) ---
-  ['nav-home', 'nav-profil-sekolah', 'nav-data-siswa'].forEach(buttonId => {
-    const targetPage = buttonId.replace('nav-', 'page-');
-    const btn = document.getElementById(buttonId);
-    if (btn) {
-      btn.addEventListener('click', (e) => {
-        e.preventDefault();
-
-        document.querySelectorAll('.content-page').forEach(p => p.style.display = 'none');
-        document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-
-        const page = document.getElementById(targetPage);
-        if (page) {
-          page.style.display = 'block';
-          const menu = document.querySelector(`.nav-link[data-page="${targetPage}"]`);
-          if (menu) menu.classList.add('active');
-        }
-      });
-    }
-  });
-
-  /* === (BARU) Event Listener untuk Halaman Profil (Hasil Langkah 3, Bagian 1) === */
-  btnSimpanProfil.addEventListener('click', (e) => {
-    e.preventDefault(); // Mencegah form submit
-    simpanDataProfil();
-  });
+  // (CATATAN: Blok 'setupNavButton' Anda yang lama dihapus karena duplikat dengan 'Kode Tambahan Chatgbt')
   
-  inputLogoFile.addEventListener('change', handleLogoUpload);
+  /* === (PERBAIKAN) Event Listener untuk Halaman Profil === */
+  if (btnSimpanProfil) {
+    btnSimpanProfil.addEventListener('click', (e) => {
+      e.preventDefault(); // Mencegah form submit
+      // Pass semua elemen yang relevan ke fungsi
+      simpanDataProfil(profilInputs, btnSimpanProfil, profilLoadingSpinner);
+    });
+  }
+  
+  if (inputLogoFile) {
+    inputLogoFile.addEventListener('change', (event) => {
+      // Pass semua elemen yang relevan ke fungsi
+      handleLogoUpload(event, profilInputs, btnSimpanProfil, profilLoadingSpinner);
+    });
+  }
   /* === (SELESAI) Event Listener Profil === */
 
 
-  // Kode Tambahan Chatgbt
+  // Kode Tambahan Chatgbt (Ini adalah kode navigasi utama Anda)
   // === Navigasi antar halaman ===
   document.querySelectorAll('.nav-link').forEach(link => {
     link.addEventListener('click', (e) => {
