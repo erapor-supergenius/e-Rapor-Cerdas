@@ -1,7 +1,7 @@
 /* === e-Rapor Cerdas - Dashboard Script (V4.2 - PERBAIKAN FATAL ERROR) === */
 
 // !!! PENTING !!! PASTIKAN INI ADALAH URL DARI "DATABASE ADMIN v2" ANDA !!!
-const GAS_URL = "https://script.google.com/macros/s/AKfycbw1Jc7JXssFYq_KMQ6Up34zBGm4XYyOEEORsCeJI7DwJfG-xj3mGY930FbU5a5c5ZCJew/exec"; // <-- URL ANDA (Sudah benar)
+const GAS_URL = "https://script.google.com/macros/s/AKfycbzKqIVZbNLOUWOF-5GFRia26wIMDLU92mutlLt2wlLqO0DqYKRxykTr085Bw11aMETV1w/exec"; // <-- URL ANDA (Sudah benar)
 
 // --- Variabel Global ---
 let user = {};
